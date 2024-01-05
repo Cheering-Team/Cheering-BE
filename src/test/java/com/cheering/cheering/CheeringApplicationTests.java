@@ -1,5 +1,6 @@
 package com.cheering.cheering;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -10,4 +11,10 @@ class CheeringApplicationTests {
 	void contextLoads() {
 	}
 
+	@Test
+	void test() {
+		int test = 3;
+
+		Assertions.assertEquals(3, 4);
+	}
 }
