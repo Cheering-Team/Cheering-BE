@@ -23,7 +23,7 @@ jobs:
         
     - name: Set up ENV
       run: |
-          cd ./cheering/src/main/resources/
+          cd ./src/main/resources/
           touch ./application.yml
           echo "$ENV_PROPERTIES_LOCAL" > ./application.yml
       env:
