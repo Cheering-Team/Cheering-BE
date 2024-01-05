@@ -10,11 +10,4 @@ class CheeringApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
-	@Test
-	void test() {
-		int test = 3;
-
-		Assertions.assertEquals(3, 4);
-	}
 }
