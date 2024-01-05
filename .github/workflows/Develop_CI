@@ -1,0 +1,36 @@
+name: Develop_CI
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'corretto'
+        
+    - name: Set up ENV
+      run: |
+          cd ./cheering/src/main/resources/
+          touch ./application.yml
+          echo "$ENV_PROPERTIES_LOCAL" > ./application.yml
+      with:
+        ENV_PROPERTIES_LOCAL: ${{ secrets.ENV_PROPERTIES_LOCAL }}
+        
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Build with Gradle
+      run: ./gradlew build
