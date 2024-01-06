@@ -48,6 +48,7 @@ jobs:
         key: ${{ secrets.EC2_KEY }}
         port: ${{ secrets.EC2_PORT }}
         script: |
+          sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           sudo docker stop prod-server
           sudo docker rm prod-server
           sudo docker image rm ${{ secrets.DOCKER_REPO }}
