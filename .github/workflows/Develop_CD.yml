@@ -1,4 +1,4 @@
-name: Java CI with Gradle # workflow 이름
+name: Develop_CD
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
       run: |      
         cd ./src/main/resources
         touch ./application.yml        
-        echo "${{ secrets.DATABASE }}" >> ./application.yml
+        echo "${{ secrets.ENV_PROPERTIES_DEPLOY }}" >> ./application.yml
 
       shell: bash
 
@@ -42,10 +42,10 @@ jobs:
     - name: executing remote ssh commands using password
       uses: appleboy/ssh-action@v0.1.6
       with:
-        host: ${{ secrets.HOST }}
+        host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.KEY }}
-        port: 22
+        key: ${{ secrets.EC2_KEY }}
+        port: ${{ secrets.EC2_PORT }}
         script: |
           sudo docker stop prod-server
           sudo docker rm prod-server
