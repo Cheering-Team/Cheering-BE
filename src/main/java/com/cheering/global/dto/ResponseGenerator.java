@@ -10,4 +10,14 @@ public interface ResponseGenerator {
                 .header("accessToken", accessToken)
                 .body(ResponseBodyDto.of(code, message, data));
     }
+
+    static <T> ResponseEntity<ResponseBodyDto<?>> success(Integer code, String message, T data) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseBodyDto.of(code, message, data));
+    }
+
+    static <T> ResponseEntity<ResponseBodyDto<?>> fail(Integer code, String message, T data) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseBodyDto.of(code, message, data));
+    }
 }
