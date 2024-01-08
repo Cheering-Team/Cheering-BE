@@ -14,8 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UserService {
 
-    private final static String REGEXP_EMAIL = "^[A-Za-z0-9_\\.\\-]+@[A-Za-z0-9\\-]+\\.[A-Za-z0-9\\-]+$";
-
+    private final static String REGEXP_EMAIL = "^[A-Za-z0-9_.\\-]+@[A-Za-z0-9\\-]+\\.[A-Za-z0-9\\-]*\\.*[A-Za-z0-9\\-]+$";
     @Autowired
     UserRepository userRepository;
 
