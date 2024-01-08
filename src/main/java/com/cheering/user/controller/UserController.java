@@ -13,7 +13,6 @@ import com.cheering.user.dto.SignUpResponse;
 import com.cheering.user.service.UserService;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +39,8 @@ public class UserController {
         SignUpResponse signUpResponse = new SignUpResponse(joinUser.getId());
 
         return ResponseGenerator.success(
-                HttpStatus.CREATED, jwToken.accessToken(), SIGN_UP_SUCCESS.getMessage(), signUpResponse);
+                SIGN_UP_SUCCESS.getCode(), jwToken.accessToken(),
+                SIGN_UP_SUCCESS.getMessage(), signUpResponse);
     }
 
     @GetMapping("/signin")
@@ -54,6 +54,7 @@ public class UserController {
 
         userService.validateEmail(email);
 
-        return ResponseGenerator.success(HttpStatus.OK, VALIDATE_EMAIL_SUCCESS.getMessage(), null);
+        return ResponseGenerator.success(VALIDATE_EMAIL_SUCCESS.getCode(),
+                VALIDATE_EMAIL_SUCCESS.getMessage(), null);
     }
 }

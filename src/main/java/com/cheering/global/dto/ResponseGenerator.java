@@ -6,13 +6,13 @@ import org.springframework.http.ResponseEntity;
 
 public interface ResponseGenerator {
 
-    static <T> ResponseEntity<ResponseBodyDto<?>> success(HttpStatus code, String accessToken, String message, T data) {
+    static <T> ResponseEntity<ResponseBodyDto<?>> success(int code, String accessToken, String message, T data) {
         return ResponseEntity.status(HttpStatus.OK)
                 .header("accessToken", accessToken)
                 .body(ResponseBodyDto.of(code, message, data));
     }
 
-    static <T> ResponseEntity<ResponseBodyDto<?>> success(HttpStatus code, String message, T data) {
+    static <T> ResponseEntity<ResponseBodyDto<?>> success(int code, String message, T data) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseBodyDto.of(code, message, data));
     }

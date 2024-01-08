@@ -10,11 +10,11 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ExceptionMessage {
     //User
-    INVALID_EMAIL_FORMAT(BAD_REQUEST, "invalid email", BAD_REQUEST),
-    DUPLICATED_EMAIL(BAD_REQUEST, "duplicated", BAD_REQUEST);
+    INVALID_EMAIL_FORMAT(400, "invalid email", BAD_REQUEST),
+    DUPLICATED_EMAIL(400, "duplicated", BAD_REQUEST);
 
 
-    private final HttpStatus code;
+    private final int code;
     private final String message;
     private final HttpStatus httpStatus;
 
