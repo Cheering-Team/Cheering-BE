@@ -35,7 +35,7 @@ public class UserController {
 
         SignUpResponse signUpResponse = new SignUpResponse(joinUser.getId());
         return ResponseGenerator.success(
-                200, jwToken.accessToken(), "signup success", signUpResponse);
+                201, jwToken.accessToken(), "signup success", signUpResponse);
     }
 
     @GetMapping("/signin")
@@ -49,7 +49,6 @@ public class UserController {
 
         userService.validateEmail(email);
 
-        return ResponseGenerator.success(
-                200, "signup success", null);
+        return ResponseGenerator.success(200, "not duplicated", null);
     }
 }
