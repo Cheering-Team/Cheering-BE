@@ -19,7 +19,7 @@ jobs:
         java-version: '17'
         distribution: 'corretto'
         
-    - name: Set up ENV
+    - name: Set up main ENV
       run: |
           cd ./src/main/resources/
           touch ./application.yml
@@ -27,8 +27,16 @@ jobs:
       env:
         ENV_PROPERTIES_LOCAL: ${{ secrets.ENV_PROPERTIES_LOCAL }}
         
+    - name: Set up test ENV
+      run: |
+        cd ./src/test/resources/
+        touch ./application.yml
+        echo "$ENV_PROPERTIES_LOCAL" > ./application.yml
+      env:
+        ENV_PROPERTIES_LOCAL: ${{ secrets.ENV_PROPERTIES_LOCAL }}
+        
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
       
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew clean build
