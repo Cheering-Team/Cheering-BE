@@ -1,4 +1,4 @@
-package com.cheering.common.dto;
+package com.cheering.global.dto;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

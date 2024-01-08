@@ -1,4 +1,4 @@
-package com.cheering.common.dto;
+package com.cheering.global.dto;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

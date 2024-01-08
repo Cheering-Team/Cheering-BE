@@ -1,8 +1,8 @@
 package com.cheering.auth.jwt;
 
-import static com.cheering.common.constant.JwtConstant.ACCESS_TOKEN_EXPIRE_TIME;
-import static com.cheering.common.constant.JwtConstant.GRANT_TYPE;
-import static com.cheering.common.constant.JwtConstant.REFRESH_TOKEN_EXPIRE_TIME;
+import static com.cheering.auth.constant.JwtConstant.ACCESS_TOKEN_EXPIRE_TIME;
+import static com.cheering.auth.constant.JwtConstant.GRANT_TYPE;
+import static com.cheering.auth.constant.JwtConstant.REFRESH_TOKEN_EXPIRE_TIME;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

@@ -1,4 +1,4 @@
-package com.cheering.common.constant;
+package com.cheering.auth.constant;
 
 public abstract class JwtConstant {
     public static final Long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60 * 60 * 24;
