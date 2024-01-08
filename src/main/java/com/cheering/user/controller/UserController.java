@@ -1,12 +1,14 @@
 package com.cheering.user.controller;
 
+import com.cheering.auth.jwt.JWToken;
+import com.cheering.auth.jwt.JwtGenerator;
 import com.cheering.common.dto.ResponseBodyDto;
 import com.cheering.common.dto.ResponseGenerator;
 import com.cheering.user.domain.User;
 import com.cheering.user.dto.SignUpRequest;
 import com.cheering.user.dto.SignUpResponse;
 import com.cheering.user.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,22 +18,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    UserService userService;
+    private final UserService userService;
+    private final JwtGenerator jwtGenerator;
 
     @PostMapping("/signup")
     public ResponseEntity<ResponseBodyDto<?>> signUp(@RequestBody SignUpRequest signUpRequest) {
         User joinUser = userService.signup(signUpRequest);
 
-        SignUpResponse userResponse = new SignUpResponse(joinUser.getId());
+        //jwt 토큰 생성
+        JWToken jwToken = jwtGenerator.generateToken(joinUser.getId());
 
-        //accessToken 생성 로직
-        String accessToken = "accessTokenString";
-        
+        SignUpResponse signUpResponse = new SignUpResponse(joinUser.getId());
+
         return ResponseGenerator.success(
-                200, accessToken, "signup success", userResponse);
+                200, jwToken.accessToken(), "signup success", signUpResponse);
     }
 
     @GetMapping("/signin")

@@ -20,7 +20,7 @@ public class UserService {
                 .password(signUpRequest.password())
                 .nickname(signUpRequest.nickname())
                 .build();
-
+        
         userRepository.save(newUser);
 
         return newUser;
