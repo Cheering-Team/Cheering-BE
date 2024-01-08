@@ -1,6 +1,6 @@
 package com.cheering.global.exception.common;
 
-import com.cheering.global.constant.ExceptionStatus;
+import com.cheering.global.constant.ExceptionMessage;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.global.exception.user.DuplicatedEmailException;
@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
             InvalidEmailFormatException e
     ) {
         log.error("handle InvalidEmailFormatException: ", e);
-        return ResponseGenerator.fail(ExceptionStatus.INVALID_EMAIL_FORMAT, null);
+        return ResponseGenerator.fail(ExceptionMessage.INVALID_EMAIL_FORMAT, null);
     }
 
     @ExceptionHandler(DuplicatedEmailException.class)
@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
             DuplicatedEmailException e
     ) {
         log.error("handle DuplicatedEmailException: ", e);
-        return ResponseGenerator.fail(ExceptionStatus.DUPLICATED_EMAIL, null);
+        return ResponseGenerator.fail(ExceptionMessage.DUPLICATED_EMAIL, null);
     }
 
 }

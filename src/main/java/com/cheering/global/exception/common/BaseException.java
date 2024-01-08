@@ -1,11 +1,11 @@
 package com.cheering.global.exception.common;
 
-import com.cheering.global.constant.ExceptionStatus;
+import com.cheering.global.constant.ExceptionMessage;
 
 public class BaseException extends RuntimeException {
-    private final ExceptionStatus status;
+    private final ExceptionMessage status;
 
-    public BaseException(ExceptionStatus status) {
+    public BaseException(ExceptionMessage status) {
         super(status.getMessage());
         this.status = status;
     }
