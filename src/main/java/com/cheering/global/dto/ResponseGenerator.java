@@ -1,6 +1,6 @@
 package com.cheering.global.dto;
 
-import com.cheering.global.exception.common.ExceptionStatus;
+import com.cheering.global.constant.ExceptionStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 

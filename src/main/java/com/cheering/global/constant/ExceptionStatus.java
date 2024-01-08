@@ -1,4 +1,4 @@
-package com.cheering.global.exception.common;
+package com.cheering.global.constant;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
@@ -12,7 +12,7 @@ public enum ExceptionStatus {
     //User
     INVALID_EMAIL_FORMAT(400, "invalid email", BAD_REQUEST),
     DUPLICATED_EMAIL(400, "duplicated", BAD_REQUEST);
-    
+
 
     private final int code;
     private final String message;

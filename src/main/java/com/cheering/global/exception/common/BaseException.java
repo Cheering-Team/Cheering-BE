@@ -1,5 +1,7 @@
 package com.cheering.global.exception.common;
 
+import com.cheering.global.constant.ExceptionStatus;
+
 public class BaseException extends RuntimeException {
     private final ExceptionStatus status;
 
@@ -7,5 +9,5 @@ public class BaseException extends RuntimeException {
         super(status.getMessage());
         this.status = status;
     }
-    
+
 }

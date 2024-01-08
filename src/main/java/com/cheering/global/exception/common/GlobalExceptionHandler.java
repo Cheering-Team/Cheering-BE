@@ -1,5 +1,6 @@
 package com.cheering.global.exception.common;
 
+import com.cheering.global.constant.ExceptionStatus;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.global.exception.user.DuplicatedEmailException;
