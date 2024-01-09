@@ -14,7 +14,7 @@ public enum ExceptionMessage {
     INVALID_EMAIL_FORMAT(BAD_REQUEST, "invalid email"),
     DUPLICATED_EMAIL(CONFLICT, "duplicated"),
     FAIL_SIGN_UP(BAD_REQUEST, "fail signup"),
-    MISMATCH_PASSWORD(CONFLICT, "mismatch passwowrd");
+    MISMATCH_PASSWORD(CONFLICT, "mismatch password");
 
     private final HttpStatus httpStatus;
     private final String message;
