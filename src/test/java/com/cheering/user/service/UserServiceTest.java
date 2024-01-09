@@ -1,5 +1,6 @@
 package com.cheering.user.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -78,6 +79,26 @@ class UserServiceTest {
         assertThatThrownBy(() -> {
             userService.validateDuplicatedEmail(newEmail);
         }).isInstanceOf(DuplicatedEmailException.class);
+    }
+
+    @Test
+    void 비밀번호_일치_성공_테스트() {
+        //given
+        String password = "aaa111!!!";
+        String passwordConfirm = "aaa111!!!";
+        //when
+        //then
+        assertThat(password).isEqualTo(passwordConfirm);
+    }
+
+    @Test
+    void 비밀번호_일치_실패_테스트() {
+        //given
+        String password = "aaa111!!!";
+        String passwordConfirm = "aaa111!!!aa";
+        //when
+        //then
+        assertThat(password).isNotEqualTo(passwordConfirm);
     }
 
     @Test
