@@ -29,7 +29,9 @@ jobs:
         
     - name: Set up test ENV
       run: |
-        cd ./src/test/resources/
+        cd ./src/test/
+        mkdir resources/
+        cd resources/
         touch ./application.yml
         echo "$ENV_PROPERTIES_LOCAL" > ./application.yml
       env:
