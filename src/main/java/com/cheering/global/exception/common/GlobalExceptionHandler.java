@@ -6,21 +6,20 @@ import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.InvalidEmailFormatException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(InvalidEmailFormatException.class)
     public ResponseEntity<ResponseBodyDto<?>> handleInvalidEmailFormatException(
             InvalidEmailFormatException e
     ) {
+
         log.error("handle InvalidEmailFormatException: ", e);
         return ResponseGenerator.fail(ExceptionMessage.INVALID_EMAIL_FORMAT, null);
     }
@@ -33,4 +32,11 @@ public class GlobalExceptionHandler {
         return ResponseGenerator.fail(ExceptionMessage.DUPLICATED_EMAIL, null);
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ResponseBodyDto<?>> handleSignUpRequestFormatException(
+            MethodArgumentNotValidException e
+    ) {
+        log.error("handle SignUpRequestFormatException", e);
+        return ResponseGenerator.fail(ExceptionMessage.FAIL_SIGN_UP, null);
+    }
 }
