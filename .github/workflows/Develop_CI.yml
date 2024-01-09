@@ -42,9 +42,9 @@ jobs:
         with:
           host port: 3306
           container port: 3306
-          mysql database: 'cheering'
+          mysql database: 'Cheering'
           mysql user: 'root'
-          mysql password: ${{ secrets.TEST_DB_PASSWORD }}
+          mysql root password: ${{ secrets.TEST_DB_PASSWORD }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
