@@ -5,6 +5,7 @@ import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.InvalidEmailFormatException;
+import com.cheering.global.exception.user.MisMatchPasswordException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -38,5 +39,13 @@ public class GlobalExceptionHandler {
     ) {
         log.error("handle SignUpRequestFormatException", e);
         return ResponseGenerator.fail(ExceptionMessage.FAIL_SIGN_UP, null);
+    }
+
+    @ExceptionHandler(MisMatchPasswordException.class)
+    public ResponseEntity<ResponseBodyDto<?>> handleMisMatchPasswordException(
+            MisMatchPasswordException e
+    ) {
+        log.error("handle handleMisMatchPasswordException", e);
+        return ResponseGenerator.fail(ExceptionMessage.MISMATCH_PASSWORD, null);
     }
 }
