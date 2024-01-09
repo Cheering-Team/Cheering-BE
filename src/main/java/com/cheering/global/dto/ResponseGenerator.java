@@ -6,21 +6,20 @@ import org.springframework.http.ResponseEntity;
 
 public interface ResponseGenerator {
 
-    static <T> ResponseEntity<ResponseBodyDto<?>> success(int code, String accessToken, String message, T data) {
+    static <T> ResponseEntity<ResponseBodyDto<?>> success(String accessToken, String message, T data) {
         return ResponseEntity.status(HttpStatus.OK)
                 .header("accessToken", accessToken)
-                .body(ResponseBodyDto.of(code, message, data));
+                .body(ResponseBodyDto.of(message, data));
     }
 
-    static <T> ResponseEntity<ResponseBodyDto<?>> success(int code, String message, T data) {
+    static <T> ResponseEntity<ResponseBodyDto<?>> success(String message, T data) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseBodyDto.of(code, message, data));
+                .body(ResponseBodyDto.of(message, data));
     }
 
     static <T> ResponseEntity<ResponseBodyDto<?>> fail(ExceptionMessage exceptionStatus, T data) {
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ResponseBodyDto.of(
-                        exceptionStatus.getCode(),
                         exceptionStatus.getMessage(),
                         data));
     }

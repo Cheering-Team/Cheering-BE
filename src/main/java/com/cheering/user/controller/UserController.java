@@ -11,6 +11,7 @@ import com.cheering.user.domain.User;
 import com.cheering.user.dto.SignUpRequest;
 import com.cheering.user.dto.SignUpResponse;
 import com.cheering.user.service.UserService;
+import jakarta.validation.Valid;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class UserController {
     private final JwtGenerator jwtGenerator;
 
     @PostMapping("/signup")
-    public ResponseEntity<ResponseBodyDto<?>> signUp(@RequestBody SignUpRequest signUpRequest) {
+    public ResponseEntity<ResponseBodyDto<?>> signUp(@RequestBody @Valid SignUpRequest signUpRequest) {
         User joinUser = userService.signup(signUpRequest);
 
         //jwt 토큰 생성
@@ -38,9 +39,7 @@ public class UserController {
 
         SignUpResponse signUpResponse = new SignUpResponse(joinUser.getId());
 
-        return ResponseGenerator.success(
-                SIGN_UP_SUCCESS.getCode(), jwToken.accessToken(),
-                SIGN_UP_SUCCESS.getMessage(), signUpResponse);
+        return ResponseGenerator.success(jwToken.accessToken(), SIGN_UP_SUCCESS.getMessage(), signUpResponse);
     }
 
     @GetMapping("/signin")
@@ -54,7 +53,6 @@ public class UserController {
 
         userService.validateEmail(email);
 
-        return ResponseGenerator.success(VALIDATE_EMAIL_SUCCESS.getCode(),
-                VALIDATE_EMAIL_SUCCESS.getMessage(), null);
+        return ResponseGenerator.success(VALIDATE_EMAIL_SUCCESS.getMessage(), null);
     }
 }
