@@ -1,7 +1,9 @@
 package com.cheering.user.service;
 
+import com.cheering.global.constant.ExceptionMessage;
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.InvalidEmailFormatException;
+import com.cheering.global.exception.user.MisMatchPasswordException;
 import com.cheering.user.domain.User;
 import com.cheering.user.domain.UserRepository;
 import com.cheering.user.dto.SignUpRequest;
@@ -22,7 +24,7 @@ public class UserService {
         User newUser = User.builder()
                 .email(signUpRequest.email())
                 .password(signUpRequest.password())
-                .nickname(signUpRequest.nickname())
+                .nickname("")
                 .build();
 
         userRepository.save(newUser);
@@ -37,15 +39,20 @@ public class UserService {
     public void validateEmailFormat(String email) {
         //이메일 형식 검사 -> throw
         if (!Pattern.matches(REGEXP_EMAIL, email)) {
-            throw new InvalidEmailFormatException();
+            throw new InvalidEmailFormatException(ExceptionMessage.INVALID_EMAIL_FORMAT);
         }
     }
 
     public void validateDuplicatedEmail(String email) {
         // 기존 이메일과 중복 검사
-
         if (userRepository.existsUserByEmail(email)) {
-            throw new DuplicatedEmailException();
+            throw new DuplicatedEmailException(ExceptionMessage.DUPLICATED_EMAIL);
+        }
+    }
+
+    public void validateConfirmPassword(String password, String passwordConfirm) {
+        if (!password.equals(passwordConfirm)) {
+            throw new MisMatchPasswordException(ExceptionMessage.INVALID_EMAIL_FORMAT);
         }
     }
 }
