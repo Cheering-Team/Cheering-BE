@@ -19,5 +19,4 @@ public class ResponseBodyDto<T> {
                 .data(data)
                 .build();
     }
-
 }

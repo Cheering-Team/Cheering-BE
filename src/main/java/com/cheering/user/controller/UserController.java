@@ -51,7 +51,8 @@ public class UserController {
     public ResponseEntity<ResponseBodyDto<?>> validateEmail(@RequestBody Map<String, String> data) {
         String email = data.get("email");
 
-        userService.validateEmail(email);
+        userService.validateEmailFormat(email);
+        userService.validateDuplicatedEmail(email);
 
         return ResponseGenerator.success(VALIDATE_EMAIL_SUCCESS.getMessage(), null);
     }

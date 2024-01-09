@@ -35,11 +35,14 @@ public class UserService {
 
     }
 
-    public void validateEmail(String email) {
+    public void validateEmailFormat(String email) {
         //이메일 형식 검사 -> throw
         if (!Pattern.matches(REGEXP_EMAIL, email)) {
             throw new InvalidEmailFormatException();
         }
+    }
+
+    public void validateDuplicatedEmail(String email) {
         // 기존 이메일과 중복 검사
         Optional<User> findByEmailUser = userRepository.findByEmail(email);
         if (findByEmailUser.isPresent()) {
