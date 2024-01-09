@@ -3,8 +3,11 @@ package com.cheering.user.domain;
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
+import com.cheering.global.constant.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
@@ -31,4 +34,7 @@ public class User {
 
     @Column(length = 25)
     private String email;
+
+    @Enumerated(value = EnumType.STRING)
+    Role role;
 }
