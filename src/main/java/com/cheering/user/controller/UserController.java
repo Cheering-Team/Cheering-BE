@@ -32,6 +32,10 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<ResponseBodyDto<?>> signUp(@RequestBody @Valid SignUpRequest signUpRequest) {
+
+        userService.validateDuplicatedEmail(signUpRequest.email());
+        userService.validateConfirmPassword(signUpRequest.password(), signUpRequest.passwordConfirm());
+
         User joinUser = userService.signup(signUpRequest);
 
         //jwt 토큰 생성
