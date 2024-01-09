@@ -1,6 +1,7 @@
 package com.cheering.user.service;
 
 import com.cheering.global.constant.ExceptionMessage;
+import com.cheering.global.constant.Role;
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.InvalidEmailFormatException;
 import com.cheering.global.exception.user.MisMatchPasswordException;
@@ -25,6 +26,7 @@ public class UserService {
                 .email(signUpRequest.email())
                 .password(signUpRequest.password())
                 .nickname("")
+                .role(Role.ROLE_USER)
                 .build();
 
         userRepository.save(newUser);
