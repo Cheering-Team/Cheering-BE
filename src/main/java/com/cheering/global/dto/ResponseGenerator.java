@@ -1,5 +1,6 @@
 package com.cheering.global.dto;
 
+import com.cheering.auth.constant.JwtConstant;
 import com.cheering.global.constant.ExceptionMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +9,7 @@ public interface ResponseGenerator {
 
     static <T> ResponseEntity<ResponseBodyDto<?>> success(String accessToken, String message, T data) {
         return ResponseEntity.status(HttpStatus.OK)
-                .header("accessToken", accessToken)
+                .header("Access-Token", JwtConstant.GRANT_TYPE + " " + accessToken)
                 .body(ResponseBodyDto.of(message, data));
     }
 
