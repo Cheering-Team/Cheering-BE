@@ -5,7 +5,6 @@ import com.cheering.global.exception.user.InvalidEmailFormatException;
 import com.cheering.user.domain.User;
 import com.cheering.user.domain.UserRepository;
 import com.cheering.user.dto.SignUpRequest;
-import java.util.Optional;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,8 +43,8 @@ public class UserService {
 
     public void validateDuplicatedEmail(String email) {
         // 기존 이메일과 중복 검사
-        Optional<User> findByEmailUser = userRepository.findByEmail(email);
-        if (findByEmailUser.isPresent()) {
+
+        if (userRepository.existsUserByEmail(email)) {
             throw new DuplicatedEmailException();
         }
     }
