@@ -49,11 +49,11 @@ jobs:
           port: ${{ secrets.EC2_PORT }}
           script: |
             sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            sudo docker stop prod-server
-            docker rm -f $(docker ps -qa)
+            sudo docker stop cheering_docker
+            docker rm -f cheering_docker
             docker rmi ${{ secrets.DOCKER_USERNAME }}/cheering_docker
             docker pull ${{ secrets.DOCKER_USERNAME }}/cheering_docker
-            docker-compose up -d
+            docker run -d --name cheering_docker -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/cheering_docker
 #          sudo docker rm prod-server
 #          sudo docker image rm ${{ secrets.DOCKER_REPO }}
 #          sudo docker pull ${{ secrets.DOCKER_REPO }}
