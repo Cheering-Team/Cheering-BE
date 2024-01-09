@@ -51,7 +51,8 @@ class UserServiceTest {
         //when
         //then
         assertThatCode(() -> {
-            userService.validateEmail(rightEmail);
+            userService.validateEmailFormat(rightEmail);
+            userService.validateDuplicatedEmail(rightEmail);
         }).doesNotThrowAnyException();
     }
 
@@ -59,7 +60,7 @@ class UserServiceTest {
     @ValueSource(strings = {"cheeringNaver.com", "cheering@navercom", "cheering@naver.ac.kr.kr"})
     void 이메일_유효성_예외_테스트(String wrongEmail) {
         assertThatThrownBy(() -> {
-            userService.validateEmail(wrongEmail);
+            userService.validateEmailFormat(wrongEmail);
         });
     }
 
@@ -75,7 +76,7 @@ class UserServiceTest {
 
         //then
         assertThatThrownBy(() -> {
-            userService.validateEmail(newEmail);
+            userService.validateDuplicatedEmail(newEmail);
         }).isInstanceOf(DuplicatedEmailException.class);
     }
 
