@@ -5,7 +5,7 @@ import com.cheering.global.exception.common.BaseException;
 
 public class DuplicatedEmailException extends BaseException {
 
-    public DuplicatedEmailException() {
-        super(ExceptionMessage.DUPLICATED_EMAIL);
+    public DuplicatedEmailException(ExceptionMessage status) {
+        super(status);
     }
 }
