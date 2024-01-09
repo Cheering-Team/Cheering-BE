@@ -5,6 +5,8 @@ import static com.cheering.global.constant.SuccessMessage.VALIDATE_EMAIL_SUCCESS
 
 import com.cheering.auth.jwt.JWToken;
 import com.cheering.auth.jwt.JwtGenerator;
+import com.cheering.auth.security.LoginUserDetails;
+import com.cheering.global.constant.Role;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.user.domain.User;
@@ -12,10 +14,13 @@ import com.cheering.user.dto.SignUpRequest;
 import com.cheering.user.dto.SignUpResponse;
 import com.cheering.user.service.UserService;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,17 +43,27 @@ public class UserController {
 
         User joinUser = userService.signup(signUpRequest);
 
-        //jwt 토큰 생성
-        JWToken jwToken = jwtGenerator.generateToken(joinUser.getId());
+        UsernamePasswordAuthenticationToken loginUser = getLoginUser(joinUser);
 
+        //jwt 토큰 생성
+        JWToken jwToken = jwtGenerator.generateToken(loginUser);
         SignUpResponse signUpResponse = new SignUpResponse(joinUser.getId());
 
         return ResponseGenerator.success(jwToken.accessToken(), SIGN_UP_SUCCESS.getMessage(), signUpResponse);
     }
 
-    @GetMapping("/signin")
-    public String signIn() {
-        return "signin complete";
+    private static UsernamePasswordAuthenticationToken getLoginUser(User joinUser) {
+        UserDetails principal = new LoginUserDetails(joinUser);
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(Role.ROLE_USER.name()));
+
+        return new UsernamePasswordAuthenticationToken(
+                principal, joinUser.getPassword(), authorities);
+    }
+
+    @PostMapping("/signin")
+    public ResponseEntity<ResponseBodyDto<?>> signIn() {
+
+        return ResponseGenerator.success(VALIDATE_EMAIL_SUCCESS.getMessage(), null);
     }
 
     @PostMapping("/email")
