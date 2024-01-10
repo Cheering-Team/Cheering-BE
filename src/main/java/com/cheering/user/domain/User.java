@@ -3,7 +3,7 @@ package com.cheering.user.domain;
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
-import com.cheering.global.constant.Role;
+import com.cheering.auth.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
