@@ -8,12 +8,14 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends GenericFilterBean {
     private final JwtProvider jwtTokenProvider;
 
@@ -28,10 +30,11 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
             // 토큰이 유효할 경우 토큰에서 Authentication 객체를 가지고 와서 SecurityContext에 저장
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
+            log.info("Authenticated User");
             chain.doFilter(request, response);
         }
-        
+
+        log.warn("Not Authenticated User");
         chain.doFilter(request, response);
     }
 

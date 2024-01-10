@@ -11,8 +11,8 @@ import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -27,19 +27,21 @@ public class JwtGenerator {
     }
 
     // Member 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
-    public JWToken generateToken(Authentication authentication) {
-        // 권한 가져오기
-        Collection<String> authorities = authentication.getAuthorities().stream()
+    public JWToken generateToken(String id, Collection<? extends GrantedAuthority> roles) {
+
+        long now = (new Date()).getTime();
+
+        //권한 문자열 변환
+        List<String> authorities = roles.stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
-        long now = (new Date()).getTime();
 
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
 
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim("auth", authorities)
+                .claim("auth", String.join(",", authorities))
+                .claim("id", id)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
