@@ -1,11 +1,11 @@
 package com.cheering.user.controller;
 
+import static com.cheering.global.constant.SuccessMessage.SIGN_IN_SUCCESS;
 import static com.cheering.global.constant.SuccessMessage.SIGN_UP_SUCCESS;
 import static com.cheering.global.constant.SuccessMessage.VALIDATE_EMAIL_SUCCESS;
 
 import com.cheering.auth.jwt.JWToken;
 import com.cheering.auth.jwt.JwtGenerator;
-import com.cheering.auth.security.LoginUserDetails;
 import com.cheering.global.constant.Role;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
@@ -18,9 +18,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,27 +41,22 @@ public class UserController {
 
         User joinUser = userService.signup(signUpRequest);
 
-        UsernamePasswordAuthenticationToken loginUser = getLoginUser(joinUser);
-
         //jwt 토큰 생성
-        JWToken jwToken = jwtGenerator.generateToken(loginUser);
+        JWToken jwToken = jwtGenerator.generateToken(
+                String.valueOf(joinUser.getId()),
+                List.of(new SimpleGrantedAuthority(Role.ROLE_USER.name())));
+
+        //refresh token 저장 로직 구현 필요
+
         SignUpResponse signUpResponse = new SignUpResponse(joinUser.getId());
 
-        return ResponseGenerator.success(jwToken.accessToken(), SIGN_UP_SUCCESS.getMessage(), signUpResponse);
-    }
-
-    private static UsernamePasswordAuthenticationToken getLoginUser(User joinUser) {
-        UserDetails principal = new LoginUserDetails(joinUser);
-        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(Role.ROLE_USER.name()));
-
-        return new UsernamePasswordAuthenticationToken(
-                principal, joinUser.getPassword(), authorities);
+        return ResponseGenerator.signUpSuccess(jwToken, SIGN_UP_SUCCESS.getMessage(), signUpResponse);
     }
 
     @PostMapping("/signin")
     public ResponseEntity<ResponseBodyDto<?>> signIn() {
 
-        return ResponseGenerator.success(VALIDATE_EMAIL_SUCCESS.getMessage(), null);
+        return ResponseGenerator.success(SIGN_IN_SUCCESS.getMessage(), null);
     }
 
     @PostMapping("/email")
