@@ -4,12 +4,14 @@ import static com.cheering.global.constant.SuccessMessage.SIGN_IN_SUCCESS;
 import static com.cheering.global.constant.SuccessMessage.SIGN_UP_SUCCESS;
 import static com.cheering.global.constant.SuccessMessage.VALIDATE_EMAIL_SUCCESS;
 
+import com.cheering.auth.constant.Role;
 import com.cheering.auth.jwt.JWToken;
 import com.cheering.auth.jwt.JwtGenerator;
-import com.cheering.global.constant.Role;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.user.domain.User;
+import com.cheering.user.dto.SignInRequest;
+import com.cheering.user.dto.SignInResponse;
 import com.cheering.user.dto.SignUpRequest;
 import com.cheering.user.dto.SignUpResponse;
 import com.cheering.user.service.UserService;
@@ -39,7 +41,7 @@ public class UserController {
         userService.validateDuplicatedEmail(signUpRequest.email());
         userService.validateConfirmPassword(signUpRequest.password(), signUpRequest.passwordConfirm());
 
-        User joinUser = userService.signup(signUpRequest);
+        User joinUser = userService.signUp(signUpRequest);
 
         //jwt 토큰 생성
         JWToken jwToken = jwtGenerator.generateToken(
@@ -54,9 +56,13 @@ public class UserController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<ResponseBodyDto<?>> signIn() {
+    public ResponseEntity<ResponseBodyDto<?>> signIn(@RequestBody SignInRequest signInRequest) {
 
-        return ResponseGenerator.success(SIGN_IN_SUCCESS.getMessage(), null);
+        User loginUser = userService.signIn(signInRequest);
+        SignInResponse signInResponse = new SignInResponse(loginUser.getId());
+        System.out.println("signInResponse = " + signInResponse);
+
+        return ResponseGenerator.success(SIGN_IN_SUCCESS.getMessage(), signInResponse);
     }
 
     @PostMapping("/email")

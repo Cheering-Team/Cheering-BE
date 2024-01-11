@@ -1,13 +1,16 @@
 package com.cheering.user.service;
 
-import com.cheering.global.constant.ExceptionMessage;
-import com.cheering.global.constant.Role;
+import com.cheering.auth.constant.Role;
+import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.InvalidEmailFormatException;
 import com.cheering.global.exception.user.MisMatchPasswordException;
+import com.cheering.global.exception.user.NotFoundUserException;
 import com.cheering.user.domain.User;
 import com.cheering.user.domain.UserRepository;
+import com.cheering.user.dto.SignInRequest;
 import com.cheering.user.dto.SignUpRequest;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +24,7 @@ public class UserService {
     UserRepository userRepository;
 
     @Transactional
-    public User signup(SignUpRequest signUpRequest) {
+    public User signUp(SignUpRequest signUpRequest) {
         User newUser = User.builder()
                 .email(signUpRequest.email())
                 .password(signUpRequest.password())
@@ -29,13 +32,17 @@ public class UserService {
                 .role(Role.ROLE_USER)
                 .build();
 
-        userRepository.save(newUser);
-
-        return newUser;
+        return userRepository.save(newUser);
     }
 
-    public void login() {
+    public User signIn(SignInRequest signInRequest) {
 
+        String email = signInRequest.email();
+        String password = signInRequest.password();
+
+        Optional<User> findUser = userRepository.findByEmailAndPassword(email, password);
+        return findUser.orElseThrow(() ->
+                new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
     }
 
     public void validateEmailFormat(String email) {
