@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagementConfigurer -> sessionManagementConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // 해당 API에 대해서는 모든 요청을 허가
+                        // 해당 API에 대해서는 요청을 허가
                         .requestMatchers("/api/signin").hasRole("USER")
                         // 이 밖에 모든 요청에 대해서 인증을 필요로 한다는 설정
                         .anyRequest().permitAll())

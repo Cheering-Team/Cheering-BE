@@ -31,10 +31,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             log.info("Authenticated User");
-            chain.doFilter(request, response);
         }
-
-        log.warn("Not Authenticated User");
         chain.doFilter(request, response);
     }
 

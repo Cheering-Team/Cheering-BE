@@ -1,6 +1,6 @@
 package com.cheering.auth.jwt;
 
-import com.cheering.auth.Role;
+import com.cheering.auth.constant.Role;
 import java.util.Collection;
 import java.util.Collections;
 import org.springframework.security.core.Authentication;

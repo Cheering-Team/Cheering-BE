@@ -32,6 +32,7 @@ public class GlobalExceptionHandler {
             DuplicatedEmailException e
     ) {
         log.error("handle DuplicatedEmailException: ", e);
+
         return ResponseGenerator.fail(ExceptionMessage.DUPLICATED_EMAIL, null);
     }
 
