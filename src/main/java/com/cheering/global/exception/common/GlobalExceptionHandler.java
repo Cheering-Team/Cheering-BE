@@ -6,6 +6,7 @@ import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.InvalidEmailFormatException;
 import com.cheering.global.exception.user.MisMatchPasswordException;
+import com.cheering.global.exception.user.NotFoundUserException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -52,5 +53,14 @@ public class GlobalExceptionHandler {
     ) {
         log.error("handle SignUpRequestFormatException", e);
         return ResponseGenerator.fail(ExceptionMessage.FAIL_SIGN_UP, null);
+    }
+
+    //로그인 실패 예외
+    @ExceptionHandler(NotFoundUserException.class)
+    public ResponseEntity<ResponseBodyDto<?>> handleNotFoundUserException(
+            NotFoundUserException e
+    ) {
+        log.error("handle NotFoundUserException", e);
+        return ResponseGenerator.fail(ExceptionMessage.NOT_FOUND_USER, null);
     }
 }
