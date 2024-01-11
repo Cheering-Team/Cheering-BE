@@ -52,7 +52,7 @@ public class UserController {
 
         SignUpResponse signUpResponse = new SignUpResponse(joinUser.getId());
 
-        return ResponseGenerator.signUpSuccess(jwToken, SIGN_UP_SUCCESS.getMessage(), signUpResponse);
+        return ResponseGenerator.signUpSuccess(jwToken, SIGN_UP_SUCCESS, signUpResponse);
     }
 
     @PostMapping("/signin")
@@ -60,9 +60,8 @@ public class UserController {
 
         User loginUser = userService.signIn(signInRequest);
         SignInResponse signInResponse = new SignInResponse(loginUser.getId());
-        System.out.println("signInResponse = " + signInResponse);
 
-        return ResponseGenerator.success(SIGN_IN_SUCCESS.getMessage(), signInResponse);
+        return ResponseGenerator.success(SIGN_IN_SUCCESS, signInResponse);
     }
 
     @PostMapping("/email")
@@ -72,6 +71,6 @@ public class UserController {
         userService.validateEmailFormat(email);
         userService.validateDuplicatedEmail(email);
 
-        return ResponseGenerator.success(VALIDATE_EMAIL_SUCCESS.getMessage(), null);
+        return ResponseGenerator.success(VALIDATE_EMAIL_SUCCESS, null);
     }
 }

@@ -41,6 +41,7 @@ public class UserService {
         String password = signInRequest.password();
 
         Optional<User> findUser = userRepository.findByEmailAndPassword(email, password);
+        
         return findUser.orElseThrow(() ->
                 new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
     }
