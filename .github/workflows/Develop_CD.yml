@@ -38,7 +38,7 @@ jobs:
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -t ${{ secrets.DOCKER_REPO }} .
           docker push ${{ secrets.DOCKER_REPO }}
-
+          
       ## redis 도커 pull 및 실행
       #      - name: docker redis pull and execute
       #        uses: appleboy/ssh-action@v0.1.6
