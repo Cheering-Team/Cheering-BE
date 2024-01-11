@@ -48,8 +48,6 @@ public class UserController {
                 String.valueOf(joinUser.getId()),
                 List.of(new SimpleGrantedAuthority(Role.ROLE_USER.name())));
 
-        //refresh token 저장 로직 구현 필요
-
         SignUpResponse signUpResponse = new SignUpResponse(joinUser.getId());
 
         return ResponseGenerator.signUpSuccess(jwToken, SIGN_UP_SUCCESS, signUpResponse);
