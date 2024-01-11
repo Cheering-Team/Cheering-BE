@@ -69,4 +69,3 @@ jobs:
             docker rmi ${{ secrets.DOCKER_USERNAME }}/cheering_docker
             docker pull ${{ secrets.DOCKER_USERNAME }}/cheering_docker
             docker-compose up -d
-            docker image prune -f
