@@ -31,12 +31,11 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagementConfigurer -> sessionManagementConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // 해당 API에 대해서는 모든 요청을 허가
-//                        .requestMatchers("/api/signup", "/api/signin").permitAll()
+                        // 해당 API에 대해서는 요청을 허가
+                        .requestMatchers("/api/signin").hasRole("USER")
                         // 이 밖에 모든 요청에 대해서 인증을 필요로 한다는 설정
                         .anyRequest().permitAll())
 //                        // USER 권한이 있어야 요청할 수 있음
-//                        .requestMatchers("/members/test").hasRole("USER"))
                 // JWT 인증을 위하여 직접 구현한 필터를 UsernamePasswordAuthenticationFilter 전에 실행
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
                         UsernamePasswordAuthenticationFilter.class

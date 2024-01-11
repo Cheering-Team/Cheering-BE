@@ -1,11 +1,14 @@
 package com.cheering.user.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.cheering.global.exception.user.DuplicatedEmailException;
+import com.cheering.global.exception.user.NotFoundUserException;
 import com.cheering.user.domain.User;
 import com.cheering.user.domain.UserRepository;
+import com.cheering.user.dto.SignInRequest;
 import com.cheering.user.dto.SignUpRequest;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -33,7 +36,7 @@ class UserServiceTest {
         SignUpRequest signUpUser = new SignUpRequest("cheering@naver.com", "123456789", "nickname");
 
         //when
-        User signup = userService.signup(signUpUser);
+        User signup = userService.signUp(signUpUser);
         Optional<User> findUser = userRepository.findById(signup.getId());
 
         //then
@@ -41,6 +44,38 @@ class UserServiceTest {
             User user = findUser.orElseThrow();
 
         }).doesNotThrowAnyException();
+    }
+
+    @Test
+    @Transactional
+    void 로그인_성공_테스트() {
+        //given
+        SignUpRequest signUpUserDto = new SignUpRequest("cheering@naver.com", "123456789", "nickname");
+        User signUpUser = userService.signUp(signUpUserDto);
+        SignInRequest signInRequest = new SignInRequest("cheering@naver.com", "123456789");
+
+        //when
+        User loginUser = userService.signIn(signInRequest);
+
+        //then
+        assertThat(signUpUser.getId()).isEqualTo(loginUser.getId());
+    }
+
+    @Test
+    @Transactional
+    void 로그인_실패_테스트() {
+        //given
+        SignUpRequest signUpUserDto = new SignUpRequest("cheering@naver.com", "123456789", "nickname");
+        User signUpUser = userService.signUp(signUpUserDto);
+        SignInRequest signInRequest = new SignInRequest("cheering@naver.com", "wrongPassword");
+
+        //when
+        //then
+        assertThatThrownBy(() -> {
+            User loginUser = userService.signIn(signInRequest);
+        }).isInstanceOf(NotFoundUserException.class);
+
+
     }
 
     @ParameterizedTest
@@ -51,7 +86,8 @@ class UserServiceTest {
         //when
         //then
         assertThatCode(() -> {
-            userService.validateEmail(rightEmail);
+            userService.validateEmailFormat(rightEmail);
+            userService.validateDuplicatedEmail(rightEmail);
         }).doesNotThrowAnyException();
     }
 
@@ -59,7 +95,7 @@ class UserServiceTest {
     @ValueSource(strings = {"cheeringNaver.com", "cheering@navercom", "cheering@naver.ac.kr.kr"})
     void 이메일_유효성_예외_테스트(String wrongEmail) {
         assertThatThrownBy(() -> {
-            userService.validateEmail(wrongEmail);
+            userService.validateEmailFormat(wrongEmail);
         });
     }
 
@@ -68,18 +104,34 @@ class UserServiceTest {
     void 이메일_중복_예외_테스트() {
         //given
         SignUpRequest signUpUser = new SignUpRequest("cheering@naver.com", "123456789", "nickname");
-        User signup = userService.signup(signUpUser);
+        User signup = userService.signUp(signUpUser);
 
         //when
         String newEmail = "cheering@naver.com";
 
         //then
         assertThatThrownBy(() -> {
-            userService.validateEmail(newEmail);
+            userService.validateDuplicatedEmail(newEmail);
         }).isInstanceOf(DuplicatedEmailException.class);
     }
 
     @Test
-    void login() {
+    void 비밀번호_일치_성공_테스트() {
+        //given
+        String password = "aaa111!!!";
+        String passwordConfirm = "aaa111!!!";
+        //when
+        //then
+        assertThat(password).isEqualTo(passwordConfirm);
+    }
+
+    @Test
+    void 비밀번호_일치_실패_테스트() {
+        //given
+        String password = "aaa111!!!";
+        String passwordConfirm = "aaa111!!!aa";
+        //when
+        //then
+        assertThat(password).isNotEqualTo(passwordConfirm);
     }
 }

@@ -1,20 +1,26 @@
 package com.cheering.user.controller;
 
+import static com.cheering.global.constant.SuccessMessage.SIGN_IN_SUCCESS;
 import static com.cheering.global.constant.SuccessMessage.SIGN_UP_SUCCESS;
 import static com.cheering.global.constant.SuccessMessage.VALIDATE_EMAIL_SUCCESS;
 
+import com.cheering.auth.constant.Role;
 import com.cheering.auth.jwt.JWToken;
 import com.cheering.auth.jwt.JwtGenerator;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.user.domain.User;
+import com.cheering.user.dto.SignInRequest;
+import com.cheering.user.dto.SignInResponse;
 import com.cheering.user.dto.SignUpRequest;
 import com.cheering.user.dto.SignUpResponse;
 import com.cheering.user.service.UserService;
+import jakarta.validation.Valid;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,31 +36,41 @@ public class UserController {
     private final JwtGenerator jwtGenerator;
 
     @PostMapping("/signup")
-    public ResponseEntity<ResponseBodyDto<?>> signUp(@RequestBody SignUpRequest signUpRequest) {
-        User joinUser = userService.signup(signUpRequest);
+    public ResponseEntity<ResponseBodyDto<?>> signUp(@RequestBody @Valid SignUpRequest signUpRequest) {
+
+        userService.validateDuplicatedEmail(signUpRequest.email());
+        userService.validateConfirmPassword(signUpRequest.password(), signUpRequest.passwordConfirm());
+
+        User joinUser = userService.signUp(signUpRequest);
 
         //jwt 토큰 생성
-        JWToken jwToken = jwtGenerator.generateToken(joinUser.getId());
+        JWToken jwToken = jwtGenerator.generateToken(
+                String.valueOf(joinUser.getId()),
+                List.of(new SimpleGrantedAuthority(Role.ROLE_USER.name())));
+
+        //refresh token 저장 로직 구현 필요
 
         SignUpResponse signUpResponse = new SignUpResponse(joinUser.getId());
 
-        return ResponseGenerator.success(
-                SIGN_UP_SUCCESS.getCode(), jwToken.accessToken(),
-                SIGN_UP_SUCCESS.getMessage(), signUpResponse);
+        return ResponseGenerator.signUpSuccess(jwToken, SIGN_UP_SUCCESS, signUpResponse);
     }
 
-    @GetMapping("/signin")
-    public String signIn() {
-        return "signin complete";
+    @PostMapping("/signin")
+    public ResponseEntity<ResponseBodyDto<?>> signIn(@RequestBody SignInRequest signInRequest) {
+
+        User loginUser = userService.signIn(signInRequest);
+        SignInResponse signInResponse = new SignInResponse(loginUser.getId());
+
+        return ResponseGenerator.success(SIGN_IN_SUCCESS, signInResponse);
     }
 
     @PostMapping("/email")
     public ResponseEntity<ResponseBodyDto<?>> validateEmail(@RequestBody Map<String, String> data) {
         String email = data.get("email");
 
-        userService.validateEmail(email);
+        userService.validateEmailFormat(email);
+        userService.validateDuplicatedEmail(email);
 
-        return ResponseGenerator.success(VALIDATE_EMAIL_SUCCESS.getCode(),
-                VALIDATE_EMAIL_SUCCESS.getMessage(), null);
+        return ResponseGenerator.success(VALIDATE_EMAIL_SUCCESS, null);
     }
 }

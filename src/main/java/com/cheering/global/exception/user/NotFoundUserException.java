@@ -3,9 +3,9 @@ package com.cheering.global.exception.user;
 import com.cheering.global.exception.common.BaseException;
 import com.cheering.global.exception.constant.ExceptionMessage;
 
-public class DuplicatedEmailException extends BaseException {
+public class NotFoundUserException extends BaseException {
 
-    public DuplicatedEmailException(ExceptionMessage status) {
+    public NotFoundUserException(ExceptionMessage status) {
         super(status);
     }
 }

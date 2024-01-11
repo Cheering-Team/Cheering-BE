@@ -8,11 +8,11 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum SuccessMessage {
 
-    SIGN_UP_SUCCESS(201, "signup success", HttpStatus.CREATED),
-    VALIDATE_EMAIL_SUCCESS(200, "not duplicated", HttpStatus.OK);
+    SIGN_UP_SUCCESS(HttpStatus.CREATED, "signup success"),
+    VALIDATE_EMAIL_SUCCESS(HttpStatus.OK, "not duplicated"),
+    SIGN_IN_SUCCESS(HttpStatus.OK, "login success");
 
-
-    private final int code;
-    private final String message;
     private final HttpStatus httpStatus;
+    private final String message;
+
 }
