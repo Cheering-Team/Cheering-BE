@@ -15,7 +15,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +40,7 @@ public class JwtGenerator {
                 .toList();
 
         long now = (new Date()).getTime();
-        
+
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         String accessToken = generateAccessToken(id, authorities, accessTokenExpiresIn);
@@ -71,8 +70,8 @@ public class JwtGenerator {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        ValueOperations<String, String> valueOperations = redis.opsForValue();
-        valueOperations.set(id, refreshToken);
+//        ValueOperations<String, String> valueOperations = redis.opsForValue();
+//        valueOperations.set(id, refreshToken);
 
         return refreshToken;
     }

@@ -38,21 +38,21 @@ jobs:
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -t ${{ secrets.DOCKER_REPO }} .
           docker push ${{ secrets.DOCKER_REPO }}
-
+          
       ## redis 도커 pull 및 실행
-      - name: docker redis pull and execute
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_KEY }}
-          port: ${{ secrets.EC2_PORT }}
-          script: |
-            sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            sudo docker rm -f redis
-            docker rmi redis
-            docker pull --platform linux/amd64 redis
-            docker run --name redis -p 6379:6379 --network redis-network -it -d redis
+      #      - name: docker redis pull and execute
+      #        uses: appleboy/ssh-action@v0.1.6
+      #        with:
+      #          host: ${{ secrets.EC2_HOST }}
+      #          username: ${{ secrets.EC2_USERNAME }}
+      #          key: ${{ secrets.EC2_KEY }}
+      #          port: ${{ secrets.EC2_PORT }}
+      #          script: |
+      #            sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      #            sudo docker rm redis
+      #            docker rmi redis
+      #            docker pull --platform linux/amd64 redis
+      #            docker run --name redis -p 6379:6379 --network redis-network -it -d redis
       
       ## 서버에 접속하여 도커 이미지를 pull 받고 실행하기
       - name: executing remote ssh commands using password
