@@ -54,7 +54,4 @@ jobs:
             docker rmi ${{ secrets.DOCKER_USERNAME }}/도커 레파지토리 이름
             docker pull ${{ secrets.DOCKER_USERNAME }}/도커 레파지토리 이름
             docker-compose up -d
-#          sudo docker rm prod-server
-#          sudo docker image rm ${{ secrets.DOCKER_REPO }}
-#          sudo docker pull ${{ secrets.DOCKER_REPO }}
-#          sudo docker run -d -p 8080:8080 ${{ secrets.DOCKER_REPO }}
+
