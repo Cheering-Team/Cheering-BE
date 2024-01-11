@@ -1,11 +1,11 @@
 package com.cheering.global.exception.user;
 
-import com.cheering.global.constant.ExceptionMessage;
 import com.cheering.global.exception.common.BaseException;
+import com.cheering.global.exception.constant.ExceptionMessage;
 
 public class InvalidEmailFormatException extends BaseException {
 
-    public InvalidEmailFormatException() {
-        super(ExceptionMessage.INVALID_EMAIL_FORMAT);
+    public InvalidEmailFormatException(ExceptionMessage status) {
+        super(status);
     }
 }
