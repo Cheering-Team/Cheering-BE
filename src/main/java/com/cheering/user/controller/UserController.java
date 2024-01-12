@@ -50,7 +50,7 @@ public class UserController {
 
         SignUpResponse signUpResponse = new SignUpResponse(joinUser.getId());
 
-        return ResponseGenerator.signUpSuccess(jwToken, SIGN_UP_SUCCESS, signUpResponse);
+        return ResponseGenerator.signSuccess(jwToken, SIGN_UP_SUCCESS, signUpResponse);
     }
 
     @PostMapping("/signin")
@@ -59,7 +59,11 @@ public class UserController {
         User loginUser = userService.signIn(signInRequest);
         SignInResponse signInResponse = new SignInResponse(loginUser.getId());
 
-        return ResponseGenerator.success(SIGN_IN_SUCCESS, signInResponse);
+        JWToken jwToken = jwtGenerator.generateToken(
+                String.valueOf(loginUser.getId()),
+                List.of(new SimpleGrantedAuthority(Role.ROLE_USER.name())));
+        
+        return ResponseGenerator.signSuccess(jwToken, SIGN_IN_SUCCESS, signInResponse);
     }
 
     @PostMapping("/email")

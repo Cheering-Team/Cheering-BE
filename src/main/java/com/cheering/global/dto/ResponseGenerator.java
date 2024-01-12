@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface ResponseGenerator {
 
-    static <T> ResponseEntity<ResponseBodyDto<?>> signUpSuccess(JWToken token, SuccessMessage status, T data) {
+    static <T> ResponseEntity<ResponseBodyDto<?>> signSuccess(JWToken token, SuccessMessage status, T data) {
         return ResponseEntity.status(status.getHttpStatus())
                 .header("Access-Token", JwtConstant.GRANT_TYPE + " " + token.accessToken())
                 .header("Refresh-Token", JwtConstant.GRANT_TYPE + " " + token.refreshToken())
