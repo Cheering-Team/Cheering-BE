@@ -1,9 +1,11 @@
 package com.cheering.auth.jwt;
 
-import static com.cheering.auth.constant.JwtConstant.ACCESS_TOKEN_EXPIRE_TIME;
-import static com.cheering.auth.constant.JwtConstant.GRANT_TYPE;
-import static com.cheering.auth.constant.JwtConstant.REFRESH_TOKEN_EXPIRE_TIME;
+import static com.cheering.auth.jwt.JwtConstant.ACCESS_TOKEN_EXPIRE_TIME;
+import static com.cheering.auth.jwt.JwtConstant.GRANT_TYPE;
+import static com.cheering.auth.jwt.JwtConstant.REFRESH_TOKEN_EXPIRE_TIME;
 
+import com.cheering.auth.redis.RedisRefreshTokenDto;
+import com.cheering.auth.redis.RedisRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -14,21 +16,20 @@ import java.util.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JwtGenerator {
     private final Key key;
-    private final RedisTemplate<String, String> redis;
+    private final RedisRepository redisRepository;
 
     // application.yml에서 secret 값 가져와서 key에 저장
     @Autowired
-    public JwtGenerator(@Value("${jwt.secret}") String secretKey, RedisTemplate<String, String> redis) {
+    public JwtGenerator(@Value("${jwt.secret}") String secretKey, RedisRepository redisRepository) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.redis = redis;
+        this.redisRepository = redisRepository;
     }
 
     // Member 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
@@ -48,6 +49,10 @@ public class JwtGenerator {
         // Refresh Token 생성
         String refreshToken = generateRefreshToken(now, id);
 
+        //redis refresh token 저장 key : accessToken, val: refreshToken
+        RedisRefreshTokenDto redisRefreshTokenDto = new RedisRefreshTokenDto(accessToken, refreshToken);
+        redisRepository.save(redisRefreshTokenDto);
+
         return JWToken.builder()
                 .grantType(GRANT_TYPE)
                 .accessToken(accessToken)
@@ -65,15 +70,9 @@ public class JwtGenerator {
     }
 
     private String generateRefreshToken(long now, String id) {
-        String refreshToken = Jwts.builder()
+        return Jwts.builder()
                 .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
-                .claim("id", id)
                 .compact();
-
-//        ValueOperations<String, String> valueOperations = redis.opsForValue();
-//        valueOperations.set(id, refreshToken);
-
-        return refreshToken;
     }
 }
