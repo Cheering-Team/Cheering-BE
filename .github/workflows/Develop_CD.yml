@@ -52,7 +52,7 @@ jobs:
             sudo docker rm -f redis
             docker rmi redis
             docker pull --platform linux/amd64 redis
-            docker run --name redis --net host -v /data/redis:/data -d redis:alpine
+      #            docker run --name redis --net host -v /data/redis:/data -d redis:alpine
       #            docker run --name redis -p 6379:6379 --network redis-network -it -d redis
 
       ## 서버에 접속하여 도커 이미지를 pull 받고 실행하기
@@ -64,10 +64,10 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            sudo docker stop cheering_docker
-            docker rm -f cheering_docker
-            docker rmi ${{ secrets.DOCKER_USERNAME }}/cheering_docker
-            docker pull ${{ secrets.DOCKER_USERNAME }}/cheering_docker
-            docker run -d --name cheering_docker -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/cheering_docker
-#            docker-compose up -d
+                    sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+                    sudo docker stop cheering_docker
+                    docker rm -f cheering_docker
+                    docker rmi ${{ secrets.DOCKER_USERNAME }}/cheering_docker
+                    docker pull ${{ secrets.DOCKER_USERNAME }}/cheering_docker
+            #            docker run -d --name cheering_docker -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/cheering_docker
+                    docker-compose up -d
