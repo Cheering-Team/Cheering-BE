@@ -66,6 +66,7 @@ public class JwtProvider {
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token);
+
             return true;
         } catch (SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT Token", e);
@@ -76,6 +77,7 @@ public class JwtProvider {
 
             if (accessToken != null && refreshToken == null) {
                 request.setAttribute("exception", "expired Access-Token");
+                
             }
 
             if (refreshToken != null && accessToken == null) {
