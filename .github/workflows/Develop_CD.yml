@@ -49,7 +49,7 @@ jobs:
           port: ${{ secrets.EC2_PORT }}
           script: |
             sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            sudo docker rm redis
+            sudo docker rm -f redis
             docker rmi redis
             docker pull --platform linux/amd64 redis
             docker run --name redis --net host -v /data/redis:/data -d redis:alpine
