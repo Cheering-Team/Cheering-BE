@@ -69,7 +69,7 @@ jobs:
             docker rm -f cheering_docker
             docker rmi ${{ secrets.DOCKER_USERNAME }}/cheering_docker
             docker pull ${{ secrets.DOCKER_USERNAME }}/cheering_docker
-            pwd
+            cd home/ubuntu/Cheering-BE/
             docker-compose up -d
 
 #            docker run -d --name cheering_docker -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/cheering_docker
