@@ -28,7 +28,7 @@ public class UserService {
         User newUser = User.builder()
                 .email(signUpRequest.email())
                 .password(signUpRequest.password())
-                .nickname("")
+                .nickname(signUpRequest.nickName())
                 .role(Role.ROLE_USER)
                 .build();
 
@@ -41,7 +41,7 @@ public class UserService {
         String password = signInRequest.password();
 
         Optional<User> findUser = userRepository.findByEmailAndPassword(email, password);
-        
+
         return findUser.orElseThrow(() ->
                 new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
     }
