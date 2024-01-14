@@ -1,7 +1,7 @@
 package com.cheering.global.dto;
 
-import com.cheering.auth.constant.JwtConstant;
 import com.cheering.auth.jwt.JWToken;
+import com.cheering.auth.jwt.JwtConstant;
 import com.cheering.global.constant.SuccessMessage;
 import com.cheering.global.exception.constant.ExceptionMessage;
 import org.springframework.http.ResponseEntity;

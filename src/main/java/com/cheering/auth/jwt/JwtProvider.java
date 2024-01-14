@@ -1,6 +1,7 @@
 package com.cheering.auth.jwt;
 
-import com.cheering.auth.constant.Role;
+import com.cheering.auth.LoginUserAuthentication;
+import com.cheering.user.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;

@@ -1,4 +1,4 @@
-package com.cheering.auth.security;
+package com.cheering.auth.config;
 
 import com.cheering.auth.jwt.JwtAuthenticationEntryPoint;
 import com.cheering.auth.jwt.JwtAuthenticationFilter;
