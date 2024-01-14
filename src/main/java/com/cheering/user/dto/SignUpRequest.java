@@ -11,10 +11,13 @@ public record SignUpRequest(
         String email,
 
         @NotNull
-        @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,20}$")
+        @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,19}$")
         String password,
 
         @NotNull
-        @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,20}$")
-        String passwordConfirm) {
+        @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,19}$")
+        String passwordConfirm,
+        @NotNull
+        @Pattern(regexp = "^(?!\\s)[a-zA-Z0-9#?!@$ %^&*-].{0,19}$")
+        String nickName) {
 }
