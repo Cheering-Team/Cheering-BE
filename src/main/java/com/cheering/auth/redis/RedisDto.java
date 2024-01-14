@@ -6,9 +6,9 @@ import org.springframework.data.redis.core.RedisHash;
 
 @RedisHash(value = "jwt", timeToLive = 30L)
 @AllArgsConstructor
-public class RedisRefreshTokenDto {
+public class RedisDto {
 
     @Id
-    private String accessToken;
     private String refreshToken;
+    private RedisUserDto redisUserDto;
 }
