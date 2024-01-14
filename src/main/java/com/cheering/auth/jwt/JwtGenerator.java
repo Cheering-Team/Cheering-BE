@@ -68,6 +68,7 @@ public class JwtGenerator {
         String refreshToken = Jwts.builder()
                 .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
+                .claim("id", id)
                 .compact();
 
 //        ValueOperations<String, String> valueOperations = redis.opsForValue();

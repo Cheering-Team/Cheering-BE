@@ -33,7 +33,7 @@ class UserServiceTest {
     @Transactional
     void 회원가입_성공_테스트() {
         //given
-        SignUpRequest signUpUser = new SignUpRequest("cheering@naver.com", "123456789", "nickname");
+        SignUpRequest signUpUser = new SignUpRequest("cheering@naver.com", "123456789", "123456789", "nickName");
 
         //when
         User signup = userService.signUp(signUpUser);
@@ -50,7 +50,7 @@ class UserServiceTest {
     @Transactional
     void 로그인_성공_테스트() {
         //given
-        SignUpRequest signUpUserDto = new SignUpRequest("cheering@naver.com", "123456789", "nickname");
+        SignUpRequest signUpUserDto = new SignUpRequest("cheering@naver.com", "123456789", "123456789", "nickName");
         User signUpUser = userService.signUp(signUpUserDto);
         SignInRequest signInRequest = new SignInRequest("cheering@naver.com", "123456789");
 
@@ -65,7 +65,7 @@ class UserServiceTest {
     @Transactional
     void 로그인_실패_테스트() {
         //given
-        SignUpRequest signUpUserDto = new SignUpRequest("cheering@naver.com", "123456789", "nickname");
+        SignUpRequest signUpUserDto = new SignUpRequest("cheering@naver.com", "123456789", "123456789", "nickName");
         User signUpUser = userService.signUp(signUpUserDto);
         SignInRequest signInRequest = new SignInRequest("cheering@naver.com", "wrongPassword");
 
@@ -103,7 +103,7 @@ class UserServiceTest {
     @Transactional
     void 이메일_중복_예외_테스트() {
         //given
-        SignUpRequest signUpUser = new SignUpRequest("cheering@naver.com", "123456789", "nickname");
+        SignUpRequest signUpUser = new SignUpRequest("cheering@naver.com", "123456789", "123456789", "nickName");
         User signup = userService.signUp(signUpUser);
 
         //when

@@ -62,7 +62,7 @@ public class UserController {
         JWToken jwToken = jwtGenerator.generateToken(
                 String.valueOf(loginUser.getId()),
                 List.of(new SimpleGrantedAuthority(Role.ROLE_USER.name())));
-        
+
         return ResponseGenerator.signSuccess(jwToken, SIGN_IN_SUCCESS, signInResponse);
     }
 
