@@ -1,7 +1,6 @@
 package com.cheering.auth.jwt;
 
 import com.cheering.auth.LoginUserAuthentication;
-import com.cheering.user.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -15,7 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -81,16 +79,8 @@ public class JwtProvider {
 
             //리프레시 토큰이 만료된 경우
             if (refreshToken != null && accessToken == null) {
+                // 재 로그인 필요
                 request.setAttribute("exception", "expired Refresh-Token");
-                Claims claims = parseClaims(refreshToken.substring(7));
-                String id = (String) claims.get("id");
-
-                JWToken jwToken = jwtGenerator.generateToken(id,
-                        List.of(new SimpleGrantedAuthority(Role.ROLE_USER.name())));
-
-                //다시 로그인 하라는 에러를 보내야 할 수도 있다.
-                response.setHeader("Access-Token", jwToken.accessToken());
-                response.setHeader("Refresh-Token", jwToken.refreshToken());
             }
         } catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT Token", e);
@@ -113,5 +103,9 @@ public class JwtProvider {
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
+    }
+
+    public String reIssueAccessToken(String refreshToken) {
+        return jwtGenerator.reIssueAccessToken(refreshToken);
     }
 }

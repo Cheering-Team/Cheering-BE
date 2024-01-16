@@ -35,7 +35,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken, request, response)) {
                 log.info("Authenticated User");
                 //여기서 엑세스 토큰 재발급
-
+                String newAccessToken = jwtTokenProvider.reIssueAccessToken(refreshToken);
+                response.setHeader("Access-Token", newAccessToken);
             }
         } finally {
             filterChain.doFilter(request, response);
