@@ -4,6 +4,7 @@ import static com.cheering.auth.jwt.JwtConstant.ACCESS_TOKEN_EXPIRE_TIME;
 import static com.cheering.auth.jwt.JwtConstant.GRANT_TYPE;
 import static com.cheering.auth.jwt.JwtConstant.REFRESH_TOKEN_EXPIRE_TIME;
 
+import com.cheering.auth.redis.RedisRepository;
 import com.cheering.auth.redis.RedisUserDto;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -15,25 +16,21 @@ import java.util.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JwtGenerator {
     private final Key key;
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final ValueOperations<String, Object> redis;
+    private final RedisRepository redisRepository;
 
     // application.yml에서 secret 값 가져와서 key에 저장
     @Autowired
     public JwtGenerator(@Value("${jwt.secret}") String secretKey,
-                        RedisTemplate<String, Object> redisTemplate) {
+                        RedisRepository redisRepository) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.redisTemplate = redisTemplate;
-        this.redis = redisTemplate.opsForValue();
+        this.redisRepository = redisRepository;
     }
 
     // Member 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
@@ -53,7 +50,7 @@ public class JwtGenerator {
         String refreshToken = generateRefreshToken(now, id);
 
         RedisUserDto redisUserDto = new RedisUserDto(id, authorities);
-        redis.set(refreshToken, redisUserDto, REFRESH_TOKEN_EXPIRE_TIME / 1000);
+        redisRepository.set(refreshToken, redisUserDto, REFRESH_TOKEN_EXPIRE_TIME / 1000);
 
         return JWToken.builder()
                 .grantType(GRANT_TYPE)
@@ -63,7 +60,7 @@ public class JwtGenerator {
     }
 
     public String reIssueAccessToken(String refreshToken) {
-        RedisUserDto redisUserDto = (RedisUserDto) redis.get(refreshToken);
+        RedisUserDto redisUserDto = redisRepository.get(refreshToken);
 
         long now = (new Date()).getTime();
         Date expireTime = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
