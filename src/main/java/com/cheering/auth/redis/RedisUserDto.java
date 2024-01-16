@@ -1,8 +1,6 @@
 package com.cheering.auth.redis;
 
-import com.cheering.user.Role;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
-@RequiredArgsConstructor
-public record RedisUserDto(Long id, Role role) {
+public record RedisUserDto(String id, List<String> authorities) {
 }

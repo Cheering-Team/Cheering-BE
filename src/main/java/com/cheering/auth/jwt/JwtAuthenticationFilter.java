@@ -23,7 +23,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 1. Request Header에서 JWT 토큰 추출
         String accessToken = resolveAccessToken(request);
         String refreshToken = resolveRefreshToken(request);
-
         // 2. validateToken으로 토큰 유효성 검사
         try {
             if (accessToken != null && jwtTokenProvider.validateToken(accessToken, request, response)) {
@@ -35,6 +34,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken, request, response)) {
                 log.info("Authenticated User");
+                //여기서 엑세스 토큰 재발급
+
             }
         } finally {
             filterChain.doFilter(request, response);
