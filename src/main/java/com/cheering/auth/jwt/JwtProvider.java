@@ -28,7 +28,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtProvider {
     private final Key key;
-
     private final JwtGenerator jwtGenerator;
 
     // application.yml에서 secret 값 가져와서 key에 저장
@@ -75,11 +74,12 @@ public class JwtProvider {
             String accessToken = request.getHeader("Access-Token");
             String refreshToken = request.getHeader("Refresh-Token");
 
+            //엑세스 토큰이 만료된 경우
             if (accessToken != null && refreshToken == null) {
                 request.setAttribute("exception", "expired Access-Token");
-                
             }
 
+            //리프레시 토큰이 만료된 경우
             if (refreshToken != null && accessToken == null) {
                 request.setAttribute("exception", "expired Refresh-Token");
                 Claims claims = parseClaims(refreshToken.substring(7));
@@ -88,6 +88,7 @@ public class JwtProvider {
                 JWToken jwToken = jwtGenerator.generateToken(id,
                         List.of(new SimpleGrantedAuthority(Role.ROLE_USER.name())));
 
+                //다시 로그인 하라는 에러를 보내야 할 수도 있다.
                 response.setHeader("Access-Token", jwToken.accessToken());
                 response.setHeader("Refresh-Token", jwToken.refreshToken());
             }
