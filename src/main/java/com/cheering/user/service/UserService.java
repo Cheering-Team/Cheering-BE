@@ -1,11 +1,11 @@
 package com.cheering.user.service;
 
-import com.cheering.auth.constant.Role;
 import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.InvalidEmailFormatException;
 import com.cheering.global.exception.user.MisMatchPasswordException;
 import com.cheering.global.exception.user.NotFoundUserException;
+import com.cheering.user.Role;
 import com.cheering.user.domain.User;
 import com.cheering.user.domain.UserRepository;
 import com.cheering.user.dto.SignInRequest;

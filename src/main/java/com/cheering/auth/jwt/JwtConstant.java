@@ -1,4 +1,4 @@
-package com.cheering.auth.constant;
+package com.cheering.auth.jwt;
 
 public abstract class JwtConstant {
     // * 60 * 60 * 24
