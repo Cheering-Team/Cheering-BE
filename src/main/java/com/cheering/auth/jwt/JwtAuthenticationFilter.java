@@ -1,6 +1,5 @@
 package com.cheering.auth.jwt;
 
-import com.cheering.auth.constant.JwtConstant;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
