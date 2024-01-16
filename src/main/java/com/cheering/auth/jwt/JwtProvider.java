@@ -114,4 +114,8 @@ public class JwtProvider {
             return e.getClaims();
         }
     }
+
+    public String reIssueAccessToken(String refreshToken) {
+        return jwtGenerator.reIssueAccessToken(refreshToken);
+    }
 }
