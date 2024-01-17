@@ -10,8 +10,8 @@ public enum SuccessMessage {
 
     SIGN_UP_SUCCESS(HttpStatus.CREATED, "signup success"),
     VALIDATE_EMAIL_SUCCESS(HttpStatus.OK, "not duplicated"),
-    SIGN_IN_SUCCESS(HttpStatus.OK, "login success");
-
+    SIGN_IN_SUCCESS(HttpStatus.OK, "login success"),
+    SIGN_OUT_SUCCESS(HttpStatus.OK, "logout success");
     private final HttpStatus httpStatus;
     private final String message;
 

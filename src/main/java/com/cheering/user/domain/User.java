@@ -1,26 +1,27 @@
 package com.cheering.user.domain;
 
-import static lombok.AccessLevel.PRIVATE;
-import static lombok.AccessLevel.PROTECTED;
-
-import com.cheering.user.Role;
+import com.cheering.global.BaseEntity;
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
-@Builder
+@SuperBuilder
+@DiscriminatorColumn
 @Getter
-@NoArgsConstructor(access = PROTECTED)
-@AllArgsConstructor(access = PRIVATE)
-public class User {
+@Inheritance(strategy = InheritanceType.JOINED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public abstract class User extends BaseEntity {
     @Id
     @GeneratedValue
     @Column(name = "user_id")

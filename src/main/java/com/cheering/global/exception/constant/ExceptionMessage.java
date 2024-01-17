@@ -16,7 +16,8 @@ public enum ExceptionMessage {
     DUPLICATED_EMAIL(CONFLICT, "duplicated"),
     FAIL_SIGN_UP(BAD_REQUEST, "fail signup"),
     MISMATCH_PASSWORD(CONFLICT, "mismatch password"),
-    NOT_FOUND_USER(UNAUTHORIZED, "login fail");
+    NOT_FOUND_USER(UNAUTHORIZED, "not found user"),
+    FAIL_SIGN_OUT(BAD_REQUEST, "fail signout");
 
     private final HttpStatus httpStatus;
     private final String message;

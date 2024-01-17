@@ -5,9 +5,9 @@ import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.InvalidEmailFormatException;
 import com.cheering.global.exception.user.MisMatchPasswordException;
 import com.cheering.global.exception.user.NotFoundUserException;
-import com.cheering.user.Role;
-import com.cheering.user.domain.User;
-import com.cheering.user.domain.UserRepository;
+import com.cheering.user.domain.Member;
+import com.cheering.user.domain.Role;
+import com.cheering.user.domain.repository.UserRepository;
 import com.cheering.user.dto.SignInRequest;
 import com.cheering.user.dto.SignUpRequest;
 import java.util.Optional;
@@ -24,23 +24,23 @@ public class UserService {
     UserRepository userRepository;
 
     @Transactional
-    public User signUp(SignUpRequest signUpRequest) {
-        User newUser = User.builder()
+    public Member signUp(SignUpRequest signUpRequest) {
+        Member newMember = Member.builder()
                 .email(signUpRequest.email())
                 .password(signUpRequest.password())
                 .nickname(signUpRequest.nickName())
                 .role(Role.ROLE_USER)
                 .build();
 
-        return userRepository.save(newUser);
+        return userRepository.save(newMember);
     }
 
-    public User signIn(SignInRequest signInRequest) {
+    public Member signIn(SignInRequest signInRequest) {
 
         String email = signInRequest.email();
         String password = signInRequest.password();
 
-        Optional<User> findUser = userRepository.findByEmailAndPassword(email, password);
+        Optional<Member> findUser = userRepository.findByEmailAndPassword(email, password);
 
         return findUser.orElseThrow(() ->
                 new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
