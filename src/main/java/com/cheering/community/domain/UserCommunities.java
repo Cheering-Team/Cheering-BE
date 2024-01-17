@@ -24,5 +24,5 @@ public class UserCommunities {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "community_id")
-    private PersonalCommunity community;
+    private PlayerCommunity community;
 }
