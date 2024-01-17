@@ -22,7 +22,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ResponseBodyDto<?>> handleInvalidEmailFormatException(
             InvalidEmailFormatException e
     ) {
-
         log.error("handle InvalidEmailFormatException: ", e);
         return ResponseGenerator.fail(ExceptionMessage.INVALID_EMAIL_FORMAT, null);
     }
