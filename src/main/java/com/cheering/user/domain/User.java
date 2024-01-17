@@ -6,6 +6,7 @@ import static lombok.AccessLevel.PROTECTED;
 import com.cheering.global.BaseEntity;
 import com.cheering.user.Role;
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -21,7 +22,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PRIVATE)
-public class User extends BaseEntity {
+@DiscriminatorColumn
+public abstract class User extends BaseEntity {
     @Id
     @GeneratedValue
     @Column(name = "user_id")
