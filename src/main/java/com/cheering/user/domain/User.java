@@ -1,7 +1,6 @@
 package com.cheering.user.domain;
 
 import com.cheering.global.BaseEntity;
-import com.cheering.user.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
