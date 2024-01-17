@@ -9,7 +9,7 @@ import com.cheering.auth.jwt.JwtGenerator;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.user.Role;
-import com.cheering.user.domain.User;
+import com.cheering.user.domain.Member;
 import com.cheering.user.dto.SignInRequest;
 import com.cheering.user.dto.SignInResponse;
 import com.cheering.user.dto.SignUpRequest;
@@ -41,7 +41,7 @@ public class UserController {
         userService.validateDuplicatedEmail(signUpRequest.email());
         userService.validateConfirmPassword(signUpRequest.password(), signUpRequest.passwordConfirm());
 
-        User joinUser = userService.signUp(signUpRequest);
+        Member joinUser = userService.signUp(signUpRequest);
 
         //jwt 토큰 생성
         JWToken jwToken = jwtGenerator.generateToken(
@@ -56,7 +56,7 @@ public class UserController {
     @PostMapping("/signin")
     public ResponseEntity<ResponseBodyDto<?>> signIn(@RequestBody SignInRequest signInRequest) {
 
-        User loginUser = userService.signIn(signInRequest);
+        Member loginUser = userService.signIn(signInRequest);
         SignInResponse signInResponse = new SignInResponse(loginUser.getId());
         JWToken jwToken = jwtGenerator.generateToken(
                 String.valueOf(loginUser.getId()),
