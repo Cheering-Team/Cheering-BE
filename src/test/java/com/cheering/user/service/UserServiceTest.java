@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.NotFoundUserException;
 import com.cheering.user.domain.User;
-import com.cheering.user.domain.UserRepository;
+import com.cheering.user.domain.repository.UserRepository;
 import com.cheering.user.dto.SignInRequest;
 import com.cheering.user.dto.SignUpRequest;
 import java.util.Optional;

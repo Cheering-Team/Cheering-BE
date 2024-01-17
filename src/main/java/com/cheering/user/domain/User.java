@@ -3,6 +3,7 @@ package com.cheering.user.domain;
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
+import com.cheering.global.BaseEntity;
 import com.cheering.user.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PRIVATE)
-public class User {
+public class User extends BaseEntity {
     @Id
     @GeneratedValue
     @Column(name = "user_id")
