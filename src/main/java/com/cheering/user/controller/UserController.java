@@ -6,8 +6,11 @@ import static com.cheering.global.constant.SuccessMessage.VALIDATE_EMAIL_SUCCESS
 
 import com.cheering.auth.jwt.JWToken;
 import com.cheering.auth.jwt.JwtGenerator;
+import com.cheering.auth.redis.RedisRepository;
+import com.cheering.global.constant.SuccessMessage;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
+import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.user.domain.Member;
 import com.cheering.user.domain.Role;
 import com.cheering.user.dto.SignInRequest;
@@ -15,12 +18,14 @@ import com.cheering.user.dto.SignInResponse;
 import com.cheering.user.dto.SignUpRequest;
 import com.cheering.user.dto.SignUpResponse;
 import com.cheering.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +39,7 @@ public class UserController {
 
     private final UserService userService;
     private final JwtGenerator jwtGenerator;
+    private final RedisRepository redisRepository;
 
     @PostMapping("/signup")
     public ResponseEntity<ResponseBodyDto<?>> signUp(@RequestBody @Valid SignUpRequest signUpRequest) {
@@ -73,5 +79,17 @@ public class UserController {
         userService.validateDuplicatedEmail(email);
 
         return ResponseGenerator.success(VALIDATE_EMAIL_SUCCESS, null);
+    }
+
+    @GetMapping("/signout")
+    public ResponseEntity<ResponseBodyDto<?>> signOut(HttpServletRequest request) {
+        String refreshToken = (String) request.getHeader("Refresh-Token");
+
+        String deleteValue = redisRepository.delete(refreshToken.substring(7));
+
+        if (deleteValue == null) {
+            return ResponseGenerator.fail(ExceptionMessage.FAIL_SIGN_OUT, null);
+        }
+        return ResponseGenerator.success(SuccessMessage.SIGN_OUT_SUCCESS, null);
     }
 }
