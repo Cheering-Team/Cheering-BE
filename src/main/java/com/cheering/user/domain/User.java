@@ -41,8 +41,4 @@ public abstract class User extends BaseEntity {
 
     @Enumerated(value = EnumType.STRING)
     Role role;
-
-    public User(String name) {
-        this.name = name;
-    }
 }

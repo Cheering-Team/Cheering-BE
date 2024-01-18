@@ -31,11 +31,6 @@ public class Player extends User {
     @JoinColumn(name = "team_community_id")
     private TeamCommunity teamCommunity;
 
-
-    public Player(String name) {
-        super(name);
-    }
-
     public void connectTeamCommunity(TeamCommunity community) {
         community.getPlayers().add(this);
         teamCommunity = community;
