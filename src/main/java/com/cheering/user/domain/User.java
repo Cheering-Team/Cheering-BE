@@ -18,14 +18,17 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @SuperBuilder
 @DiscriminatorColumn
-@Getter
 @Inheritance(strategy = InheritanceType.JOINED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public abstract class User extends BaseEntity {
     @Id
     @GeneratedValue
     @Column(name = "user_id")
     private Long id;
+
+    @Column(length = 20)
+    private String name;
 
     @Column(length = 20)
     private String nickname;
@@ -38,4 +41,8 @@ public abstract class User extends BaseEntity {
 
     @Enumerated(value = EnumType.STRING)
     Role role;
+
+    public User(String name) {
+        this.name = name;
+    }
 }
