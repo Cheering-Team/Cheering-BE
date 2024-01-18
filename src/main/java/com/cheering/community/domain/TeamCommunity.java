@@ -4,7 +4,6 @@ import com.cheering.user.domain.Player;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,6 +18,5 @@ import lombok.experimental.SuperBuilder;
 public class TeamCommunity extends Community {
 
     @OneToMany(mappedBy = "teamCommunity")
-    List<Player> players = new ArrayList<>();
-
+    private List<Player> players;
 }
