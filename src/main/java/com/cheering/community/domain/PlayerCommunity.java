@@ -22,5 +22,6 @@ public class PlayerCommunity extends Community {
     @OneToOne(fetch = LAZY, mappedBy = "playerCommunity")
     @JoinColumn(name = "player_id")
     private Player player;
+    
 }
 

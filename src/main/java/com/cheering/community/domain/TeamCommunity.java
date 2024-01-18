@@ -20,4 +20,5 @@ public class TeamCommunity extends Community {
 
     @OneToMany(mappedBy = "teamCommunity")
     List<Player> players = new ArrayList<>();
+
 }
