@@ -9,9 +9,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @DiscriminatorValue("player_community")
+@SuperBuilder
+@NoArgsConstructor
+@Getter
 public class PlayerCommunity extends Community {
     @Id
     @GeneratedValue
@@ -19,7 +25,7 @@ public class PlayerCommunity extends Community {
 
     private Long fanCount;
 
-    @OneToOne(fetch = LAZY)
+    @OneToOne(fetch = LAZY, mappedBy = "playerCommunity")
     @JoinColumn(name = "player_id")
     private Player player;
 }
