@@ -1,19 +1,27 @@
 package com.cheering.community.domain;
 
+import com.cheering.user.domain.Player;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
-@DiscriminatorValue("player_community")
+@DiscriminatorValue("team_community")
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class TeamCommunity extends Community {
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_id")
-    Team team;
+    @OneToMany(mappedBy = "teamCommunity")
+    List<Player> players = new ArrayList<>();
+
+    public TeamCommunity(String name) {
+        super(name);
+    }
 }
