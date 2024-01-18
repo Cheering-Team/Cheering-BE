@@ -5,8 +5,6 @@ import static jakarta.persistence.FetchType.LAZY;
 import com.cheering.user.domain.Player;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.Getter;
@@ -19,10 +17,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Getter
 public class PlayerCommunity extends Community {
-    @Id
-    @GeneratedValue
-    private Long id;
-
     private Long fanCount;
 
     @OneToOne(fetch = LAZY, mappedBy = "playerCommunity")
