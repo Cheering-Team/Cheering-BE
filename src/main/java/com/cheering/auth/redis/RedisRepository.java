@@ -42,4 +42,8 @@ public class RedisRepository {
 
         return null;
     }
+
+    public String delete(String key) {
+        return (String) redis.getAndDelete(key);
+    }
 }
