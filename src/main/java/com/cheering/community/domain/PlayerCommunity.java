@@ -2,24 +2,26 @@ package com.cheering.community.domain;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-import com.cheering.global.BaseEntity;
 import com.cheering.user.domain.Player;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
-public class PersonalCommunity extends BaseEntity {
-    @Id
-    @GeneratedValue
-    private Long id;
-
+@DiscriminatorValue("player_community")
+@SuperBuilder
+@NoArgsConstructor
+@Getter
+public class PlayerCommunity extends Community {
     private Long fanCount;
 
-    @OneToOne(fetch = LAZY)
+    @OneToOne(fetch = LAZY, mappedBy = "playerCommunity")
     @JoinColumn(name = "player_id")
     private Player player;
+    
 }
 

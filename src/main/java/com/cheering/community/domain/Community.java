@@ -1,11 +1,9 @@
-package com.cheering.user.domain;
+package com.cheering.community.domain;
 
 import com.cheering.global.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
@@ -17,28 +15,16 @@ import lombok.experimental.SuperBuilder;
 
 @Entity
 @SuperBuilder
-@DiscriminatorColumn
-@Inheritance(strategy = InheritanceType.JOINED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn
 @Getter
-public abstract class User extends BaseEntity {
+public abstract class Community extends BaseEntity {
+
     @Id
     @GeneratedValue
-    @Column(name = "user_id")
+    @Column(name = "community_id")
     private Long id;
 
-    @Column(length = 20)
     private String name;
-
-    @Column(length = 20)
-    private String nickname;
-
-    @Column(length = 20)
-    private String password;
-
-    @Column(length = 25)
-    private String email;
-
-    @Enumerated(value = EnumType.STRING)
-    Role role;
 }
