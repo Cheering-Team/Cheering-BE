@@ -8,6 +8,7 @@ import com.cheering.community.domain.repository.PlayerCommunityRepository;
 import com.cheering.community.domain.repository.PlayerRepository;
 import com.cheering.community.domain.repository.TeamCommunityRepository;
 import com.cheering.community.dto.CommunityResponse;
+import com.cheering.community.dto.PlayerCommunityResponse;
 import com.cheering.user.domain.Player;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,14 +49,16 @@ public class CommunityService {
         List<Player> players = teamCommunity.getPlayers();
         List<PlayerCommunity> playerCommunities = getPlayerCommunitiesByPlayers(players);
 
-        return CommunityResponse.of(playerCommunities, teamCommunity);
+        List<PlayerCommunityResponse> playerCommunityResponses = PlayerCommunityResponse.of(playerCommunities);
+        return CommunityResponse.of(playerCommunityResponses, teamCommunity);
     }
 
     private CommunityResponse generatePlayerCommunityResponse(PlayerCommunity playerCommunity) {
         TeamCommunity teamCommunity = playerCommunity.getPlayer().getTeamCommunity();
         List<PlayerCommunity> playerCommunities = List.of(playerCommunity);
 
-        return CommunityResponse.of(playerCommunities, teamCommunity);
+        List<PlayerCommunityResponse> playerCommunityResponses = PlayerCommunityResponse.of(playerCommunities);
+        return CommunityResponse.of(playerCommunityResponses, teamCommunity);
     }
 
     private List<PlayerCommunity> getPlayerCommunitiesByPlayers(List<Player> players) {

@@ -2,7 +2,6 @@ package com.cheering.community.dto;
 
 import com.cheering.community.constant.Category;
 import com.cheering.community.constant.League;
-import com.cheering.community.domain.PlayerCommunity;
 import com.cheering.community.domain.TeamCommunity;
 import java.util.List;
 import lombok.Builder;
@@ -18,8 +17,8 @@ public record CommunityResponse(
         List<PlayerCommunityResponse> playerCommunities
 ) {
 
-    public static CommunityResponse of(List<PlayerCommunity> playerCommunities, TeamCommunity teamCommunity) {
-        List<PlayerCommunityResponse> playerCommunityResponses = PlayerCommunityResponse.of(playerCommunities);
+    public static CommunityResponse of(List<PlayerCommunityResponse> playerCommunityResponses,
+                                       TeamCommunity teamCommunity) {
 
         return builder().id(teamCommunity.getId())
                 .teamName(teamCommunity.getName())
