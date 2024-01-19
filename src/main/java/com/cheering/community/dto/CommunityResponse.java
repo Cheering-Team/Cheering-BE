@@ -1,9 +1,14 @@
 package com.cheering.community.dto;
 
-import java.util.List;
+import com.cheering.community.constant.Category;
+import com.cheering.community.constant.League;
 
 public record CommunityResponse(
+        Long id,
         String teamName,
-        List<PlayerCommunityResponse> playerCommunities
+        Category category,
+        League league,
+        String image,
+        PlayerCommunityResponse playerCommunities
 ) {
 }
