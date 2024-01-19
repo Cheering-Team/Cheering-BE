@@ -19,9 +19,7 @@ public record CommunityResponse(
 ) {
 
     public static CommunityResponse of(List<PlayerCommunity> playerCommunities, TeamCommunity teamCommunity) {
-        List<PlayerCommunityResponse> playerCommunityResponses = playerCommunities.stream()
-                .map(com -> new PlayerCommunityResponse(com.getId(), com.getName(), com.getImage()))
-                .toList();
+        List<PlayerCommunityResponse> playerCommunityResponses = PlayerCommunityResponse.of(playerCommunities);
 
         return builder().id(teamCommunity.getId())
                 .teamName(teamCommunity.getName())
