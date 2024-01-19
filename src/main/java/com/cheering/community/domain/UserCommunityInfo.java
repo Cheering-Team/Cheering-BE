@@ -10,7 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class UserCommunities {
+public class UserCommunityInfo {
     @Id
     @GeneratedValue
     @Column(name = "user_communities_id")
