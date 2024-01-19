@@ -31,34 +31,34 @@ public class CommunityService {
         List<CommunityResponse> responseResult = new ArrayList<>();
 
         for (Community community : communities) {
-            TeamCommunity teamCommunity = convertTeamCommunity(community);
+            if (community instanceof PlayerCommunity playerCommunity) {
+                CommunityResponse communityResponse = generatePlayerCommunityResponse(playerCommunity);
+                responseResult.add(communityResponse);
+            }
 
-            List<Player> players = teamCommunity.getPlayers();
-            List<PlayerCommunity> playerCommunities = getPlayerCommunitiesByPlayers(players);
-
-            CommunityResponse communityResponse = generateCommunityResponse(playerCommunities, teamCommunity);
-
-            responseResult.add(communityResponse);
+            if (community instanceof TeamCommunity teamCommunity) {
+                CommunityResponse communityResponse = generateTeamCommunityResponse(teamCommunity);
+                responseResult.add(communityResponse);
+            }
         }
 
         return responseResult;
     }
 
-    private CommunityResponse generateCommunityResponse(List<PlayerCommunity> playerCommunities,
-                                                        TeamCommunity teamCommunity) {
-        List<PlayerCommunityResponse> playerCommunityResponses = playerCommunities.stream()
-                .map(com -> new PlayerCommunityResponse(com.getId(), com.getName(), com.getFanCount()))
-                .toList();
+    private CommunityResponse generateTeamCommunityResponse(TeamCommunity teamCommunity) {
+        List<Player> players = teamCommunity.getPlayers();
+        List<PlayerCommunity> playerCommunities = getPlayerCommunitiesByPlayers(players);
 
-        return new CommunityResponse(teamCommunity.getName(), playerCommunityResponses);
+        List<PlayerCommunityResponse> playerCommunityResponses = PlayerCommunityResponse.of(playerCommunities);
+        return CommunityResponse.of(playerCommunityResponses, teamCommunity);
     }
 
-    private TeamCommunity convertTeamCommunity(Community community) {
-        if (community instanceof PlayerCommunity playerCommunity) {
-            return playerCommunity.getPlayer().getTeamCommunity();
-        }
+    private CommunityResponse generatePlayerCommunityResponse(PlayerCommunity playerCommunity) {
+        TeamCommunity teamCommunity = playerCommunity.getPlayer().getTeamCommunity();
+        List<PlayerCommunity> playerCommunities = List.of(playerCommunity);
 
-        return (TeamCommunity) community;
+        List<PlayerCommunityResponse> playerCommunityResponses = PlayerCommunityResponse.of(playerCommunities);
+        return CommunityResponse.of(playerCommunityResponses, teamCommunity);
     }
 
     private List<PlayerCommunity> getPlayerCommunitiesByPlayers(List<Player> players) {

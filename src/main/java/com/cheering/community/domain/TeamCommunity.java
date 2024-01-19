@@ -1,5 +1,7 @@
 package com.cheering.community.domain;
 
+import com.cheering.community.constant.Category;
+import com.cheering.community.constant.League;
 import com.cheering.user.domain.Player;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -19,4 +21,7 @@ public class TeamCommunity extends Community {
 
     @OneToMany(mappedBy = "teamCommunity")
     private List<Player> players;
+    private Category category;
+    private League league;
+    private String image;
 }
