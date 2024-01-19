@@ -18,6 +18,8 @@ public class UserCommunities {
 
     private String nickname;
 
+    private String profileImage;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
@@ -25,4 +27,5 @@ public class UserCommunities {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "community_id")
     private PlayerCommunity community;
+
 }
