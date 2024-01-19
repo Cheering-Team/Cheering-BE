@@ -23,4 +23,5 @@ public class TeamCommunity extends Community {
     private List<Player> players;
     private Category category;
     private League league;
+    private String image;
 }

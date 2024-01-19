@@ -3,6 +3,9 @@ package com.cheering.community.dto;
 import com.cheering.community.constant.Category;
 import com.cheering.community.constant.League;
 import java.util.List;
+import lombok.Builder;
+
+@Builder
 
 public record CommunityResponse(
         Long id,
