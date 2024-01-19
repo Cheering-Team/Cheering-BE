@@ -2,6 +2,7 @@ package com.cheering.community.dto;
 
 import com.cheering.community.constant.Category;
 import com.cheering.community.constant.League;
+import java.util.List;
 
 public record CommunityResponse(
         Long id,
@@ -9,6 +10,6 @@ public record CommunityResponse(
         Category category,
         League league,
         String image,
-        PlayerCommunityResponse playerCommunities
+        List<PlayerCommunityResponse> playerCommunities
 ) {
 }
