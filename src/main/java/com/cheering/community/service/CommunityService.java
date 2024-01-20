@@ -1,18 +1,31 @@
 package com.cheering.community.service;
 
+import com.cheering.community.constant.Category;
+import com.cheering.community.constant.League;
 import com.cheering.community.domain.Community;
 import com.cheering.community.domain.PlayerCommunity;
 import com.cheering.community.domain.TeamCommunity;
+import com.cheering.community.domain.UserCommunityInfo;
 import com.cheering.community.domain.repository.CommunityRepository;
 import com.cheering.community.domain.repository.PlayerCommunityRepository;
 import com.cheering.community.domain.repository.PlayerRepository;
 import com.cheering.community.domain.repository.TeamCommunityRepository;
-import com.cheering.community.dto.CommunityResponse;
-import com.cheering.community.dto.PlayerCommunityResponse;
+import com.cheering.community.domain.repository.UserCommunityInfoRepository;
+import com.cheering.community.dto.response.CommunityResponse;
+import com.cheering.community.dto.response.PlayerCommunityResponse;
+import com.cheering.community.dto.response.UserCommunityInfoResponse;
+import com.cheering.global.exception.community.DuplicatedCommunityJoinException;
+import com.cheering.global.exception.community.NotFoundCommunityException;
+import com.cheering.global.exception.constant.ExceptionMessage;
+import com.cheering.global.exception.user.NotFoundUserException;
 import com.cheering.user.domain.Player;
+import com.cheering.user.domain.User;
+import com.cheering.user.domain.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,8 +35,12 @@ public class CommunityService {
 
     private final PlayerCommunityRepository playerCommunityRepository;
     private final TeamCommunityRepository teamCommunityRepository;
-    private final CommunityRepository communityRepository;
     private final PlayerRepository playerRepository;
+
+
+    private final UserRepository userRepository;
+    private final CommunityRepository communityRepository;
+    private final UserCommunityInfoRepository userCommunityInfoRepository;
 
     public List<CommunityResponse> findCommunitiesByName(String name) {
         List<Community> communities = communityRepository.findCommunitiesByName(name);
@@ -43,6 +60,36 @@ public class CommunityService {
         }
 
         return responseResult;
+    }
+
+    @Transactional
+    public UserCommunityInfoResponse joinCommunity(Long communityId, String nickname) {
+        Authentication loginUser = SecurityContextHolder.getContext().getAuthentication();
+        String loginUserId = loginUser.getName();
+
+        User user = userRepository.findById(Long.valueOf(loginUserId)).orElseThrow(() ->
+                new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
+
+        Community community = communityRepository.findById(communityId).orElseThrow(() ->
+                new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
+
+        validateDuplicateJoinCommunity(user, community);
+
+        UserCommunityInfo communityUser = UserCommunityInfo.builder()
+                .nickname(nickname)
+                .community(community)
+                .user(user)
+                .build();
+
+        UserCommunityInfo savedCommunityUser = userCommunityInfoRepository.save(communityUser);
+
+        return new UserCommunityInfoResponse(savedCommunityUser.getId());
+    }
+
+    private void validateDuplicateJoinCommunity(User user, Community community) {
+        if (userCommunityInfoRepository.existsByUserAndCommunity(user, community)) {
+            throw new DuplicatedCommunityJoinException(ExceptionMessage.DUPLICATED_JOIN_COMMUNITY);
+        }
     }
 
     private CommunityResponse generateTeamCommunityResponse(TeamCommunity teamCommunity) {
@@ -67,17 +114,18 @@ public class CommunityService {
 
     @Transactional
     public void setData() {
-        PlayerCommunity playerCommunity1 = PlayerCommunity.builder().name("playerA1")
+        PlayerCommunity playerCommunity1 = PlayerCommunity.builder().name("이강인")
                 .fanCount(1L).build();
-        PlayerCommunity playerCommunity2 = PlayerCommunity.builder().name("playerA2")
+        PlayerCommunity playerCommunity2 = PlayerCommunity.builder().name("음바페")
                 .fanCount(2L).build();
-        PlayerCommunity playerCommunity3 = PlayerCommunity.builder().name("playerA3")
+        PlayerCommunity playerCommunity3 = PlayerCommunity.builder().name("아센시오")
                 .fanCount(3L).build();
-        PlayerCommunity playerCommunity4 = PlayerCommunity.builder().name("playerB4")
+
+        PlayerCommunity playerCommunity4 = PlayerCommunity.builder().name("손흥민")
                 .fanCount(4L).build();
-        PlayerCommunity playerCommunity5 = PlayerCommunity.builder().name("playerB5")
+        PlayerCommunity playerCommunity5 = PlayerCommunity.builder().name("히샬리송")
                 .fanCount(5L).build();
-        PlayerCommunity playerCommunity6 = PlayerCommunity.builder().name("playerB6")
+        PlayerCommunity playerCommunity6 = PlayerCommunity.builder().name("메디슨")
                 .fanCount(6L).build();
 
         playerCommunityRepository.save(playerCommunity1);
@@ -87,37 +135,45 @@ public class CommunityService {
         playerCommunityRepository.save(playerCommunity5);
         playerCommunityRepository.save(playerCommunity6);
 
-        TeamCommunity teamCommunity1 = TeamCommunity.builder().name("teamCommunity1").players(new ArrayList<>())
+        TeamCommunity psgCommunity = TeamCommunity.builder()
+                .name("파리 생제르맹")
+                .players(new ArrayList<>())
+                .category(Category.SOCCER)
+                .league(League.FRENCH_LEAGUE1)
                 .build();
-        TeamCommunity teamCommunity2 = TeamCommunity.builder().name("teamCommunity2").players(new ArrayList<>())
+
+        TeamCommunity tottenhamCommunity = TeamCommunity.builder()
+                .name("토트넘")
+                .players(new ArrayList<>())
+                .category(Category.SOCCER)
+                .league(League.EPL)
                 .build();
 
-        teamCommunityRepository.save(teamCommunity1);
-        teamCommunityRepository.save(teamCommunity2);
+        teamCommunityRepository.save(psgCommunity);
+        teamCommunityRepository.save(tottenhamCommunity);
 
-        Player playerA1 = Player.builder().playerCommunity(playerCommunity1).name("playerA1").build();
-        Player playerA2 = Player.builder().playerCommunity(playerCommunity2).name("playerA2").build();
-        Player playerA3 = Player.builder().playerCommunity(playerCommunity3).name("playerA3").build();
+        Player playerA1 = Player.builder().playerCommunity(playerCommunity1).name("이강인").build();
+        Player playerA2 = Player.builder().playerCommunity(playerCommunity2).name("음바페").build();
+        Player playerA3 = Player.builder().playerCommunity(playerCommunity3).name("아센시오").build();
 
-        playerA1.connectTeamCommunity(teamCommunity1);
-        playerA2.connectTeamCommunity(teamCommunity1);
-        playerA3.connectTeamCommunity(teamCommunity1);
+        playerA1.connectTeamCommunity(psgCommunity);
+        playerA2.connectTeamCommunity(psgCommunity);
+        playerA3.connectTeamCommunity(psgCommunity);
 
         playerRepository.save(playerA1);
         playerRepository.save(playerA2);
         playerRepository.save(playerA3);
 
-        Player playerB1 = Player.builder().playerCommunity(playerCommunity4).name("playerB1").build();
-        Player playerB2 = Player.builder().playerCommunity(playerCommunity5).name("playerB2").build();
-        Player playerB3 = Player.builder().playerCommunity(playerCommunity6).name("playerB3").build();
+        Player playerB1 = Player.builder().playerCommunity(playerCommunity4).name("손흥민").build();
+        Player playerB2 = Player.builder().playerCommunity(playerCommunity5).name("히샬리송").build();
+        Player playerB3 = Player.builder().playerCommunity(playerCommunity6).name("메디슨").build();
 
-        playerB1.connectTeamCommunity(teamCommunity2);
-        playerB2.connectTeamCommunity(teamCommunity2);
-        playerB3.connectTeamCommunity(teamCommunity2);
+        playerB1.connectTeamCommunity(tottenhamCommunity);
+        playerB2.connectTeamCommunity(tottenhamCommunity);
+        playerB3.connectTeamCommunity(tottenhamCommunity);
 
         playerRepository.save(playerB1);
         playerRepository.save(playerB2);
         playerRepository.save(playerB3);
-
     }
 }

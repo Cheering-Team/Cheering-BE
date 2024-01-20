@@ -1,4 +1,4 @@
-package com.cheering.community.dto;
+package com.cheering.community.dto.response;
 
 import com.cheering.community.domain.PlayerCommunity;
 import java.util.List;
