@@ -38,7 +38,7 @@ class UserServiceTest {
 
         //when
         Member signup = userService.signUp(signUpUser);
-        Optional<Member> findUser = userRepository.findById(signup.getId());
+        Optional<User> findUser = userRepository.findById(signup.getId());
 
         //then
         assertThatCode(() -> {

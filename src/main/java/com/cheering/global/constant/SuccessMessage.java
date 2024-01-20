@@ -14,8 +14,8 @@ public enum SuccessMessage {
     SIGN_OUT_SUCCESS(HttpStatus.OK, "logout success"),
 
     //community
-    SEARCH_COMMUNITY_SUCCESS(HttpStatus.OK, "search complete");
-
+    SEARCH_COMMUNITY_SUCCESS(HttpStatus.OK, "search complete"),
+    JOIN_COMMUNITY_SUCCESS(HttpStatus.CREATED, "join community success");
 
     private final HttpStatus httpStatus;
     private final String message;
