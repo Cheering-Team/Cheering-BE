@@ -14,6 +14,7 @@ import com.cheering.community.domain.repository.UserCommunityInfoRepository;
 import com.cheering.community.dto.response.CommunityResponse;
 import com.cheering.community.dto.response.PlayerCommunityResponse;
 import com.cheering.community.dto.response.UserCommunityInfoResponse;
+import com.cheering.global.exception.community.DuplicatedCommunityJoinException;
 import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.NotFoundUserException;
@@ -64,12 +65,15 @@ public class CommunityService {
     @Transactional
     public UserCommunityInfoResponse joinCommunity(Long communityId, String nickname) {
         Authentication loginUser = SecurityContextHolder.getContext().getAuthentication();
+        String loginUserId = loginUser.getName();
 
-        User user = userRepository.findById(Long.valueOf(loginUser.getName())).orElseThrow(() ->
+        User user = userRepository.findById(Long.valueOf(loginUserId)).orElseThrow(() ->
                 new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
 
         Community community = communityRepository.findById(communityId).orElseThrow(() ->
                 new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
+
+        validateDuplicateJoinCommunity(user, community);
 
         UserCommunityInfo communityUser = UserCommunityInfo.builder()
                 .nickname(nickname)
@@ -80,6 +84,12 @@ public class CommunityService {
         UserCommunityInfo savedCommunityUser = userCommunityInfoRepository.save(communityUser);
 
         return new UserCommunityInfoResponse(savedCommunityUser.getId());
+    }
+
+    private void validateDuplicateJoinCommunity(User user, Community community) {
+        if (userCommunityInfoRepository.existsByUserAndCommunity(user, community)) {
+            throw new DuplicatedCommunityJoinException(ExceptionMessage.DUPLICATED_JOIN_COMMUNITY);
+        }
     }
 
     private CommunityResponse generateTeamCommunityResponse(TeamCommunity teamCommunity) {

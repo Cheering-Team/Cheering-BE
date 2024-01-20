@@ -21,7 +21,8 @@ public enum ExceptionMessage {
     FAIL_SIGN_OUT(BAD_REQUEST, "fail signout"),
 
     //community
-    NOT_FOUND_COMMUNITY(NOT_FOUND, "not found community");
+    NOT_FOUND_COMMUNITY(NOT_FOUND, "not found community"),
+    DUPLICATED_JOIN_COMMUNITY(BAD_REQUEST, "duplicated join community");
 
     private final HttpStatus httpStatus;
     private final String message;
