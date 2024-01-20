@@ -3,16 +3,26 @@ package com.cheering.community.service;
 import com.cheering.community.domain.Community;
 import com.cheering.community.domain.PlayerCommunity;
 import com.cheering.community.domain.TeamCommunity;
+import com.cheering.community.domain.UserCommunityInfo;
 import com.cheering.community.domain.repository.CommunityRepository;
 import com.cheering.community.domain.repository.PlayerCommunityRepository;
 import com.cheering.community.domain.repository.PlayerRepository;
 import com.cheering.community.domain.repository.TeamCommunityRepository;
-import com.cheering.community.dto.CommunityResponse;
-import com.cheering.community.dto.PlayerCommunityResponse;
+import com.cheering.community.domain.repository.UserCommunityInfoRepository;
+import com.cheering.community.dto.response.CommunityResponse;
+import com.cheering.community.dto.response.PlayerCommunityResponse;
+import com.cheering.community.dto.response.UserCommunityInfoResponse;
+import com.cheering.global.exception.community.NotFoundCommunityException;
+import com.cheering.global.exception.constant.ExceptionMessage;
+import com.cheering.global.exception.user.NotFoundUserException;
 import com.cheering.user.domain.Player;
+import com.cheering.user.domain.User;
+import com.cheering.user.domain.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,8 +32,12 @@ public class CommunityService {
 
     private final PlayerCommunityRepository playerCommunityRepository;
     private final TeamCommunityRepository teamCommunityRepository;
-    private final CommunityRepository communityRepository;
     private final PlayerRepository playerRepository;
+
+
+    private final UserRepository userRepository;
+    private final CommunityRepository communityRepository;
+    private final UserCommunityInfoRepository userCommunityInfoRepository;
 
     public List<CommunityResponse> findCommunitiesByName(String name) {
         List<Community> communities = communityRepository.findCommunitiesByName(name);
@@ -43,6 +57,27 @@ public class CommunityService {
         }
 
         return responseResult;
+    }
+
+    @Transactional
+    public UserCommunityInfoResponse joinCommunity(Long communityId, String nickname) {
+        Authentication loginUser = SecurityContextHolder.getContext().getAuthentication();
+
+        User user = userRepository.findById(Long.valueOf(loginUser.getName())).orElseThrow(() ->
+                new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
+
+        Community community = communityRepository.findById(communityId).orElseThrow(() ->
+                new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
+
+        UserCommunityInfo communityUser = UserCommunityInfo.builder()
+                .nickname(nickname)
+                .community(community)
+                .user(user)
+                .build();
+
+        UserCommunityInfo savedCommunityUser = userCommunityInfoRepository.save(communityUser);
+
+        return new UserCommunityInfoResponse(savedCommunityUser.getId());
     }
 
     private CommunityResponse generateTeamCommunityResponse(TeamCommunity teamCommunity) {
@@ -73,11 +108,11 @@ public class CommunityService {
                 .fanCount(2L).build();
         PlayerCommunity playerCommunity3 = PlayerCommunity.builder().name("playerA3")
                 .fanCount(3L).build();
-        PlayerCommunity playerCommunity4 = PlayerCommunity.builder().name("playerB4")
+        PlayerCommunity playerCommunity4 = PlayerCommunity.builder().name("playerB1")
                 .fanCount(4L).build();
-        PlayerCommunity playerCommunity5 = PlayerCommunity.builder().name("playerB5")
+        PlayerCommunity playerCommunity5 = PlayerCommunity.builder().name("playerB2")
                 .fanCount(5L).build();
-        PlayerCommunity playerCommunity6 = PlayerCommunity.builder().name("playerB6")
+        PlayerCommunity playerCommunity6 = PlayerCommunity.builder().name("playerB3")
                 .fanCount(6L).build();
 
         playerCommunityRepository.save(playerCommunity1);
