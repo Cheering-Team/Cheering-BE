@@ -1,5 +1,7 @@
 package com.cheering.community.service;
 
+import com.cheering.community.constant.Category;
+import com.cheering.community.constant.League;
 import com.cheering.community.domain.Community;
 import com.cheering.community.domain.PlayerCommunity;
 import com.cheering.community.domain.TeamCommunity;
@@ -87,21 +89,30 @@ public class CommunityService {
         playerCommunityRepository.save(playerCommunity5);
         playerCommunityRepository.save(playerCommunity6);
 
-        TeamCommunity teamCommunity1 = TeamCommunity.builder().name("teamCommunity1").players(new ArrayList<>())
-                .build();
-        TeamCommunity teamCommunity2 = TeamCommunity.builder().name("teamCommunity2").players(new ArrayList<>())
+        TeamCommunity psgCommunity = TeamCommunity.builder()
+                .name("파리 생제르맹")
+                .players(new ArrayList<>())
+                .category(Category.SOCCER)
+                .league(League.FRENCH_LEAGUE1)
                 .build();
 
-        teamCommunityRepository.save(teamCommunity1);
-        teamCommunityRepository.save(teamCommunity2);
+        TeamCommunity tottenhamCommunity = TeamCommunity.builder()
+                .name("토트넘")
+                .players(new ArrayList<>())
+                .category(Category.SOCCER)
+                .league(League.EPL)
+                .build();
+
+        teamCommunityRepository.save(psgCommunity);
+        teamCommunityRepository.save(tottenhamCommunity);
 
         Player playerA1 = Player.builder().playerCommunity(playerCommunity1).name("playerA1").build();
         Player playerA2 = Player.builder().playerCommunity(playerCommunity2).name("playerA2").build();
         Player playerA3 = Player.builder().playerCommunity(playerCommunity3).name("playerA3").build();
 
-        playerA1.connectTeamCommunity(teamCommunity1);
-        playerA2.connectTeamCommunity(teamCommunity1);
-        playerA3.connectTeamCommunity(teamCommunity1);
+        playerA1.connectTeamCommunity(psgCommunity);
+        playerA2.connectTeamCommunity(psgCommunity);
+        playerA3.connectTeamCommunity(psgCommunity);
 
         playerRepository.save(playerA1);
         playerRepository.save(playerA2);
@@ -111,9 +122,9 @@ public class CommunityService {
         Player playerB2 = Player.builder().playerCommunity(playerCommunity5).name("playerB2").build();
         Player playerB3 = Player.builder().playerCommunity(playerCommunity6).name("playerB3").build();
 
-        playerB1.connectTeamCommunity(teamCommunity2);
-        playerB2.connectTeamCommunity(teamCommunity2);
-        playerB3.connectTeamCommunity(teamCommunity2);
+        playerB1.connectTeamCommunity(tottenhamCommunity);
+        playerB2.connectTeamCommunity(tottenhamCommunity);
+        playerB3.connectTeamCommunity(tottenhamCommunity);
 
         playerRepository.save(playerB1);
         playerRepository.save(playerB2);
