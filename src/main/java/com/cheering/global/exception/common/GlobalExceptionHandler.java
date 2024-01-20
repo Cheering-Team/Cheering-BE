@@ -2,6 +2,7 @@ package com.cheering.global.exception.common;
 
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
+import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.InvalidEmailFormatException;
@@ -61,5 +62,13 @@ public class GlobalExceptionHandler {
     ) {
         log.error("handle NotFoundUserException", e);
         return ResponseGenerator.fail(ExceptionMessage.NOT_FOUND_USER, null);
+    }
+
+    @ExceptionHandler(NotFoundCommunityException.class)
+    public ResponseEntity<ResponseBodyDto<?>> handleNotFoundCommunityException(
+            NotFoundCommunityException e
+    ) {
+        log.error("handle NotFoundCommunityException", e);
+        return ResponseGenerator.fail(ExceptionMessage.NOT_FOUND_COMMUNITY, null);
     }
 }

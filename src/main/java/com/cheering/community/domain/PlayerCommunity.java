@@ -17,13 +17,11 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Getter
 public class PlayerCommunity extends Community {
-    private Long fanCount;
-
     @OneToOne(fetch = LAZY, mappedBy = "playerCommunity")
     @JoinColumn(name = "player_id")
     private Player player;
 
     private String image;
-
+    private Long fanCount;
 }
 
