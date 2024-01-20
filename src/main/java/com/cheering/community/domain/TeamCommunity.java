@@ -23,11 +23,11 @@ public class TeamCommunity extends Community {
 
     @OneToMany(mappedBy = "teamCommunity")
     private List<Player> players;
+    private String image;
+    @Enumerated(value = EnumType.STRING)
     private Category category;
 
     @Enumerated(value = EnumType.STRING)
     private League league;
-    
-    @Enumerated(value = EnumType.STRING)
-    private String image;
+
 }
