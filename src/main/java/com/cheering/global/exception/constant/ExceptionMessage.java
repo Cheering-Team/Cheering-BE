@@ -2,6 +2,7 @@ package com.cheering.global.exception.constant;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import lombok.Getter;
@@ -17,7 +18,10 @@ public enum ExceptionMessage {
     FAIL_SIGN_UP(BAD_REQUEST, "fail signup"),
     MISMATCH_PASSWORD(CONFLICT, "mismatch password"),
     NOT_FOUND_USER(UNAUTHORIZED, "not found user"),
-    FAIL_SIGN_OUT(BAD_REQUEST, "fail signout");
+    FAIL_SIGN_OUT(BAD_REQUEST, "fail signout"),
+
+    //community
+    NOT_FOUND_COMMUNITY(NOT_FOUND, "not found community");
 
     private final HttpStatus httpStatus;
     private final String message;
