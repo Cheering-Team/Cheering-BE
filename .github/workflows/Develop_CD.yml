@@ -71,5 +71,6 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/cheering_docker
             cd ./Cheering-BE/
             docker-compose up -d
+            docker image prune -f
 
 #            docker run -d --name cheering_docker -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/cheering_docker
