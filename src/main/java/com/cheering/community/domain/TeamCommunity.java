@@ -5,6 +5,8 @@ import com.cheering.community.constant.League;
 import com.cheering.user.domain.Player;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToMany;
 import java.util.List;
 import lombok.AccessLevel;
@@ -21,7 +23,12 @@ public class TeamCommunity extends Community {
 
     @OneToMany(mappedBy = "teamCommunity")
     private List<Player> players;
-    private Category category;
-    private League league;
     private String image;
+    
+    @Enumerated(value = EnumType.STRING)
+    private Category category;
+
+    @Enumerated(value = EnumType.STRING)
+    private League league;
+
 }
