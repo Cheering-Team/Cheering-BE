@@ -18,9 +18,12 @@ import com.cheering.global.exception.community.DuplicatedCommunityJoinException;
 import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.NotFoundUserException;
+import com.cheering.global.util.AwsS3Util;
 import com.cheering.user.domain.Player;
 import com.cheering.user.domain.User;
 import com.cheering.user.domain.repository.UserRepository;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -28,19 +31,21 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 public class CommunityService {
-
+    //원래 안쓰는 거
     private final PlayerCommunityRepository playerCommunityRepository;
     private final TeamCommunityRepository teamCommunityRepository;
     private final PlayerRepository playerRepository;
 
-
     private final UserRepository userRepository;
     private final CommunityRepository communityRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
+
+    private final AwsS3Util awsS3Util;
 
     public List<CommunityResponse> findCommunitiesByName(String name) {
         List<Community> communities = communityRepository.findCommunitiesByName(name);
@@ -63,7 +68,7 @@ public class CommunityService {
     }
 
     @Transactional
-    public UserCommunityInfoResponse joinCommunity(Long communityId, String nickname) {
+    public UserCommunityInfoResponse joinCommunity(Long communityId, String nickname, MultipartFile file) {
         Authentication loginUser = SecurityContextHolder.getContext().getAuthentication();
         String loginUserId = loginUser.getName();
 
@@ -75,15 +80,27 @@ public class CommunityService {
 
         validateDuplicateJoinCommunity(user, community);
 
-        UserCommunityInfo communityUser = UserCommunityInfo.builder()
-                .nickname(nickname)
-                .community(community)
-                .user(user)
-                .build();
+        try {
+            URL url = awsS3Util.uploadFile(file, "team-community-profile");
+            UserCommunityInfo communityUser = UserCommunityInfo.builder()
+                    .nickname(nickname)
+                    .community(community)
+                    .profileImage(url)
+                    .user(user)
+                    .build();
 
-        UserCommunityInfo savedCommunityUser = userCommunityInfoRepository.save(communityUser);
+            UserCommunityInfo savedCommunityUser = userCommunityInfoRepository.save(communityUser);
+            return new UserCommunityInfoResponse(savedCommunityUser.getId());
+        } catch (IOException e) {
+            UserCommunityInfo communityUser = UserCommunityInfo.builder()
+                    .nickname(nickname)
+                    .community(community)
+                    .user(user)
+                    .build();
 
-        return new UserCommunityInfoResponse(savedCommunityUser.getId());
+            UserCommunityInfo savedCommunityUser = userCommunityInfoRepository.save(communityUser);
+            return new UserCommunityInfoResponse(savedCommunityUser.getId());
+        }
     }
 
     private void validateDuplicateJoinCommunity(User user, Community community) {
