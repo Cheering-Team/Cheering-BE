@@ -9,5 +9,8 @@ import org.springframework.data.repository.query.Param;
 public interface CommunityRepository extends JpaRepository<Community, Long> {
 
     @Query("select c from Community c where c.name = :name")
-    List<Community> findCommunitiesByName(@Param("name") String name);
+    List<Community> findByName(@Param("name") String name);
+
+    List<Community> findByNameContainingIgnoreCase(@Param("name") String name);
+
 }

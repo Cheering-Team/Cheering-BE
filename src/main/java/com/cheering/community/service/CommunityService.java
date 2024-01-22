@@ -48,7 +48,7 @@ public class CommunityService {
     private final AwsS3Util awsS3Util;
 
     public List<CommunityResponse> findCommunitiesByName(String name) {
-        List<Community> communities = communityRepository.findCommunitiesByName(name);
+        List<Community> communities = communityRepository.findByNameContainingIgnoreCase(name);
 
         List<CommunityResponse> responseResult = new ArrayList<>();
 
