@@ -1,5 +1,12 @@
 package com.cheering.community.constant;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+@Getter
 public enum Category {
-    SOCCER
+    SOCCER("축구");
+
+    private final String korean;
 }

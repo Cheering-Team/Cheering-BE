@@ -21,7 +21,7 @@ public class PlayerCommunity extends Community {
     @JoinColumn(name = "player_id")
     private Player player;
 
-    private String image;
     private Long fanCount;
+    private String profileImage;
 }
 
