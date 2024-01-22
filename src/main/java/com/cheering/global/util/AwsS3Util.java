@@ -74,6 +74,10 @@ public class AwsS3Util {
         return fileUrls;
     }
 
+    public String getPath(String path) {
+        return s3Client.getUrl(bucket, path).toString();
+    }
+
     public byte[] downloadFile(String image) {
 
         String filename = image.substring(image.lastIndexOf('/') + 1);

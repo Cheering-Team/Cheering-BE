@@ -79,7 +79,7 @@ public class CommunityService {
                 new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
         validateDuplicateJoinCommunity(user, community);
-        
+
         try {
             URL url = awsS3Util.uploadFile(file, "user-community-profile");
             UserCommunityInfo communityUser = UserCommunityInfo.builder()
@@ -131,19 +131,21 @@ public class CommunityService {
 
     @Transactional
     public void setData() {
+
+        String imageUrl = awsS3Util.getPath("user-community-profile/0d5211b8-6ee0-4d04-a310-ed1df5dcd89e.png");
         PlayerCommunity playerCommunity1 = PlayerCommunity.builder().name("이강인")
-                .fanCount(1L).build();
+                .fanCount(1L).profileImage(imageUrl).build();
         PlayerCommunity playerCommunity2 = PlayerCommunity.builder().name("음바페")
-                .fanCount(2L).build();
+                .fanCount(2L).profileImage(imageUrl).build();
         PlayerCommunity playerCommunity3 = PlayerCommunity.builder().name("아센시오")
-                .fanCount(3L).build();
+                .fanCount(3L).profileImage(imageUrl).build();
 
         PlayerCommunity playerCommunity4 = PlayerCommunity.builder().name("손흥민")
-                .fanCount(4L).build();
+                .fanCount(4L).profileImage(imageUrl).build();
         PlayerCommunity playerCommunity5 = PlayerCommunity.builder().name("히샬리송")
-                .fanCount(5L).build();
+                .fanCount(5L).profileImage(imageUrl).build();
         PlayerCommunity playerCommunity6 = PlayerCommunity.builder().name("메디슨")
-                .fanCount(6L).build();
+                .fanCount(6L).profileImage(imageUrl).build();
 
         playerCommunityRepository.save(playerCommunity1);
         playerCommunityRepository.save(playerCommunity2);
@@ -157,6 +159,7 @@ public class CommunityService {
                 .players(new ArrayList<>())
                 .category(Category.SOCCER)
                 .league(League.FRENCH_LEAGUE1)
+                .image(imageUrl)
                 .build();
 
         TeamCommunity tottenhamCommunity = TeamCommunity.builder()
@@ -164,6 +167,7 @@ public class CommunityService {
                 .players(new ArrayList<>())
                 .category(Category.SOCCER)
                 .league(League.EPL)
+                .image(imageUrl)
                 .build();
 
         teamCommunityRepository.save(psgCommunity);
