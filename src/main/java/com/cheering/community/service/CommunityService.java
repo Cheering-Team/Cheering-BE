@@ -18,9 +18,12 @@ import com.cheering.global.exception.community.DuplicatedCommunityJoinException;
 import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.NotFoundUserException;
+import com.cheering.global.util.AwsS3Util;
 import com.cheering.user.domain.Player;
 import com.cheering.user.domain.User;
 import com.cheering.user.domain.repository.UserRepository;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -28,22 +31,24 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 public class CommunityService {
-
+    //원래 안쓰는 거
     private final PlayerCommunityRepository playerCommunityRepository;
     private final TeamCommunityRepository teamCommunityRepository;
     private final PlayerRepository playerRepository;
-
 
     private final UserRepository userRepository;
     private final CommunityRepository communityRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
 
+    private final AwsS3Util awsS3Util;
+
     public List<CommunityResponse> findCommunitiesByName(String name) {
-        List<Community> communities = communityRepository.findCommunitiesByName(name);
+        List<Community> communities = communityRepository.findByNameContainingIgnoreCase(name);
 
         List<CommunityResponse> responseResult = new ArrayList<>();
 
@@ -63,7 +68,7 @@ public class CommunityService {
     }
 
     @Transactional
-    public UserCommunityInfoResponse joinCommunity(Long communityId, String nickname) {
+    public UserCommunityInfoResponse joinCommunity(Long communityId, String nickname, MultipartFile file) {
         Authentication loginUser = SecurityContextHolder.getContext().getAuthentication();
         String loginUserId = loginUser.getName();
 
@@ -75,15 +80,27 @@ public class CommunityService {
 
         validateDuplicateJoinCommunity(user, community);
 
-        UserCommunityInfo communityUser = UserCommunityInfo.builder()
-                .nickname(nickname)
-                .community(community)
-                .user(user)
-                .build();
+        try {
+            URL url = awsS3Util.uploadFile(file, "user-community-profile");
+            UserCommunityInfo communityUser = UserCommunityInfo.builder()
+                    .nickname(nickname)
+                    .community(community)
+                    .profileImage(url)
+                    .user(user)
+                    .build();
 
-        UserCommunityInfo savedCommunityUser = userCommunityInfoRepository.save(communityUser);
+            UserCommunityInfo savedCommunityUser = userCommunityInfoRepository.save(communityUser);
+            return new UserCommunityInfoResponse(savedCommunityUser.getId());
+        } catch (IOException e) {
+            UserCommunityInfo communityUser = UserCommunityInfo.builder()
+                    .nickname(nickname)
+                    .community(community)
+                    .user(user)
+                    .build();
 
-        return new UserCommunityInfoResponse(savedCommunityUser.getId());
+            UserCommunityInfo savedCommunityUser = userCommunityInfoRepository.save(communityUser);
+            return new UserCommunityInfoResponse(savedCommunityUser.getId());
+        }
     }
 
     private void validateDuplicateJoinCommunity(User user, Community community) {
@@ -114,19 +131,21 @@ public class CommunityService {
 
     @Transactional
     public void setData() {
+
+        String imageUrl = awsS3Util.getPath("user-community-profile/0d5211b8-6ee0-4d04-a310-ed1df5dcd89e.png");
         PlayerCommunity playerCommunity1 = PlayerCommunity.builder().name("이강인")
-                .fanCount(1L).build();
+                .fanCount(1L).profileImage(imageUrl).build();
         PlayerCommunity playerCommunity2 = PlayerCommunity.builder().name("음바페")
-                .fanCount(2L).build();
+                .fanCount(2L).profileImage(imageUrl).build();
         PlayerCommunity playerCommunity3 = PlayerCommunity.builder().name("아센시오")
-                .fanCount(3L).build();
+                .fanCount(3L).profileImage(imageUrl).build();
 
         PlayerCommunity playerCommunity4 = PlayerCommunity.builder().name("손흥민")
-                .fanCount(4L).build();
+                .fanCount(4L).profileImage(imageUrl).build();
         PlayerCommunity playerCommunity5 = PlayerCommunity.builder().name("히샬리송")
-                .fanCount(5L).build();
+                .fanCount(5L).profileImage(imageUrl).build();
         PlayerCommunity playerCommunity6 = PlayerCommunity.builder().name("메디슨")
-                .fanCount(6L).build();
+                .fanCount(6L).profileImage(imageUrl).build();
 
         playerCommunityRepository.save(playerCommunity1);
         playerCommunityRepository.save(playerCommunity2);
@@ -140,6 +159,7 @@ public class CommunityService {
                 .players(new ArrayList<>())
                 .category(Category.SOCCER)
                 .league(League.FRENCH_LEAGUE1)
+                .image(imageUrl)
                 .build();
 
         TeamCommunity tottenhamCommunity = TeamCommunity.builder()
@@ -147,6 +167,7 @@ public class CommunityService {
                 .players(new ArrayList<>())
                 .category(Category.SOCCER)
                 .league(League.EPL)
+                .image(imageUrl)
                 .build();
 
         teamCommunityRepository.save(psgCommunity);

@@ -1,7 +1,5 @@
 package com.cheering.community.dto.response;
 
-import com.cheering.community.constant.Category;
-import com.cheering.community.constant.League;
 import com.cheering.community.domain.TeamCommunity;
 import java.util.List;
 import lombok.Builder;
@@ -11,8 +9,8 @@ import lombok.Builder;
 public record CommunityResponse(
         Long id,
         String teamName,
-        Category category,
-        League league,
+        String category,
+        String league,
         String image,
         List<PlayerCommunityResponse> playerCommunities
 ) {
@@ -22,8 +20,8 @@ public record CommunityResponse(
 
         return builder().id(teamCommunity.getId())
                 .teamName(teamCommunity.getName())
-                .category(teamCommunity.getCategory())
-                .league(teamCommunity.getLeague())
+                .category(teamCommunity.getCategory().getKorean())
+                .league(teamCommunity.getLeague().getKorean())
                 .image(teamCommunity.getImage())
                 .playerCommunities(playerCommunityResponses)
                 .build();
