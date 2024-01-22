@@ -79,9 +79,9 @@ public class CommunityService {
                 new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
         validateDuplicateJoinCommunity(user, community);
-
+        
         try {
-            URL url = awsS3Util.uploadFile(file, "team-community-profile");
+            URL url = awsS3Util.uploadFile(file, "user-community-profile");
             UserCommunityInfo communityUser = UserCommunityInfo.builder()
                     .nickname(nickname)
                     .community(community)

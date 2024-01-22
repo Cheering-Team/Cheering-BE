@@ -37,7 +37,6 @@ public class communityController {
     public ResponseEntity<ResponseBodyDto<?>> joinCommunity(@PathVariable("id") Long communityId,
                                                             @RequestPart(value = "image", required = false) MultipartFile file,
                                                             @RequestParam("nickname") String nickname) {
-
         UserCommunityInfoResponse response = communityService.joinCommunity(communityId, nickname, file);
 
         return ResponseGenerator.success(SuccessMessage.JOIN_COMMUNITY_SUCCESS, response);
