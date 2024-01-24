@@ -1,6 +1,6 @@
 package com.cheering.community.controller;
 
-import com.cheering.community.dto.response.CommunityResponse;
+import com.cheering.community.dto.response.FoundCommunitiesResponse;
 import com.cheering.community.dto.response.UserCommunityInfoResponse;
 import com.cheering.community.service.CommunityService;
 import com.cheering.global.constant.SuccessMessage;
@@ -28,7 +28,7 @@ public class communityController {
 
     @GetMapping("/communities")
     public ResponseEntity<ResponseBodyDto<?>> findCommunitiesByName(@RequestParam("name") String name) {
-        List<CommunityResponse> communitiesByName = communityService.findCommunitiesByName(name);
+        List<FoundCommunitiesResponse> communitiesByName = communityService.findCommunitiesByName(name);
 
         return ResponseGenerator.success(SuccessMessage.SEARCH_COMMUNITY_SUCCESS, communitiesByName);
     }

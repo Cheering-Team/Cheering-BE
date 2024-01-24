@@ -12,7 +12,7 @@ import com.cheering.community.domain.repository.PlayerRepository;
 import com.cheering.community.domain.repository.TeamCommunityRepository;
 import com.cheering.community.domain.repository.UserCommunityInfoRepository;
 import com.cheering.community.dto.response.CommunityResponse;
-import com.cheering.community.dto.response.PlayerCommunityResponse;
+import com.cheering.community.dto.response.FoundCommunitiesResponse;
 import com.cheering.community.dto.response.UserCommunityInfoResponse;
 import com.cheering.global.exception.community.DuplicatedCommunityJoinException;
 import com.cheering.global.exception.community.NotFoundCommunityException;
@@ -47,20 +47,20 @@ public class CommunityService {
 
     private final AwsS3Util awsS3Util;
 
-    public List<CommunityResponse> findCommunitiesByName(String name) {
+    public List<FoundCommunitiesResponse> findCommunitiesByName(String name) {
         List<Community> communities = communityRepository.findByNameContainingIgnoreCase(name);
 
-        List<CommunityResponse> responseResult = new ArrayList<>();
+        List<FoundCommunitiesResponse> responseResult = new ArrayList<>();
 
         for (Community community : communities) {
             if (community instanceof PlayerCommunity playerCommunity) {
-                CommunityResponse communityResponse = generatePlayerCommunityResponse(playerCommunity);
-                responseResult.add(communityResponse);
+                FoundCommunitiesResponse foundCommunitiesResponse = generatePlayerCommunityResponse(playerCommunity);
+                responseResult.add(foundCommunitiesResponse);
             }
 
             if (community instanceof TeamCommunity teamCommunity) {
-                CommunityResponse communityResponse = generateTeamCommunityResponse(teamCommunity);
-                responseResult.add(communityResponse);
+                FoundCommunitiesResponse foundCommunitiesResponse = generateTeamCommunityResponse(teamCommunity);
+                responseResult.add(foundCommunitiesResponse);
             }
         }
 
@@ -109,20 +109,20 @@ public class CommunityService {
         }
     }
 
-    private CommunityResponse generateTeamCommunityResponse(TeamCommunity teamCommunity) {
+    private FoundCommunitiesResponse generateTeamCommunityResponse(TeamCommunity teamCommunity) {
         List<Player> players = teamCommunity.getPlayers();
         List<PlayerCommunity> playerCommunities = getPlayerCommunitiesByPlayers(players);
 
-        List<PlayerCommunityResponse> playerCommunityResponses = PlayerCommunityResponse.of(playerCommunities);
-        return CommunityResponse.of(playerCommunityResponses, teamCommunity);
+        List<CommunityResponse> communityRespons = CommunityResponse.of(playerCommunities);
+        return FoundCommunitiesResponse.of(communityRespons, teamCommunity);
     }
 
-    private CommunityResponse generatePlayerCommunityResponse(PlayerCommunity playerCommunity) {
+    private FoundCommunitiesResponse generatePlayerCommunityResponse(PlayerCommunity playerCommunity) {
         TeamCommunity teamCommunity = playerCommunity.getPlayer().getTeamCommunity();
         List<PlayerCommunity> playerCommunities = List.of(playerCommunity);
 
-        List<PlayerCommunityResponse> playerCommunityResponses = PlayerCommunityResponse.of(playerCommunities);
-        return CommunityResponse.of(playerCommunityResponses, teamCommunity);
+        List<CommunityResponse> communityRespons = CommunityResponse.of(playerCommunities);
+        return FoundCommunitiesResponse.of(communityRespons, teamCommunity);
     }
 
     private List<PlayerCommunity> getPlayerCommunitiesByPlayers(List<Player> players) {
