@@ -1,9 +1,13 @@
 package com.cheering.community.domain;
 
+import com.cheering.community.constant.Category;
+import com.cheering.community.constant.League;
 import com.cheering.global.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
@@ -27,4 +31,16 @@ public abstract class Community extends BaseEntity {
     private Long id;
 
     private String name;
+
+    private Long fanCount;
+
+    private String profileImage;
+
+    private String image;
+
+    @Enumerated(value = EnumType.STRING)
+    private Category category;
+
+    @Enumerated(value = EnumType.STRING)
+    private League league;
 }
