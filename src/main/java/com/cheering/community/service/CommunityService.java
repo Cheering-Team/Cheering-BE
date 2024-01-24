@@ -13,7 +13,6 @@ import com.cheering.community.domain.repository.TeamCommunityRepository;
 import com.cheering.community.domain.repository.UserCommunityInfoRepository;
 import com.cheering.community.dto.response.CommunityResponse;
 import com.cheering.community.dto.response.PlayerCommunityResponse;
-import com.cheering.community.dto.response.UserCommunityInfoResponse;
 import com.cheering.global.exception.community.DuplicatedCommunityJoinException;
 import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.constant.ExceptionMessage;
@@ -134,18 +133,18 @@ public class CommunityService {
 
         String imageUrl = awsS3Util.getPath("user-community-profile/0d5211b8-6ee0-4d04-a310-ed1df5dcd89e.png");
         PlayerCommunity playerCommunity1 = PlayerCommunity.builder().name("이강인")
-                .fanCount(1L).profileImage(imageUrl).build();
+                .fanCount(1L).image(imageUrl).build();
         PlayerCommunity playerCommunity2 = PlayerCommunity.builder().name("음바페")
-                .fanCount(2L).profileImage(imageUrl).build();
+                .fanCount(2L).image(imageUrl).build();
         PlayerCommunity playerCommunity3 = PlayerCommunity.builder().name("아센시오")
-                .fanCount(3L).profileImage(imageUrl).build();
+                .fanCount(3L).image(imageUrl).build();
 
         PlayerCommunity playerCommunity4 = PlayerCommunity.builder().name("손흥민")
-                .fanCount(4L).profileImage(imageUrl).build();
+                .fanCount(4L).image(imageUrl).build();
         PlayerCommunity playerCommunity5 = PlayerCommunity.builder().name("히샬리송")
-                .fanCount(5L).profileImage(imageUrl).build();
+                .fanCount(5L).image(imageUrl).build();
         PlayerCommunity playerCommunity6 = PlayerCommunity.builder().name("메디슨")
-                .fanCount(6L).profileImage(imageUrl).build();
+                .fanCount(6L).image(imageUrl).build();
 
         playerCommunityRepository.save(playerCommunity1);
         playerCommunityRepository.save(playerCommunity2);

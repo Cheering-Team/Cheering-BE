@@ -10,7 +10,7 @@ public record PlayerCommunityResponse(
 ) {
     public static List<PlayerCommunityResponse> of(List<PlayerCommunity> playerCommunities) {
         return playerCommunities.stream()
-                .map(com -> new PlayerCommunityResponse(com.getId(), com.getName(), com.getProfileImage()))
+                .map(com -> new PlayerCommunityResponse(com.getId(), com.getName(), com.getImage()))
                 .toList();
     }
 }

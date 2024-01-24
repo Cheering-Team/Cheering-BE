@@ -12,6 +12,7 @@ public record CommunityResponse(
         String category,
         String league,
         String image,
+        Long fanCount,
         List<PlayerCommunityResponse> playerCommunities
 ) {
 
@@ -21,6 +22,7 @@ public record CommunityResponse(
         return builder().id(teamCommunity.getId())
                 .teamName(teamCommunity.getName())
                 .category(teamCommunity.getCategory().getKorean())
+                .fanCount(teamCommunity.getFanCount())
                 .league(teamCommunity.getLeague().getKorean())
                 .image(teamCommunity.getImage())
                 .playerCommunities(playerCommunityResponses)

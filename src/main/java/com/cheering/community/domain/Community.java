@@ -33,9 +33,7 @@ public abstract class Community extends BaseEntity {
     private String name;
 
     private Long fanCount;
-
-    private String profileImage;
-
+    
     private String image;
 
     @Enumerated(value = EnumType.STRING)
