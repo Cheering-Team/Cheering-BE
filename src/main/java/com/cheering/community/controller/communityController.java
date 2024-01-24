@@ -1,6 +1,7 @@
 package com.cheering.community.controller;
 
 import com.cheering.community.dto.response.CommunityResponse;
+import com.cheering.community.dto.response.UserCommunityInfoResponse;
 import com.cheering.community.service.CommunityService;
 import com.cheering.global.constant.SuccessMessage;
 import com.cheering.global.dto.ResponseBodyDto;

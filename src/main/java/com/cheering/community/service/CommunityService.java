@@ -13,6 +13,7 @@ import com.cheering.community.domain.repository.TeamCommunityRepository;
 import com.cheering.community.domain.repository.UserCommunityInfoRepository;
 import com.cheering.community.dto.response.CommunityResponse;
 import com.cheering.community.dto.response.PlayerCommunityResponse;
+import com.cheering.community.dto.response.UserCommunityInfoResponse;
 import com.cheering.global.exception.community.DuplicatedCommunityJoinException;
 import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.constant.ExceptionMessage;
