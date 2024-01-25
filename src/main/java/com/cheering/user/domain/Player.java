@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 public class Player extends BaseEntity {
     @Id
     @GeneratedValue
-    @Column(name = "user_id")
+    @Column(name = "player_id")
     private Long id;
 
     @Column(length = 20)
