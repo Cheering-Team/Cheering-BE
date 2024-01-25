@@ -8,7 +8,6 @@ import com.cheering.community.domain.TeamCommunity;
 import com.cheering.community.domain.UserCommunityInfo;
 import com.cheering.community.domain.repository.CommunityRepository;
 import com.cheering.community.domain.repository.PlayerCommunityRepository;
-import com.cheering.community.domain.repository.PlayerRepository;
 import com.cheering.community.domain.repository.TeamCommunityRepository;
 import com.cheering.community.domain.repository.UserCommunityInfoRepository;
 import com.cheering.community.dto.response.CommunityResponse;
@@ -21,6 +20,7 @@ import com.cheering.global.exception.user.NotFoundUserException;
 import com.cheering.global.util.AwsS3Util;
 import com.cheering.user.domain.Player;
 import com.cheering.user.domain.User;
+import com.cheering.user.domain.repository.PlayerRepository;
 import com.cheering.user.domain.repository.UserRepository;
 import java.io.IOException;
 import java.net.URL;
@@ -37,10 +37,10 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class CommunityService {
     //원래 안쓰는 거
-    private final PlayerCommunityRepository playerCommunityRepository;
-    private final TeamCommunityRepository teamCommunityRepository;
     private final PlayerRepository playerRepository;
 
+    private final PlayerCommunityRepository playerCommunityRepository;
+    private final TeamCommunityRepository teamCommunityRepository;
     private final UserRepository userRepository;
     private final CommunityRepository communityRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
@@ -75,13 +75,16 @@ public class CommunityService {
         User user = userRepository.findById(Long.valueOf(loginUserId)).orElseThrow(() ->
                 new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
 
-        Community community = communityRepository.findById(communityId).orElseThrow(() ->
-                new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
+        Community tempCommunity = communityRepository.findById(communityId)
+                .orElseThrow(() -> new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
-        validateDuplicateJoinCommunity(user, community);
+        validateDuplicateJoinCommunity(user, tempCommunity);
+
+        Community community = downCastingCommunity(tempCommunity);
 
         try {
-            URL url = awsS3Util.uploadFile(file, "user-community-profile");
+            String category = "community/user-community-info-profile";
+            URL url = awsS3Util.uploadFile(file, category);
             UserCommunityInfo communityUser = UserCommunityInfo.builder()
                     .nickname(nickname)
                     .community(community)
@@ -103,6 +106,18 @@ public class CommunityService {
         }
     }
 
+    private Community downCastingCommunity(Community tempCommunity) {
+        if (tempCommunity instanceof PlayerCommunity playerCommunity) {
+            return playerCommunity;
+        }
+
+        if (tempCommunity instanceof TeamCommunity teamCommunity) {
+            return teamCommunity;
+        }
+
+        return null;
+    }
+
     private void validateDuplicateJoinCommunity(User user, Community community) {
         if (userCommunityInfoRepository.existsByUserAndCommunity(user, community)) {
             throw new DuplicatedCommunityJoinException(ExceptionMessage.DUPLICATED_JOIN_COMMUNITY);
@@ -113,16 +128,16 @@ public class CommunityService {
         List<Player> players = teamCommunity.getPlayers();
         List<PlayerCommunity> playerCommunities = getPlayerCommunitiesByPlayers(players);
 
-        List<CommunityResponse> communityRespons = CommunityResponse.of(playerCommunities);
-        return FoundCommunitiesResponse.of(communityRespons, teamCommunity);
+        List<CommunityResponse> communityResponse = CommunityResponse.of(playerCommunities);
+        return FoundCommunitiesResponse.of(communityResponse, teamCommunity);
     }
 
     private FoundCommunitiesResponse generatePlayerCommunityResponse(PlayerCommunity playerCommunity) {
         TeamCommunity teamCommunity = playerCommunity.getPlayer().getTeamCommunity();
         List<PlayerCommunity> playerCommunities = List.of(playerCommunity);
 
-        List<CommunityResponse> communityRespons = CommunityResponse.of(playerCommunities);
-        return FoundCommunitiesResponse.of(communityRespons, teamCommunity);
+        List<CommunityResponse> communityResponse = CommunityResponse.of(playerCommunities);
+        return FoundCommunitiesResponse.of(communityResponse, teamCommunity);
     }
 
     private List<PlayerCommunity> getPlayerCommunitiesByPlayers(List<Player> players) {
@@ -131,8 +146,8 @@ public class CommunityService {
 
     @Transactional
     public void setData() {
-
-        String imageUrl = awsS3Util.getPath("user-community-profile/0d5211b8-6ee0-4d04-a310-ed1df5dcd89e.png");
+        String imageUrl = awsS3Util.getPath(
+                "community/user-community-info-profile/0d5211b8-6ee0-4d04-a310-ed1df5dcd89e.png");
         PlayerCommunity playerCommunity1 = PlayerCommunity.builder().name("이강인")
                 .fanCount(1L).image(imageUrl).build();
         PlayerCommunity playerCommunity2 = PlayerCommunity.builder().name("음바페")
