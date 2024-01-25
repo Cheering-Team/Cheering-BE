@@ -53,4 +53,9 @@ public class Player extends BaseEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "team_community_id")
     private TeamCommunity teamCommunity;
+
+    public void connectTeamCommunity(TeamCommunity community) {
+        this.teamCommunity = community;
+        community.getPlayers().add(this);
+    }
 }

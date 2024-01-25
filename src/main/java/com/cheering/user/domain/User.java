@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public abstract class User extends BaseEntity {
+public class User extends BaseEntity {
     @Id
     @GeneratedValue
     @Column(name = "user_id")
