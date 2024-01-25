@@ -1,5 +1,9 @@
 package com.cheering.user.domain;
 
+import static jakarta.persistence.FetchType.LAZY;
+
+import com.cheering.community.domain.PlayerCommunity;
+import com.cheering.community.domain.TeamCommunity;
 import com.cheering.global.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,6 +11,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +25,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public abstract class User extends BaseEntity {
+public class Player extends BaseEntity {
     @Id
     @GeneratedValue
     @Column(name = "user_id")
@@ -38,4 +45,12 @@ public abstract class User extends BaseEntity {
 
     @Enumerated(value = EnumType.STRING)
     private Role role;
+
+    @OneToOne(fetch = LAZY)
+    @JoinColumn(name = "player_community_id")
+    private PlayerCommunity playerCommunity;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "team_community_id")
+    private TeamCommunity teamCommunity;
 }
