@@ -1,6 +1,5 @@
 package com.cheering.user.domain.repository;
 
-import com.cheering.user.domain.Member;
 import com.cheering.user.domain.User;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
