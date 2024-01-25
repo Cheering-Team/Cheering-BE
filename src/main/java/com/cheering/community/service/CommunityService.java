@@ -2,11 +2,9 @@ package com.cheering.community.service;
 
 import com.cheering.community.constant.Category;
 import com.cheering.community.constant.League;
-import com.cheering.community.domain.Community;
 import com.cheering.community.domain.PlayerCommunity;
 import com.cheering.community.domain.TeamCommunity;
 import com.cheering.community.domain.UserCommunityInfo;
-import com.cheering.community.domain.repository.CommunityRepository;
 import com.cheering.community.domain.repository.PlayerCommunityRepository;
 import com.cheering.community.domain.repository.TeamCommunityRepository;
 import com.cheering.community.domain.repository.UserCommunityInfoRepository;
@@ -36,32 +34,25 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class CommunityService {
-    //원래 안쓰는 거
-    private final PlayerRepository playerRepository;
 
-    private final PlayerCommunityRepository playerCommunityRepository;
-    private final TeamCommunityRepository teamCommunityRepository;
     private final UserRepository userRepository;
-    private final CommunityRepository communityRepository;
+    private final PlayerCommunityRepository playerCommunityRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
-
+    private final TeamCommunityRepository teamCommunityRepository;
+    private final PlayerRepository playerRepository;
     private final AwsS3Util awsS3Util;
 
     public List<FoundCommunitiesResponse> findCommunitiesByName(String name) {
-        List<Community> communities = communityRepository.findByNameContainingIgnoreCase(name);
+        List<PlayerCommunity> playerCommunities = playerCommunityRepository.findByNameContainingIgnoreCase(name);
+        TeamCommunity teamCommunity = teamCommunityRepository.findByNameContainingIgnoreCase(name);
 
-        List<FoundCommunitiesResponse> responseResult = new ArrayList<>();
+        List<FoundCommunitiesResponse> foundCommunitiesResponses = generatePlayerCommunityResponse(playerCommunities);
 
-        for (Community community : communities) {
-            if (community instanceof PlayerCommunity playerCommunity) {
-                FoundCommunitiesResponse foundCommunitiesResponse = generatePlayerCommunityResponse(playerCommunity);
-                responseResult.add(foundCommunitiesResponse);
-            }
-
-            if (community instanceof TeamCommunity teamCommunity) {
-                FoundCommunitiesResponse foundCommunitiesResponse = generateTeamCommunityResponse(teamCommunity);
-                responseResult.add(foundCommunitiesResponse);
-            }
+        List<FoundCommunitiesResponse> responseResult = new ArrayList<>(foundCommunitiesResponses);
+        
+        if (teamCommunity != null) {
+            FoundCommunitiesResponse foundCommunitiesResponse = generateTeamCommunityResponse(teamCommunity);
+            responseResult.add(foundCommunitiesResponse);
         }
 
         return responseResult;
@@ -75,12 +66,10 @@ public class CommunityService {
         User user = userRepository.findById(Long.valueOf(loginUserId)).orElseThrow(() ->
                 new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
 
-        Community tempCommunity = communityRepository.findById(communityId)
+        PlayerCommunity community = playerCommunityRepository.findById(communityId)
                 .orElseThrow(() -> new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
-        validateDuplicateJoinCommunity(user, tempCommunity);
-
-        Community community = downCastingCommunity(tempCommunity);
+        validateDuplicateJoinCommunity(user, community);
 
         try {
             String category = "community/user-community-info-profile";
@@ -106,19 +95,7 @@ public class CommunityService {
         }
     }
 
-    private Community downCastingCommunity(Community tempCommunity) {
-        if (tempCommunity instanceof PlayerCommunity playerCommunity) {
-            return playerCommunity;
-        }
-
-        if (tempCommunity instanceof TeamCommunity teamCommunity) {
-            return teamCommunity;
-        }
-
-        return null;
-    }
-
-    private void validateDuplicateJoinCommunity(User user, Community community) {
+    private void validateDuplicateJoinCommunity(User user, PlayerCommunity community) {
         if (userCommunityInfoRepository.existsByUserAndCommunity(user, community)) {
             throw new DuplicatedCommunityJoinException(ExceptionMessage.DUPLICATED_JOIN_COMMUNITY);
         }
@@ -128,16 +105,24 @@ public class CommunityService {
         List<Player> players = teamCommunity.getPlayers();
         List<PlayerCommunity> playerCommunities = getPlayerCommunitiesByPlayers(players);
 
-        List<CommunityResponse> communityResponse = CommunityResponse.of(playerCommunities);
+        List<CommunityResponse> communityResponse = CommunityResponse.ofList(playerCommunities);
         return FoundCommunitiesResponse.of(communityResponse, teamCommunity);
     }
 
-    private FoundCommunitiesResponse generatePlayerCommunityResponse(PlayerCommunity playerCommunity) {
-        TeamCommunity teamCommunity = playerCommunity.getPlayer().getTeamCommunity();
-        List<PlayerCommunity> playerCommunities = List.of(playerCommunity);
+    private List<FoundCommunitiesResponse> generatePlayerCommunityResponse(List<PlayerCommunity> playerCommunities) {
+        List<FoundCommunitiesResponse> result = new ArrayList<>();
 
-        List<CommunityResponse> communityResponse = CommunityResponse.of(playerCommunities);
-        return FoundCommunitiesResponse.of(communityResponse, teamCommunity);
+        for (PlayerCommunity playerCommunity : playerCommunities) {
+            CommunityResponse communityResponse = CommunityResponse.of(playerCommunity);
+            TeamCommunity teamCommunity = playerCommunity.getPlayer().getTeamCommunity();
+
+            FoundCommunitiesResponse foundCommunitiesResponse = FoundCommunitiesResponse.of(List.of(communityResponse),
+                    teamCommunity);
+
+            result.add(foundCommunitiesResponse);
+        }
+
+        return result;
     }
 
     private List<PlayerCommunity> getPlayerCommunitiesByPlayers(List<Player> players) {

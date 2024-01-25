@@ -9,9 +9,13 @@ public record CommunityResponse(
         String image,
         Long fanCount
 ) {
-    public static List<CommunityResponse> of(List<PlayerCommunity> playerCommunities) {
-        return playerCommunities.stream()
-                .map(com -> new CommunityResponse(com.getId(), com.getName(), com.getImage(), com.getFanCount()))
-                .toList();
+    public static CommunityResponse of(PlayerCommunity community) {
+        return new CommunityResponse(community.getId(), community.getName(), community.getImage(),
+                community.getFanCount());
+    }
+
+    public static List<CommunityResponse> ofList(List<PlayerCommunity> playerCommunities) {
+        return playerCommunities.stream().map(com ->
+                new CommunityResponse(com.getId(), com.getName(), com.getImage(), com.getFanCount())).toList();
     }
 }
