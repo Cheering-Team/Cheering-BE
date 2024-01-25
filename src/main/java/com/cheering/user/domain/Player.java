@@ -2,8 +2,6 @@ package com.cheering.user.domain;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-import com.cheering.community.domain.PlayerCommunity;
-import com.cheering.community.domain.TeamCommunity;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
