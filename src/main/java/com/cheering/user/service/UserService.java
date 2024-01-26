@@ -1,31 +1,42 @@
 package com.cheering.user.service;
 
+import com.cheering.community.domain.PlayerCommunity;
+import com.cheering.community.domain.UserCommunityInfo;
+import com.cheering.community.domain.repository.UserCommunityInfoRepository;
+import com.cheering.community.dto.response.CommunityResponse;
+import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.InvalidEmailFormatException;
 import com.cheering.global.exception.user.MisMatchPasswordException;
 import com.cheering.global.exception.user.NotFoundUserException;
-import com.cheering.user.domain.Member;
 import com.cheering.user.domain.Role;
+import com.cheering.user.domain.User;
 import com.cheering.user.domain.repository.UserRepository;
-import com.cheering.user.dto.SignInRequest;
-import com.cheering.user.dto.SignUpRequest;
+import com.cheering.user.dto.request.SignInRequest;
+import com.cheering.user.dto.request.SignUpRequest;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final static String REGEXP_EMAIL = "^[A-Za-z0-9_.\\-]+@[A-Za-z0-9\\-]+\\.[A-Za-z0-9\\-]*\\.*[A-Za-z0-9\\-]+$";
-    @Autowired
-    UserRepository userRepository;
+
+    private final UserRepository userRepository;
+    private final UserCommunityInfoRepository userCommunityInfoRepository;
 
     @Transactional
-    public Member signUp(SignUpRequest signUpRequest) {
-        Member newMember = Member.builder()
+    public User signUp(SignUpRequest signUpRequest) {
+        User newMember = User.builder()
                 .email(signUpRequest.email())
                 .password(signUpRequest.password())
                 .nickname(signUpRequest.nickName())
@@ -35,15 +46,45 @@ public class UserService {
         return userRepository.save(newMember);
     }
 
-    public Member signIn(SignInRequest signInRequest) {
+    @Transactional(readOnly = true)
+    public User signIn(SignInRequest signInRequest) {
 
         String email = signInRequest.email();
         String password = signInRequest.password();
 
-        Optional<Member> findUser = userRepository.findByEmailAndPassword(email, password);
+        Optional<User> findUser = userRepository.findByEmailAndPassword(email, password);
 
         return findUser.orElseThrow(() ->
                 new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
+    }
+
+    @Transactional(readOnly = true)
+    public List<CommunityResponse> getUserCommunities() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long loginId = Long.valueOf(authentication.getName());
+
+        User user = userRepository.findById(loginId)
+                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
+
+        List<UserCommunityInfo> userCommunities = userCommunityInfoRepository.findByUser(user);
+
+        if (userCommunities.isEmpty()) {
+            throw new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY);
+        }
+
+        List<CommunityResponse> result = new ArrayList<>();
+        for (UserCommunityInfo userCommunityInfo : userCommunities) {
+            PlayerCommunity community = userCommunityInfo.getCommunity();
+
+            CommunityResponse communityResponse = new CommunityResponse(community.getId(),
+                    community.getName(),
+                    community.getImage(),
+                    community.getFanCount());
+
+            result.add(communityResponse);
+        }
+
+        return result;
     }
 
     public void validateEmailFormat(String email) {
