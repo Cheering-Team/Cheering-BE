@@ -1,29 +1,21 @@
 package com.cheering.community.dto.response;
 
-import com.cheering.community.domain.TeamCommunity;
+import com.cheering.community.domain.PlayerCommunity;
 import java.util.List;
-import lombok.Builder;
-
-@Builder
 
 public record CommunityResponse(
         Long id,
-        String teamName,
-        String category,
-        String league,
+        String name,
         String image,
-        List<PlayerCommunityResponse> playerCommunities
+        Long fanCount
 ) {
+    public static CommunityResponse of(PlayerCommunity community) {
+        return new CommunityResponse(community.getId(), community.getName(), community.getImage(),
+                community.getFanCount());
+    }
 
-    public static CommunityResponse of(List<PlayerCommunityResponse> playerCommunityResponses,
-                                       TeamCommunity teamCommunity) {
-
-        return builder().id(teamCommunity.getId())
-                .teamName(teamCommunity.getName())
-                .category(teamCommunity.getCategory().getKorean())
-                .league(teamCommunity.getLeague().getKorean())
-                .image(teamCommunity.getImage())
-                .playerCommunities(playerCommunityResponses)
-                .build();
+    public static List<CommunityResponse> ofList(List<PlayerCommunity> playerCommunities) {
+        return playerCommunities.stream().map(com ->
+                new CommunityResponse(com.getId(), com.getName(), com.getImage(), com.getFanCount())).toList();
     }
 }

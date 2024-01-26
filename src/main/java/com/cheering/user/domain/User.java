@@ -2,26 +2,23 @@ package com.cheering.user.domain;
 
 import com.cheering.global.BaseEntity;
 import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Entity
-@SuperBuilder
-@DiscriminatorColumn
-@Inheritance(strategy = InheritanceType.JOINED)
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public abstract class User extends BaseEntity {
+public class User extends BaseEntity {
     @Id
     @GeneratedValue
     @Column(name = "user_id")
@@ -40,5 +37,5 @@ public abstract class User extends BaseEntity {
     private String email;
 
     @Enumerated(value = EnumType.STRING)
-    Role role;
+    private Role role;
 }

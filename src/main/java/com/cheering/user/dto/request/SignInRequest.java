@@ -1,4 +1,4 @@
-package com.cheering.user.dto;
+package com.cheering.user.dto.request;
 
 public record SignInRequest(
         String email,

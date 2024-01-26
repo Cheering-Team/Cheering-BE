@@ -7,16 +7,16 @@ import static com.cheering.global.constant.SuccessMessage.VALIDATE_EMAIL_SUCCESS
 import com.cheering.auth.jwt.JWToken;
 import com.cheering.auth.jwt.JwtGenerator;
 import com.cheering.auth.redis.RedisRepository;
+import com.cheering.community.dto.response.CommunityResponse;
 import com.cheering.global.constant.SuccessMessage;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.global.exception.constant.ExceptionMessage;
-import com.cheering.user.domain.Member;
-import com.cheering.user.domain.Role;
-import com.cheering.user.dto.SignInRequest;
-import com.cheering.user.dto.SignInResponse;
-import com.cheering.user.dto.SignUpRequest;
-import com.cheering.user.dto.SignUpResponse;
+import com.cheering.user.domain.User;
+import com.cheering.user.dto.request.SignInRequest;
+import com.cheering.user.dto.request.SignUpRequest;
+import com.cheering.user.dto.response.SignInResponse;
+import com.cheering.user.dto.response.SignUpResponse;
 import com.cheering.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -47,12 +47,12 @@ public class UserController {
         userService.validateDuplicatedEmail(signUpRequest.email());
         userService.validateConfirmPassword(signUpRequest.password(), signUpRequest.passwordConfirm());
 
-        Member joinUser = userService.signUp(signUpRequest);
+        User joinUser = userService.signUp(signUpRequest);
 
         //jwt 토큰 생성
         JWToken jwToken = jwtGenerator.generateToken(
                 String.valueOf(joinUser.getId()),
-                List.of(new SimpleGrantedAuthority(Role.ROLE_USER.name())));
+                List.of(new SimpleGrantedAuthority(joinUser.getRole().toString())));
 
         SignUpResponse signUpResponse = new SignUpResponse(joinUser.getId());
 
@@ -62,11 +62,11 @@ public class UserController {
     @PostMapping("/signin")
     public ResponseEntity<ResponseBodyDto<?>> signIn(@RequestBody SignInRequest signInRequest) {
 
-        Member loginUser = userService.signIn(signInRequest);
+        User loginUser = userService.signIn(signInRequest);
         SignInResponse signInResponse = new SignInResponse(loginUser.getId());
         JWToken jwToken = jwtGenerator.generateToken(
                 String.valueOf(loginUser.getId()),
-                List.of(new SimpleGrantedAuthority(Role.ROLE_USER.name())));
+                List.of(new SimpleGrantedAuthority(loginUser.getRole().toString())));
 
         return ResponseGenerator.signSuccess(jwToken, SIGN_IN_SUCCESS, signInResponse);
     }
@@ -91,5 +91,11 @@ public class UserController {
             return ResponseGenerator.fail(ExceptionMessage.FAIL_SIGN_OUT, null);
         }
         return ResponseGenerator.success(SuccessMessage.SIGN_OUT_SUCCESS, null);
+    }
+
+    @GetMapping("/users/communities")
+    public ResponseEntity<ResponseBodyDto<?>> getUserCommunities() {
+        List<CommunityResponse> userCommunities = userService.getUserCommunities();
+        return ResponseGenerator.success(SuccessMessage.SEARCH_COMMUNITY_SUCCESS, userCommunities);
     }
 }

@@ -1,4 +1,4 @@
-package com.cheering.community.domain.repository;
+package com.cheering.user.domain.repository;
 
 import com.cheering.user.domain.Player;
 import org.springframework.data.jpa.repository.JpaRepository;

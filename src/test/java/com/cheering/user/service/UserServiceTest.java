@@ -6,11 +6,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.NotFoundUserException;
-import com.cheering.user.domain.Member;
 import com.cheering.user.domain.User;
 import com.cheering.user.domain.repository.UserRepository;
-import com.cheering.user.dto.SignInRequest;
-import com.cheering.user.dto.SignUpRequest;
+import com.cheering.user.dto.request.SignInRequest;
+import com.cheering.user.dto.request.SignUpRequest;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +36,7 @@ class UserServiceTest {
         SignUpRequest signUpUser = new SignUpRequest("cheering@naver.com", "123456789", "123456789", "nickName");
 
         //when
-        Member signup = userService.signUp(signUpUser);
+        User signup = userService.signUp(signUpUser);
         Optional<User> findUser = userRepository.findById(signup.getId());
 
         //then
@@ -52,11 +51,11 @@ class UserServiceTest {
     void 로그인_성공_테스트() {
         //given
         SignUpRequest signUpUserDto = new SignUpRequest("cheering@naver.com", "123456789", "123456789", "nickName");
-        Member signUpUser = userService.signUp(signUpUserDto);
+        User signUpUser = userService.signUp(signUpUserDto);
         SignInRequest signInRequest = new SignInRequest("cheering@naver.com", "123456789");
 
         //when
-        Member loginUser = userService.signIn(signInRequest);
+        User loginUser = userService.signIn(signInRequest);
 
         //then
         assertThat(signUpUser.getId()).isEqualTo(loginUser.getId());
@@ -67,13 +66,13 @@ class UserServiceTest {
     void 로그인_실패_테스트() {
         //given
         SignUpRequest signUpUserDto = new SignUpRequest("cheering@naver.com", "123456789", "123456789", "nickName");
-        Member signUpUser = userService.signUp(signUpUserDto);
+        User signUpUser = userService.signUp(signUpUserDto);
         SignInRequest signInRequest = new SignInRequest("cheering@naver.com", "wrongPassword");
 
         //when
         //then
         assertThatThrownBy(() -> {
-            Member loginUser = userService.signIn(signInRequest);
+            User loginUser = userService.signIn(signInRequest);
         }).isInstanceOf(NotFoundUserException.class);
 
 
