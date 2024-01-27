@@ -38,7 +38,8 @@ public class SecurityConfig {
                         // 이 밖에 모든 요청에 대해서 인증을 필요로 한다는 설정
                         .requestMatchers("/api/signup").permitAll()
                         .requestMatchers("/api/signin").permitAll()
-                        .requestMatchers("/api/set-data").permitAll())
+                        .requestMatchers("/api/set-data").permitAll()
+                        .requestMatchers("/api/email").permitAll())
 //                        .anyRequest().permitAll())
                 .exceptionHandling(authenticationEntryPoint -> authenticationEntryPoint
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
