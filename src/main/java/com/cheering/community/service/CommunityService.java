@@ -153,18 +153,30 @@ public class CommunityService {
     public void setData() {
         String imageUrl = awsS3Util.getPath(
                 "community/user-community-info-profile/0d5211b8-6ee0-4d04-a310-ed1df5dcd89e.png");
-        Community community1 = Community.builder().name("이강인")
+        Community community1 = Community.builder()
+                .cType(CommunityType.PLAYER_COMMUNITY)
+                .name("이강인")
                 .fanCount(1L).image(imageUrl).build();
-        Community community2 = Community.builder().name("음바페")
+        Community community2 = Community.builder()
+                .cType(CommunityType.PLAYER_COMMUNITY)
+                .name("음바페")
                 .fanCount(2L).image(imageUrl).build();
-        Community community3 = Community.builder().name("아센시오")
+        Community community3 = Community.builder()
+                .cType(CommunityType.PLAYER_COMMUNITY)
+                .name("아센시오")
                 .fanCount(3L).image(imageUrl).build();
 
         Community community4 = Community.builder().name("손흥민")
-                .fanCount(4L).image(imageUrl).build();
-        Community community5 = Community.builder().name("히샬리송")
+                .fanCount(4L).image(imageUrl)
+                .cType(CommunityType.PLAYER_COMMUNITY)
+                .build();
+        Community community5 = Community.builder()
+                .cType(CommunityType.PLAYER_COMMUNITY)
+                .name("히샬리송")
                 .fanCount(5L).image(imageUrl).build();
-        Community community6 = Community.builder().name("메디슨")
+        Community community6 = Community.builder()
+                .cType(CommunityType.PLAYER_COMMUNITY)
+                .name("메디슨")
                 .fanCount(6L).image(imageUrl).build();
 
         communityRepository.save(community1);
@@ -179,6 +191,8 @@ public class CommunityService {
                 .category(Category.SOCCER)
                 .league(League.FRENCH_LEAGUE1)
                 .image(imageUrl)
+                .cType(CommunityType.TEAM_COMMUNITY)
+                .fanCount(3000L)
                 .build();
 
         Community tottenhamCommunity = Community.builder()
@@ -186,6 +200,8 @@ public class CommunityService {
                 .category(Category.SOCCER)
                 .league(League.EPL)
                 .image(imageUrl)
+                .cType(CommunityType.TEAM_COMMUNITY)
+                .fanCount(4000L)
                 .build();
 
         communityRepository.save(psgCommunity);
