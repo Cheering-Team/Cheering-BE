@@ -9,7 +9,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -32,6 +31,6 @@ public class Team {
     private Community community;
 
     @OneToMany(mappedBy = "team")
-    private List<Player> players = new ArrayList<>();
+    private List<Player> players;
 
 }
