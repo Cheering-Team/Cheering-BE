@@ -2,8 +2,7 @@ package com.cheering.community.service;
 
 import com.cheering.community.constant.Category;
 import com.cheering.community.constant.League;
-import com.cheering.community.domain.PlayerCommunity;
-import com.cheering.community.domain.TeamCommunity;
+import com.cheering.community.domain.Community;
 import com.cheering.community.domain.UserCommunityInfo;
 import com.cheering.community.domain.repository.PlayerCommunityRepository;
 import com.cheering.community.domain.repository.TeamCommunityRepository;
@@ -43,13 +42,13 @@ public class CommunityService {
     private final AwsS3Util awsS3Util;
 
     public List<FoundCommunitiesResponse> findCommunitiesByName(String name) {
-        List<PlayerCommunity> playerCommunities = playerCommunityRepository.findByNameContainingIgnoreCase(name);
+        List<Community> playerCommunities = playerCommunityRepository.findByNameContainingIgnoreCase(name);
         TeamCommunity teamCommunity = teamCommunityRepository.findByNameContainingIgnoreCase(name);
 
         List<FoundCommunitiesResponse> foundCommunitiesResponses = generatePlayerCommunityResponse(playerCommunities);
 
         List<FoundCommunitiesResponse> responseResult = new ArrayList<>(foundCommunitiesResponses);
-        
+
         if (teamCommunity != null) {
             FoundCommunitiesResponse foundCommunitiesResponse = generateTeamCommunityResponse(teamCommunity);
             responseResult.add(foundCommunitiesResponse);
@@ -66,7 +65,7 @@ public class CommunityService {
         User user = userRepository.findById(Long.valueOf(loginUserId)).orElseThrow(() ->
                 new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
 
-        PlayerCommunity community = playerCommunityRepository.findById(communityId)
+        Community community = playerCommunityRepository.findById(communityId)
                 .orElseThrow(() -> new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
         validateDuplicateJoinCommunity(user, community);
@@ -95,7 +94,7 @@ public class CommunityService {
         }
     }
 
-    private void validateDuplicateJoinCommunity(User user, PlayerCommunity community) {
+    private void validateDuplicateJoinCommunity(User user, Community community) {
         if (userCommunityInfoRepository.existsByUserAndCommunity(user, community)) {
             throw new DuplicatedCommunityJoinException(ExceptionMessage.DUPLICATED_JOIN_COMMUNITY);
         }
@@ -103,18 +102,18 @@ public class CommunityService {
 
     private FoundCommunitiesResponse generateTeamCommunityResponse(TeamCommunity teamCommunity) {
         List<Player> players = teamCommunity.getPlayers();
-        List<PlayerCommunity> playerCommunities = getPlayerCommunitiesByPlayers(players);
+        List<Community> playerCommunities = getPlayerCommunitiesByPlayers(players);
 
         List<CommunityResponse> communityResponse = CommunityResponse.ofList(playerCommunities);
         return FoundCommunitiesResponse.of(communityResponse, teamCommunity);
     }
 
-    private List<FoundCommunitiesResponse> generatePlayerCommunityResponse(List<PlayerCommunity> playerCommunities) {
+    private List<FoundCommunitiesResponse> generatePlayerCommunityResponse(List<Community> playerCommunities) {
         List<FoundCommunitiesResponse> result = new ArrayList<>();
 
-        for (PlayerCommunity playerCommunity : playerCommunities) {
-            CommunityResponse communityResponse = CommunityResponse.of(playerCommunity);
-            TeamCommunity teamCommunity = playerCommunity.getPlayer().getTeamCommunity();
+        for (Community community : playerCommunities) {
+            CommunityResponse communityResponse = CommunityResponse.of(community);
+            TeamCommunity teamCommunity = community.getPlayer().getTeamCommunity();
 
             FoundCommunitiesResponse foundCommunitiesResponse = FoundCommunitiesResponse.of(List.of(communityResponse),
                     teamCommunity);
@@ -125,34 +124,34 @@ public class CommunityService {
         return result;
     }
 
-    private List<PlayerCommunity> getPlayerCommunitiesByPlayers(List<Player> players) {
-        return players.stream().map(Player::getPlayerCommunity).toList();
+    private List<Community> getPlayerCommunitiesByPlayers(List<Player> players) {
+        return players.stream().map(Player::getCommunity).toList();
     }
 
     @Transactional
     public void setData() {
         String imageUrl = awsS3Util.getPath(
                 "community/user-community-info-profile/0d5211b8-6ee0-4d04-a310-ed1df5dcd89e.png");
-        PlayerCommunity playerCommunity1 = PlayerCommunity.builder().name("이강인")
+        Community community1 = Community.builder().name("이강인")
                 .fanCount(1L).image(imageUrl).build();
-        PlayerCommunity playerCommunity2 = PlayerCommunity.builder().name("음바페")
+        Community community2 = Community.builder().name("음바페")
                 .fanCount(2L).image(imageUrl).build();
-        PlayerCommunity playerCommunity3 = PlayerCommunity.builder().name("아센시오")
+        Community community3 = Community.builder().name("아센시오")
                 .fanCount(3L).image(imageUrl).build();
 
-        PlayerCommunity playerCommunity4 = PlayerCommunity.builder().name("손흥민")
+        Community community4 = Community.builder().name("손흥민")
                 .fanCount(4L).image(imageUrl).build();
-        PlayerCommunity playerCommunity5 = PlayerCommunity.builder().name("히샬리송")
+        Community community5 = Community.builder().name("히샬리송")
                 .fanCount(5L).image(imageUrl).build();
-        PlayerCommunity playerCommunity6 = PlayerCommunity.builder().name("메디슨")
+        Community community6 = Community.builder().name("메디슨")
                 .fanCount(6L).image(imageUrl).build();
 
-        playerCommunityRepository.save(playerCommunity1);
-        playerCommunityRepository.save(playerCommunity2);
-        playerCommunityRepository.save(playerCommunity3);
-        playerCommunityRepository.save(playerCommunity4);
-        playerCommunityRepository.save(playerCommunity5);
-        playerCommunityRepository.save(playerCommunity6);
+        playerCommunityRepository.save(community1);
+        playerCommunityRepository.save(community2);
+        playerCommunityRepository.save(community3);
+        playerCommunityRepository.save(community4);
+        playerCommunityRepository.save(community5);
+        playerCommunityRepository.save(community6);
 
         TeamCommunity psgCommunity = TeamCommunity.builder()
                 .name("파리 생제르맹")
@@ -173,9 +172,9 @@ public class CommunityService {
         teamCommunityRepository.save(psgCommunity);
         teamCommunityRepository.save(tottenhamCommunity);
 
-        Player playerA1 = Player.builder().playerCommunity(playerCommunity1).name("이강인").build();
-        Player playerA2 = Player.builder().playerCommunity(playerCommunity2).name("음바페").build();
-        Player playerA3 = Player.builder().playerCommunity(playerCommunity3).name("아센시오").build();
+        Player playerA1 = Player.builder().community(community1).name("이강인").build();
+        Player playerA2 = Player.builder().community(community2).name("음바페").build();
+        Player playerA3 = Player.builder().community(community3).name("아센시오").build();
 
         playerA1.connectTeamCommunity(psgCommunity);
         playerA2.connectTeamCommunity(psgCommunity);
@@ -185,9 +184,9 @@ public class CommunityService {
         playerRepository.save(playerA2);
         playerRepository.save(playerA3);
 
-        Player playerB1 = Player.builder().playerCommunity(playerCommunity4).name("손흥민").build();
-        Player playerB2 = Player.builder().playerCommunity(playerCommunity5).name("히샬리송").build();
-        Player playerB3 = Player.builder().playerCommunity(playerCommunity6).name("메디슨").build();
+        Player playerB1 = Player.builder().community(community4).name("손흥민").build();
+        Player playerB2 = Player.builder().community(community5).name("히샬리송").build();
+        Player playerB3 = Player.builder().community(community6).name("메디슨").build();
 
         playerB1.connectTeamCommunity(tottenhamCommunity);
         playerB2.connectTeamCommunity(tottenhamCommunity);

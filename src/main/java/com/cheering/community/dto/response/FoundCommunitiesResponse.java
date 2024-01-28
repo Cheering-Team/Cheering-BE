@@ -1,6 +1,5 @@
 package com.cheering.community.dto.response;
 
-import com.cheering.community.domain.TeamCommunity;
 import java.util.List;
 import lombok.Builder;
 

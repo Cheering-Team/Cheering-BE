@@ -27,7 +27,7 @@ import lombok.experimental.SuperBuilder;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn
 @Getter
-public class PlayerCommunity extends BaseEntity {
+public class Community extends BaseEntity {
     @Id
     @GeneratedValue
     @Column(name = "player_community_id")
