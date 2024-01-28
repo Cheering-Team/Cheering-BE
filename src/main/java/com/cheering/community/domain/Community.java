@@ -3,6 +3,7 @@ package com.cheering.community.domain;
 import static jakarta.persistence.FetchType.LAZY;
 
 import com.cheering.community.constant.Category;
+import com.cheering.community.constant.CommunityType;
 import com.cheering.community.constant.League;
 import com.cheering.global.BaseEntity;
 import com.cheering.user.domain.Player;
@@ -47,4 +48,7 @@ public class Community extends BaseEntity {
 
     @OneToOne(fetch = LAZY, mappedBy = "playerCommunity")
     private Player player;
+
+    @Enumerated(EnumType.STRING)
+    private CommunityType cType;
 }
