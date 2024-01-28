@@ -1,5 +1,6 @@
 package com.cheering.community.dto.response;
 
+import com.cheering.community.constant.BooleanType;
 import com.cheering.community.domain.Community;
 import java.util.List;
 import lombok.Builder;
@@ -13,11 +14,12 @@ public record FoundCommunitiesResponse(
         String league,
         String image,
         Long fanCount,
+        BooleanType isJoin,
         List<CommunityResponse> playerCommunities
 ) {
 
     public static FoundCommunitiesResponse of(List<CommunityResponse> communityResponse,
-                                              Community teamCommunity) {
+                                              Community teamCommunity, BooleanType isJoin) {
 
         return builder().id(teamCommunity.getId())
                 .teamName(teamCommunity.getName())
@@ -26,6 +28,7 @@ public record FoundCommunitiesResponse(
                 .league(teamCommunity.getLeague().getKorean())
                 .image(teamCommunity.getImage())
                 .playerCommunities(communityResponse)
+                .isJoin(isJoin)
                 .build();
     }
 }

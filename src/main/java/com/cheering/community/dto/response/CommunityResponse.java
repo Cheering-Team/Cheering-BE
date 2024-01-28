@@ -2,6 +2,7 @@ package com.cheering.community.dto.response;
 
 import com.cheering.community.constant.BooleanType;
 import com.cheering.community.domain.Community;
+import java.util.ArrayList;
 import java.util.List;
 
 public record CommunityResponse(
@@ -16,8 +17,27 @@ public record CommunityResponse(
                 community.getFanCount(), isJoin);
     }
 
-    public static List<CommunityResponse> ofList(List<Community> playerCommunities, BooleanType isJoin) {
-        return playerCommunities.stream().map(com ->
-                new CommunityResponse(com.getId(), com.getName(), com.getImage(), com.getFanCount(), isJoin)).toList();
+    public static List<CommunityResponse> ofList(List<Community> playerCommunities, List<Long> joinCommunityIds) {
+
+        List<CommunityResponse> result = new ArrayList<>();
+
+        for (Community community : playerCommunities) {
+            if (joinCommunityIds.contains(community.getId())) {
+                CommunityResponse communityResponse = new CommunityResponse(community.getId(), community.getName(),
+                        community.getImage(),
+                        community.getFanCount(),
+                        BooleanType.TRUE);
+
+                result.add(communityResponse);
+            } else {
+                CommunityResponse communityResponse = new CommunityResponse(community.getId(), community.getName(),
+                        community.getImage(),
+                        community.getFanCount(),
+                        BooleanType.FALSE);
+
+                result.add(communityResponse);
+            }
+        }
+        return result;
     }
 }

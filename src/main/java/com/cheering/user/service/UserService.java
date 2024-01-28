@@ -1,5 +1,6 @@
 package com.cheering.user.service;
 
+import com.cheering.community.constant.BooleanType;
 import com.cheering.community.domain.Community;
 import com.cheering.community.domain.UserCommunityInfo;
 import com.cheering.community.domain.repository.UserCommunityInfoRepository;
@@ -79,7 +80,8 @@ public class UserService {
             CommunityResponse communityResponse = new CommunityResponse(community.getId(),
                     community.getName(),
                     community.getImage(),
-                    community.getFanCount());
+                    community.getFanCount(),
+                    BooleanType.TRUE);
 
             result.add(communityResponse);
         }
