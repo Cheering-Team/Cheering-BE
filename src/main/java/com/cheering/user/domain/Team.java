@@ -1,12 +1,16 @@
 package com.cheering.user.domain;
 
-import com.cheering.global.BaseEntity;
+import static jakarta.persistence.FetchType.LAZY;
+
+import com.cheering.community.domain.Community;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,24 +22,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class User extends BaseEntity {
+public class Team {
     @Id
     @GeneratedValue
-    @Column(name = "user_id")
+    @Column(name = "team_id")
     private Long id;
 
-    @Column(length = 20)
-    private String name;
+    @OneToOne(fetch = LAZY)
+    @JoinColumn(name = "team_community_id")
+    private Community teamCommunity;
 
-    @Column(length = 20)
-    private String nickname;
-
-    @Column(length = 20)
-    private String password;
-
-    @Column(length = 25)
-    private String email;
-    
-    @Enumerated(value = EnumType.STRING)
-    private Role role;
+    @OneToMany(mappedBy = "team")
+    private List<Player> players;
 }

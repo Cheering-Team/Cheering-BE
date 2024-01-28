@@ -3,34 +3,33 @@ package com.cheering.community.domain;
 import static jakarta.persistence.FetchType.LAZY;
 
 import com.cheering.community.constant.Category;
+import com.cheering.community.constant.CommunityType;
 import com.cheering.community.constant.League;
 import com.cheering.global.BaseEntity;
 import com.cheering.user.domain.Player;
+import com.cheering.user.domain.Team;
 import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Entity
-@SuperBuilder
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class PlayerCommunity extends BaseEntity {
+public class Community extends BaseEntity {
     @Id
     @GeneratedValue
-    @Column(name = "player_community_id")
+    @Column(name = "community_id")
     private Long id;
 
     private String name;
@@ -47,4 +46,11 @@ public class PlayerCommunity extends BaseEntity {
 
     @OneToOne(fetch = LAZY, mappedBy = "playerCommunity")
     private Player player;
+
+    @Enumerated(EnumType.STRING)
+    private CommunityType cType;
+
+    @OneToOne(fetch = LAZY, mappedBy = "teamCommunity")
+    private Team team;
+
 }

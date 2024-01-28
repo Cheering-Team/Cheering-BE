@@ -1,6 +1,6 @@
 package com.cheering.community.domain.repository;
 
-import com.cheering.community.domain.PlayerCommunity;
+import com.cheering.community.domain.Community;
 import com.cheering.community.domain.UserCommunityInfo;
 import com.cheering.user.domain.User;
 import java.util.List;
@@ -10,6 +10,6 @@ public interface UserCommunityInfoRepository extends JpaRepository<UserCommunity
 
     List<UserCommunityInfo> findByUser(User user);
 
-    boolean existsByUserAndCommunity(User user, PlayerCommunity community);
+    boolean existsByUserAndCommunity(User user, Community community);
 
 }

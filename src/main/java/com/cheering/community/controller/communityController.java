@@ -45,7 +45,6 @@ public class communityController {
     @GetMapping("/set-data")
     @Transactional
     public String setData() {
-
         communityService.setData();
         return null;
     }

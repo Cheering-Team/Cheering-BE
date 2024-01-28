@@ -1,6 +1,7 @@
 package com.cheering.user.service;
 
-import com.cheering.community.domain.PlayerCommunity;
+import com.cheering.community.constant.BooleanType;
+import com.cheering.community.domain.Community;
 import com.cheering.community.domain.UserCommunityInfo;
 import com.cheering.community.domain.repository.UserCommunityInfoRepository;
 import com.cheering.community.dto.response.CommunityResponse;
@@ -74,12 +75,13 @@ public class UserService {
 
         List<CommunityResponse> result = new ArrayList<>();
         for (UserCommunityInfo userCommunityInfo : userCommunities) {
-            PlayerCommunity community = userCommunityInfo.getCommunity();
+            Community community = userCommunityInfo.getCommunity();
 
             CommunityResponse communityResponse = new CommunityResponse(community.getId(),
                     community.getName(),
                     community.getImage(),
-                    community.getFanCount());
+                    community.getFanCount(),
+                    BooleanType.TRUE);
 
             result.add(communityResponse);
         }
