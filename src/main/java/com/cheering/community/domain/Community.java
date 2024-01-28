@@ -7,6 +7,7 @@ import com.cheering.community.constant.CommunityType;
 import com.cheering.community.constant.League;
 import com.cheering.global.BaseEntity;
 import com.cheering.user.domain.Player;
+import com.cheering.user.domain.Team;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
@@ -51,4 +52,7 @@ public class Community extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private CommunityType cType;
+
+    @OneToOne(fetch = LAZY, mappedBy = "community")
+    private Team team;
 }
