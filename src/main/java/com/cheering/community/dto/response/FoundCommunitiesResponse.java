@@ -1,5 +1,6 @@
 package com.cheering.community.dto.response;
 
+import com.cheering.community.domain.Community;
 import java.util.List;
 import lombok.Builder;
 
@@ -16,7 +17,7 @@ public record FoundCommunitiesResponse(
 ) {
 
     public static FoundCommunitiesResponse of(List<CommunityResponse> communityResponse,
-                                              TeamCommunity teamCommunity) {
+                                              Community teamCommunity) {
 
         return builder().id(teamCommunity.getId())
                 .teamName(teamCommunity.getName())

@@ -53,7 +53,7 @@ public class Player extends BaseEntity {
     @JoinColumn(name = "team_id")
     private Team team;
 
-    public void connectTeamCommunity(Team team) {
+    public void connectTeam(Team team) {
         this.team = team;
         team.getPlayers().add(this);
     }

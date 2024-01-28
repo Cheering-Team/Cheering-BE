@@ -47,7 +47,7 @@ public class Community extends BaseEntity {
     @Enumerated(value = EnumType.STRING)
     private League league;
 
-    @OneToOne(fetch = LAZY, mappedBy = "playerCommunity")
+    @OneToOne(fetch = LAZY, mappedBy = "community")
     private Player player;
 
     @Enumerated(EnumType.STRING)
