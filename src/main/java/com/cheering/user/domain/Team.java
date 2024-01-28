@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import java.util.List;
@@ -28,9 +29,9 @@ public class Team {
     private Long id;
 
     @OneToOne(fetch = LAZY)
-    private Community community;
+    @JoinColumn(name = "team_community_id")
+    private Community teamCommunity;
 
     @OneToMany(mappedBy = "team")
     private List<Player> players;
-
 }

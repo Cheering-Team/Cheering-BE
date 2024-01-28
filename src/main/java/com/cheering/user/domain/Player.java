@@ -46,8 +46,8 @@ public class Player extends BaseEntity {
     private Role role;
 
     @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "community_id")
-    private Community community;
+    @JoinColumn(name = "player_community_id")
+    private Community playerCommunity;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "team_id")
