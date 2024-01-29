@@ -10,7 +10,6 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Component
@@ -57,7 +57,7 @@ public class JwtProvider {
     }
 
     // 토큰 정보를 검증하는 메서드
-    public boolean validateToken(String token, HttpServletRequest request, HttpServletResponse response) {
+    public boolean validateToken(String token, HttpServletRequest request) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(key)
@@ -70,17 +70,10 @@ public class JwtProvider {
         } catch (ExpiredJwtException e) {
             log.info("Expired JWT Token", e);
             String accessToken = request.getHeader("Access-Token");
-            String refreshToken = request.getHeader("Refresh-Token");
 
             //엑세스 토큰이 만료된 경우
-            if (accessToken != null && refreshToken == null) {
+            if (accessToken != null) {
                 request.setAttribute("exception", "expired Access-Token");
-            }
-
-            //리프레시 토큰이 만료된 경우
-            if (refreshToken != null && accessToken == null) {
-                // 재 로그인 필요
-                request.setAttribute("exception", "expired Refresh-Token");
             }
         } catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT Token", e);
@@ -107,5 +100,22 @@ public class JwtProvider {
 
     public String reIssueAccessToken(String refreshToken) {
         return jwtGenerator.reIssueAccessToken(refreshToken);
+    }
+
+    // Request Header에서 토큰 정보 추출
+    public String resolveAccessToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Access-Token");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(JwtConstant.GRANT_TYPE)) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+
+    public String resolveRefreshToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Refresh-Token");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(JwtConstant.GRANT_TYPE)) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

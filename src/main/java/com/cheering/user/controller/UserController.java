@@ -6,6 +6,7 @@ import static com.cheering.global.constant.SuccessMessage.VALIDATE_EMAIL_SUCCESS
 
 import com.cheering.auth.jwt.JWToken;
 import com.cheering.auth.jwt.JwtGenerator;
+import com.cheering.auth.jwt.JwtProvider;
 import com.cheering.auth.redis.RedisRepository;
 import com.cheering.community.dto.response.CommunityResponse;
 import com.cheering.global.constant.SuccessMessage;
@@ -19,10 +20,12 @@ import com.cheering.user.dto.response.SignInResponse;
 import com.cheering.user.dto.response.SignUpResponse;
 import com.cheering.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,10 +38,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 @RestController
+@Slf4j
 public class UserController {
 
     private final UserService userService;
     private final JwtGenerator jwtGenerator;
+    private final JwtProvider jwtTokenProvider;
     private final RedisRepository redisRepository;
 
     @PostMapping("/signup")
@@ -97,5 +102,18 @@ public class UserController {
     public ResponseEntity<ResponseBodyDto<?>> getUserCommunities() {
         List<CommunityResponse> userCommunities = userService.getUserCommunities();
         return ResponseGenerator.success(SuccessMessage.SEARCH_COMMUNITY_SUCCESS, userCommunities);
+    }
+
+    @GetMapping("refresh")
+    public ResponseEntity<ResponseBodyDto<?>> reIssueAccessToken(HttpServletRequest request,
+                                                                 HttpServletResponse response) {
+        String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
+        String newAccessToken = null;
+        if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken, request)) {
+            log.info("Authenticated User");
+            newAccessToken = jwtTokenProvider.reIssueAccessToken(refreshToken);
+        }
+        response.setHeader("Access-Token", newAccessToken);
+        return ResponseGenerator.success(SuccessMessage.REISSUE_ACCESS_TOKEN_SUCCESS, null);
     }
 }
