@@ -12,6 +12,7 @@ public enum SuccessMessage {
     VALIDATE_EMAIL_SUCCESS(HttpStatus.OK, "not duplicated"),
     SIGN_IN_SUCCESS(HttpStatus.OK, "login success"),
     SIGN_OUT_SUCCESS(HttpStatus.OK, "logout success"),
+    REISSUE_ACCESS_TOKEN_SUCCESS(HttpStatus.OK, "reIssue Access-Token"),
 
     //community
     SEARCH_COMMUNITY_SUCCESS(HttpStatus.OK, "search complete"),
