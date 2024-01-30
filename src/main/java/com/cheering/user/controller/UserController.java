@@ -5,6 +5,7 @@ import static com.cheering.global.constant.SuccessMessage.SIGN_UP_SUCCESS;
 import static com.cheering.global.constant.SuccessMessage.VALIDATE_EMAIL_SUCCESS;
 
 import com.cheering.auth.jwt.JWToken;
+import com.cheering.auth.jwt.JwtConstant;
 import com.cheering.auth.jwt.JwtGenerator;
 import com.cheering.auth.jwt.JwtProvider;
 import com.cheering.auth.redis.RedisRepository;
@@ -116,7 +117,7 @@ public class UserController {
                 log.info("Authenticated User");
                 newAccessToken = jwtTokenProvider.reIssueAccessToken(refreshToken);
 
-                response.setHeader("Access-Token", newAccessToken);
+                response.setHeader("Access-Token", JwtConstant.GRANT_TYPE + " " + newAccessToken);
                 return ResponseGenerator.success(SuccessMessage.REISSUE_ACCESS_TOKEN_SUCCESS, null);
             }
         } catch (ExpiredJwtException e) {
