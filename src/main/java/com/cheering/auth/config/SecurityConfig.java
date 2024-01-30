@@ -39,7 +39,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/signup").permitAll()
                         .requestMatchers("/api/signin").permitAll()
                         .requestMatchers("/api/set-data").permitAll()
-                        .requestMatchers("/api/email").permitAll())
+                        .requestMatchers("/api/email").permitAll()
+                        .requestMatchers("/api/refresh").permitAll())
 //                        .anyRequest().permitAll())
                 .exceptionHandling(authenticationEntryPoint -> authenticationEntryPoint
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
