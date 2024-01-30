@@ -33,7 +33,7 @@ public class JwtGenerator {
         this.redisRepository = redisRepository;
     }
 
-    // Member 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
+    // User 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
     public JWToken generateToken(String id, Collection<? extends GrantedAuthority> roles) {
         //권한 문자열 변환
         List<String> authorities = roles.stream()

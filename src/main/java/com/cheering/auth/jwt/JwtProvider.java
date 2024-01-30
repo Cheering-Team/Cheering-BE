@@ -57,7 +57,7 @@ public class JwtProvider {
     }
 
     // 토큰 정보를 검증하는 메서드
-    public boolean validateToken(String token, HttpServletRequest request) {
+    public boolean validateToken(String token, HttpServletRequest request) throws ExpiredJwtException {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(key)
@@ -67,14 +67,6 @@ public class JwtProvider {
             return true;
         } catch (SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT Token", e);
-        } catch (ExpiredJwtException e) {
-            log.info("Expired JWT Token", e);
-            String accessToken = request.getHeader("Access-Token");
-
-            //엑세스 토큰이 만료된 경우
-            if (accessToken != null) {
-                request.setAttribute("exception", "expired Access-Token");
-            }
         } catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT Token", e);
         } catch (IllegalArgumentException e) {

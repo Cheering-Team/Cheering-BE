@@ -19,6 +19,7 @@ import com.cheering.user.dto.request.SignUpRequest;
 import com.cheering.user.dto.response.SignInResponse;
 import com.cheering.user.dto.response.SignUpResponse;
 import com.cheering.user.service.UserService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -109,11 +110,21 @@ public class UserController {
                                                                  HttpServletResponse response) {
         String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
         String newAccessToken = null;
-        if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken, request)) {
-            log.info("Authenticated User");
-            newAccessToken = jwtTokenProvider.reIssueAccessToken(refreshToken);
+
+        try {
+            if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken, request)) {
+                log.info("Authenticated User");
+                newAccessToken = jwtTokenProvider.reIssueAccessToken(refreshToken);
+
+                response.setHeader("Access-Token", newAccessToken);
+                return ResponseGenerator.success(SuccessMessage.REISSUE_ACCESS_TOKEN_SUCCESS, null);
+            }
+        } catch (ExpiredJwtException e) {
+            log.error("expired Refresh-Token", e);
+
+            return ResponseGenerator.fail(ExceptionMessage.EXPIRED_REFRESH_TOKEN, null);
         }
-        response.setHeader("Access-Token", newAccessToken);
-        return ResponseGenerator.success(SuccessMessage.REISSUE_ACCESS_TOKEN_SUCCESS, null);
+
+        return null;
     }
 }

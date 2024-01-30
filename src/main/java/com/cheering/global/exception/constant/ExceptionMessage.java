@@ -19,7 +19,8 @@ public enum ExceptionMessage {
     MISMATCH_PASSWORD(CONFLICT, "mismatch password"),
     NOT_FOUND_USER(UNAUTHORIZED, "not found user"),
     FAIL_SIGN_OUT(BAD_REQUEST, "fail signout"),
-
+    EXPIRED_REFRESH_TOKEN(UNAUTHORIZED, "expired Refreh-Token"),
+    
     //community
     NOT_FOUND_COMMUNITY(NOT_FOUND, "not found community"),
     DUPLICATED_JOIN_COMMUNITY(BAD_REQUEST, "duplicated join community");

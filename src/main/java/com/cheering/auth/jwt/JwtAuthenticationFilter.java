@@ -1,5 +1,6 @@
 package com.cheering.auth.jwt;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +31,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.info("Authenticated User");
             }
+        } catch (ExpiredJwtException e) {
+            log.info("Expired JWT Token", e);
+            //엑세스 토큰이 만료된 경우
+            request.setAttribute("exception", "expired Access-Token");
         } finally {
             filterChain.doFilter(request, response);
         }
