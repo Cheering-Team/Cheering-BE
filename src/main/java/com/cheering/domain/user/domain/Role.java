@@ -1,8 +1,10 @@
 package com.cheering.domain.user.domain;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
+@Getter
 public enum Role {
     ROLE_USER("USER"),
     ROLE_PLAYER("PLAYER"),
