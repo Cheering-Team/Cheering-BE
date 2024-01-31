@@ -1,5 +1,15 @@
 package com.cheering.domain.user.domain;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public enum Role {
-    ROLE_USER, ROLE_PLAYER, ROLE_ADMIN
+    ROLE_USER("USER"),
+    ROLE_PLAYER("PLAYER"),
+    ROLE_TEAM("TEAM"),
+    ROLE_ADMIN("ADMIN");
+
+    private final String type;
+
+
 }
