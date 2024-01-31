@@ -16,6 +16,7 @@ import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.NotFoundTeamException;
 import com.cheering.global.exception.user.NotFoundUserException;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,17 +34,16 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<PostResponse> getPosts(Long communityId, Long writerId, String type) {
-        List<Post> result;
         Community findCommunity = communityRepository.findById(communityId).orElseThrow(() ->
                 new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
-        result = getPostsByType(type, writerId, findCommunity);
-
+        List<Post> result = getPostsByType(type, writerId, findCommunity);
+        
         return PostResponse.ofList(result);
     }
 
     private List<Post> getPostsByType(String type, Long writerId, Community findCommunity) {
-        List<Post> result = null;
+        List<Post> result = new ArrayList<>();
 
         if (Role.ROLE_PLAYER.getType().equals(type)) {
             Player findPlayer = playerRepository.findById(writerId)

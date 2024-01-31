@@ -21,7 +21,7 @@ public enum ExceptionMessage {
     EXPIRED_REFRESH_TOKEN(UNAUTHORIZED, "expired Refreh-Token"),
     NOT_FOUND_USER(UNAUTHORIZED, "not found user"),
     NOT_FOUND_TEAM(UNAUTHORIZED, "not found team"),
-    
+
     //community
     NOT_FOUND_COMMUNITY(NOT_FOUND, "not found community"),
     DUPLICATED_JOIN_COMMUNITY(BAD_REQUEST, "duplicated join community");
