@@ -1,6 +1,6 @@
 package com.cheering.auth;
 
-import com.cheering.core.user.domain.Role;
+import com.cheering.domain.user.domain.Role;
 import java.util.Collection;
 import java.util.Collections;
 import org.springframework.security.core.Authentication;
