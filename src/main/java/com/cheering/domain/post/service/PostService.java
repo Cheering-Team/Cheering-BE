@@ -1,22 +1,24 @@
 package com.cheering.domain.post.service;
 
 import com.cheering.domain.community.domain.Community;
+import com.cheering.domain.community.domain.UserCommunityInfo;
 import com.cheering.domain.community.domain.repository.CommunityRepository;
+import com.cheering.domain.community.domain.repository.UserCommunityInfoRepository;
 import com.cheering.domain.post.domain.Post;
 import com.cheering.domain.post.dto.PostResponse;
 import com.cheering.domain.post.repository.PostRepository;
 import com.cheering.domain.user.domain.Player;
-import com.cheering.domain.user.domain.Role;
 import com.cheering.domain.user.domain.Team;
 import com.cheering.domain.user.domain.User;
 import com.cheering.domain.user.domain.repository.PlayerRepository;
 import com.cheering.domain.user.domain.repository.TeamRepository;
 import com.cheering.domain.user.domain.repository.UserRepository;
+import com.cheering.domain.user.dto.response.PostOwnerResponse;
 import com.cheering.global.exception.community.NotFoundCommunityException;
+import com.cheering.global.exception.community.NotFoundUserCommunityInfoException;
 import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.NotFoundTeamException;
 import com.cheering.global.exception.user.NotFoundUserException;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,38 +33,63 @@ public class PostService {
     private final PlayerRepository playerRepository;
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
+    private final UserCommunityInfoRepository userCommunityInfoRepository;
 
     @Transactional(readOnly = true)
-    public List<PostResponse> getPosts(Long communityId, Long writerId, String type) {
+    public List<PostResponse> getPlayerPosts(Long communityId, Long writerId) {
         Community findCommunity = communityRepository.findById(communityId).orElseThrow(() ->
                 new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
-        List<Post> result = getPostsByType(type, writerId, findCommunity);
-        
-        return PostResponse.ofList(result);
+        Player findPlayer = playerRepository.findById(writerId)
+                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
+
+        List<Post> result = postRepository.findByCommunityAndPlayer(findCommunity, findPlayer);
+
+        PostOwnerResponse postOwnerResponse = PostOwnerResponse.builder()
+                .id(findPlayer.getId())
+                .name(findPlayer.getNickname())
+                .build();
+
+        return PostResponse.ofList(result, postOwnerResponse);
     }
 
-    private List<Post> getPostsByType(String type, Long writerId, Community findCommunity) {
-        List<Post> result = new ArrayList<>();
+    @Transactional(readOnly = true)
+    public List<PostResponse> getUserPosts(Long communityId, Long writerId) {
+        Community findCommunity = communityRepository.findById(communityId).orElseThrow(() ->
+                new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
-        if (Role.ROLE_PLAYER.getType().equals(type)) {
-            Player findPlayer = playerRepository.findById(writerId)
-                    .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
-            result = postRepository.findByCommunityAndPlayer(findCommunity, findPlayer);
-        }
+        User findUser = userRepository.findById(writerId)
+                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
 
-        if (Role.ROLE_USER.getType().equals(type)) {
-            User findUser = userRepository.findById(writerId)
-                    .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
-            result = postRepository.findByCommunityAndUser(findCommunity, findUser);
-        }
+        UserCommunityInfo userCommunityInfo =
+                userCommunityInfoRepository.findByUserAndCommunity(findUser, findCommunity).orElseThrow(
+                        () -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO));
 
-        if (Role.ROLE_TEAM.getType().equals(type)) {
-            Team findTeam = teamRepository.findById(writerId)
-                    .orElseThrow(() -> new NotFoundTeamException(ExceptionMessage.NOT_FOUND_TEAM));
-            result = postRepository.findByCommunityAndTeam(findCommunity, findTeam);
-        }
+        List<Post> result = postRepository.findByCommunityAndUser(findCommunity, findUser);
 
-        return result;
+        PostOwnerResponse postOwnerResponse = PostOwnerResponse.builder()
+                .id(findUser.getId())
+                .name(userCommunityInfo.getNickname())
+                .build();
+
+        return PostResponse.ofList(result, postOwnerResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostResponse> getTeamPosts(Long communityId, Long writerId) {
+        Community findCommunity = communityRepository.findById(communityId).orElseThrow(() ->
+                new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
+
+        Team findTeam = teamRepository.findById(writerId)
+                .orElseThrow(() -> new NotFoundTeamException(ExceptionMessage.NOT_FOUND_TEAM));
+
+        List<Post> result = postRepository.findByCommunityAndTeam(findCommunity, findTeam);
+
+        PostOwnerResponse postOwnerResponse = PostOwnerResponse.builder()
+                .id(findTeam.getId())
+                .name(findTeam.getTeamCommunity().getName())
+                .build();
+
+        return PostResponse.ofList(result, postOwnerResponse);
     }
 }
