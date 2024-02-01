@@ -12,6 +12,8 @@ import com.cheering.domain.community.dto.response.UserCommunityInfoResponse;
 import com.cheering.domain.community.repository.CommunityRepository;
 import com.cheering.domain.community.repository.UserCommunityInfoRepository;
 import com.cheering.domain.post.domain.Post;
+import com.cheering.domain.post.domain.PostInfo;
+import com.cheering.domain.post.repository.PostInfoRepository;
 import com.cheering.domain.post.repository.PostRepository;
 import com.cheering.domain.user.domain.Player;
 import com.cheering.domain.user.domain.Role;
@@ -47,6 +49,7 @@ public class CommunityService {
     private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final PlayerRepository playerRepository;
     private final PostRepository postRepository;
+    private final PostInfoRepository postInfoRepository;
     private final AwsS3Util awsS3Util;
 
     public List<FoundCommunitiesResponse> findCommunitiesByName(String name) {
@@ -334,29 +337,46 @@ public class CommunityService {
         userRepository.save(fan1);
         userRepository.save(fan2);
 
+        PostInfo fanPostInfo1 = PostInfo.builder().writerName(fan1.getNickname()).build();
+        PostInfo fanPostInfo2 = PostInfo.builder().writerName(fan2.getNickname()).build();
+        PostInfo fanPostInfo3 = PostInfo.builder().writerName(fan1.getNickname()).build();
+        PostInfo fanPostInfo4 = PostInfo.builder().writerName(playerA1.getNickname()).build();
+        PostInfo fanPostInfo5 = PostInfo.builder().writerName(playerA1.getNickname()).build();
+
+        postInfoRepository.save(fanPostInfo1);
+        postInfoRepository.save(fanPostInfo2);
+        postInfoRepository.save(fanPostInfo3);
+        postInfoRepository.save(fanPostInfo4);
+        postInfoRepository.save(fanPostInfo5);
+
         Post fanPost1 = Post.builder().community(community1)
                 .content("팬 -> 이강인 커뮤니티1")
                 .user(fan1)
+                .postInfo(fanPostInfo1)
                 .build();
 
         Post fanPost2 = Post.builder().community(community1)
                 .content("팬 -> 이강인 커뮤니티2")
-                .user(fan1)
+                .user(fan2)
+                .postInfo(fanPostInfo2)
                 .build();
 
         Post fanPost3 = Post.builder().community(psgCommunity)
                 .content("팬 -> PSG 팀 커뮤니티")
                 .user(fan1)
+                .postInfo(fanPostInfo3)
                 .build();
 
         Post playerPost1 = Post.builder().community(community1)
                 .content("아시안 컵 쉽네 ㅋ")
                 .player(playerA1)
+                .postInfo(fanPostInfo4)
                 .build();
 
         Post playerPost2 = Post.builder().community(psgCommunity)
                 .content("선수 -> PSG 팀 커뮤니티")
                 .player(playerA1)
+                .postInfo(fanPostInfo5)
                 .build();
 
         Post teamPost = Post.builder().community(psgCommunity)
