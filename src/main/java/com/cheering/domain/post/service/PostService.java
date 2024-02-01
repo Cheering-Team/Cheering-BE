@@ -47,7 +47,7 @@ public class PostService {
 
         PostOwnerResponse postOwnerResponse = PostOwnerResponse.builder()
                 .id(findPlayer.getId())
-                .name(findPlayer.getNickname())
+                .name(findPlayer.getName())
                 .build();
 
         return PostResponse.ofList(result, postOwnerResponse);

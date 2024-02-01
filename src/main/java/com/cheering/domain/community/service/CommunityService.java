@@ -11,17 +11,20 @@ import com.cheering.domain.community.domain.repository.UserCommunityInfoReposito
 import com.cheering.domain.community.dto.response.CommunityResponse;
 import com.cheering.domain.community.dto.response.FoundCommunitiesResponse;
 import com.cheering.domain.community.dto.response.UserCommunityInfoResponse;
+import com.cheering.domain.post.domain.Post;
+import com.cheering.domain.post.repository.PostRepository;
+import com.cheering.domain.user.domain.Player;
+import com.cheering.domain.user.domain.Role;
 import com.cheering.domain.user.domain.Team;
 import com.cheering.domain.user.domain.User;
 import com.cheering.domain.user.domain.repository.PlayerRepository;
+import com.cheering.domain.user.domain.repository.TeamRepository;
 import com.cheering.domain.user.domain.repository.UserRepository;
 import com.cheering.global.exception.community.DuplicatedCommunityJoinException;
 import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.NotFoundUserException;
 import com.cheering.global.util.AwsS3Util;
-import com.cheering.domain.user.domain.Player;
-import com.cheering.domain.user.domain.repository.TeamRepository;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -43,6 +46,7 @@ public class CommunityService {
     private final CommunityRepository communityRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final PlayerRepository playerRepository;
+    private final PostRepository postRepository;
     private final AwsS3Util awsS3Util;
 
     public List<FoundCommunitiesResponse> findCommunitiesByName(String name) {
@@ -211,14 +215,26 @@ public class CommunityService {
 
     @Transactional
     public void setData() {
-        String imageUrl = awsS3Util.getPath(
-                "community/user-community-info-profile/0d5211b8-6ee0-4d04-a310-ed1df5dcd89e.png");
+        String teamTottenhanImageUrl = awsS3Util.getPath(
+                "community/team-profile/team_tottenhan_image.png");
+
+        String teamPSGImageUrl = awsS3Util.getPath(
+                "community/team-profile/team_PSG_image.jpeg");
+
+        String playerLeeImageUrl = awsS3Util.getPath(
+                "community/player-profile/player_leeKangIn.jpg");
+
+        String playerSonImageUrl = awsS3Util.getPath(
+                "community/player-profile/player_SonHeungMin.png");
+
+        String userImageUrl = awsS3Util.getPath(
+                "community/user-community-info-profile/user_img.avif");
 
         Community psgCommunity = Community.builder()
                 .name("파리 생제르맹")
                 .category(Category.SOCCER)
                 .league(League.FRENCH_LEAGUE1)
-                .image(imageUrl)
+                .image(teamPSGImageUrl)
                 .cType(CommunityType.TEAM_COMMUNITY)
                 .fanCount(3000L)
                 .build();
@@ -227,7 +243,7 @@ public class CommunityService {
                 .name("토트넘")
                 .category(Category.SOCCER)
                 .league(League.EPL)
-                .image(imageUrl)
+                .image(teamTottenhanImageUrl)
                 .cType(CommunityType.TEAM_COMMUNITY)
                 .fanCount(4000L)
                 .build();
@@ -235,8 +251,10 @@ public class CommunityService {
         communityRepository.save(psgCommunity);
         communityRepository.save(tottenhamCommunity);
 
-        Team teamPSG = Team.builder().players(new ArrayList<>()).teamCommunity(psgCommunity).build();
-        Team teamTottenham = Team.builder().players(new ArrayList<>()).teamCommunity(tottenhamCommunity).build();
+        Team teamPSG = Team.builder().players(new ArrayList<>()).role(Role.ROLE_TEAM).teamCommunity(psgCommunity)
+                .build();
+        Team teamTottenham = Team.builder().players(new ArrayList<>()).role(Role.ROLE_TEAM)
+                .teamCommunity(tottenhamCommunity).build();
 
         teamRepository.save(teamPSG);
         teamRepository.save(teamTottenham);
@@ -244,30 +262,30 @@ public class CommunityService {
         Community community1 = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("이강인")
-                .fanCount(1L).image(imageUrl).build();
+                .fanCount(1L).image(playerLeeImageUrl).build();
         Community community2 = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("음바페")
-                .fanCount(2L).image(imageUrl).build();
+                .fanCount(2L).image(userImageUrl).build();
         Community community3 = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("아센시오")
-                .fanCount(3L).image(imageUrl).build();
+                .fanCount(3L).image(userImageUrl).build();
 
         Community community4 = Community.builder()
                 .name("손흥민")
                 .fanCount(4L)
-                .image(imageUrl)
+                .image(playerSonImageUrl)
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .build();
         Community community5 = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("히샬리송")
-                .fanCount(5L).image(imageUrl).build();
+                .fanCount(5L).image(userImageUrl).build();
         Community community6 = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("메디슨")
-                .fanCount(6L).image(imageUrl).build();
+                .fanCount(6L).image(userImageUrl).build();
 
         communityRepository.save(community1);
         communityRepository.save(community2);
@@ -276,9 +294,12 @@ public class CommunityService {
         communityRepository.save(community5);
         communityRepository.save(community6);
 
-        Player playerA1 = Player.builder().playerCommunity(community1).name("이강인").build();
-        Player playerA2 = Player.builder().playerCommunity(community2).name("음바페").build();
-        Player playerA3 = Player.builder().playerCommunity(community3).name("아센시오").build();
+        Player playerA1 = Player.builder()
+                .playerCommunity(community1)
+                .name("이강인")
+                .role(Role.ROLE_PLAYER).build();
+        Player playerA2 = Player.builder().playerCommunity(community2).name("음바페").role(Role.ROLE_PLAYER).build();
+        Player playerA3 = Player.builder().playerCommunity(community3).name("아센시오").role(Role.ROLE_PLAYER).build();
 
         playerA1.connectTeam(teamPSG);
         playerA2.connectTeam(teamPSG);
@@ -288,9 +309,9 @@ public class CommunityService {
         playerRepository.save(playerA2);
         playerRepository.save(playerA3);
 
-        Player playerB1 = Player.builder().playerCommunity(community4).name("손흥민").build();
-        Player playerB2 = Player.builder().playerCommunity(community5).name("히샬리송").build();
-        Player playerB3 = Player.builder().playerCommunity(community6).name("메디슨").build();
+        Player playerB1 = Player.builder().playerCommunity(community4).name("손흥민").role(Role.ROLE_PLAYER).build();
+        Player playerB2 = Player.builder().playerCommunity(community5).name("히샬리송").role(Role.ROLE_PLAYER).build();
+        Player playerB3 = Player.builder().playerCommunity(community6).name("메디슨").role(Role.ROLE_PLAYER).build();
 
         playerB1.connectTeam(teamTottenham);
         playerB2.connectTeam(teamTottenham);
@@ -299,5 +320,55 @@ public class CommunityService {
         playerRepository.save(playerB1);
         playerRepository.save(playerB2);
         playerRepository.save(playerB3);
+
+        User fan1 = User.builder()
+                .nickname("이강인 팬")
+                .role(Role.ROLE_USER)
+                .build();
+
+        User fan2 = User.builder()
+                .nickname("손흥민 팬")
+                .role(Role.ROLE_USER)
+                .build();
+
+        userRepository.save(fan1);
+        userRepository.save(fan2);
+
+        Post fanPost1 = Post.builder().community(community1)
+                .content("팬 -> 이강인 커뮤니티1")
+                .user(fan1)
+                .build();
+
+        Post fanPost2 = Post.builder().community(community1)
+                .content("팬 -> 이강인 커뮤니티2")
+                .user(fan1)
+                .build();
+
+        Post fanPost3 = Post.builder().community(psgCommunity)
+                .content("팬 -> PSG 팀 커뮤니티")
+                .user(fan1)
+                .build();
+
+        Post playerPost1 = Post.builder().community(community1)
+                .content("아시안 컵 쉽네 ㅋ")
+                .player(playerA1)
+                .build();
+
+        Post playerPost2 = Post.builder().community(psgCommunity)
+                .content("선수 -> PSG 팀 커뮤니티")
+                .player(playerA1)
+                .build();
+
+        Post teamPost = Post.builder().community(psgCommunity)
+                .content("PSG 팀 게시글 입니다.")
+                .team(teamPSG)
+                .build();
+
+        postRepository.save(fanPost1);
+        postRepository.save(fanPost2);
+        postRepository.save(fanPost3);
+        postRepository.save(playerPost1);
+        postRepository.save(playerPost2);
+        postRepository.save(teamPost);
     }
 }
