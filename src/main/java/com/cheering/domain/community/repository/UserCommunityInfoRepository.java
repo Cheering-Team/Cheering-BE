@@ -1,4 +1,4 @@
-package com.cheering.domain.community.domain.repository;
+package com.cheering.domain.community.repository;
 
 import com.cheering.domain.community.domain.Community;
 import com.cheering.domain.community.domain.UserCommunityInfo;
