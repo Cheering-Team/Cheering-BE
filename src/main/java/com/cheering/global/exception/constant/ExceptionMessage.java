@@ -24,7 +24,8 @@ public enum ExceptionMessage {
 
     //community
     NOT_FOUND_COMMUNITY(NOT_FOUND, "not found community"),
-    DUPLICATED_JOIN_COMMUNITY(BAD_REQUEST, "duplicated join community");
+    DUPLICATED_JOIN_COMMUNITY(BAD_REQUEST, "duplicated join community"),
+    NOT_FOUND_COMMUNITY_INFO(NOT_FOUND, "not found user community info");
 
     private final HttpStatus httpStatus;
     private final String message;
