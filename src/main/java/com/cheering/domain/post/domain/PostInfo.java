@@ -2,15 +2,15 @@ package com.cheering.domain.post.domain;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-import com.cheering.domain.community.domain.Community;
-import com.cheering.global.BaseEntity;
+import com.cheering.domain.user.domain.Player;
+import com.cheering.domain.user.domain.Team;
+import com.cheering.domain.user.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,19 +22,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class Post extends BaseEntity {
+public class PostInfo {
     @Id
     @GeneratedValue
-    @Column(name = "post_id")
+    @Column(name = "post_info_id")
     private Long id;
 
-    private String content;
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "community_id")
-    private Community community;
+    @JoinColumn(name = "player_id")
+    private Player player;
 
-    @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "post_info_id")
-    private PostInfo postInfo;
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "team_id")
+    private Team team;
+
+    private String writerName;
+    private String image;
 }
