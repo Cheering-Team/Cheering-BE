@@ -24,7 +24,7 @@ public class PostController {
 
     @GetMapping("/communities/{communityId}/posts")
     public ResponseEntity<ResponseBodyDto<?>> getPosts(@PathVariable("communityId") Long communityId,
-                                                       @RequestParam("writer") Long writerId,
+                                                       @RequestParam(value = "writer", required = false) Long writerId,
                                                        @RequestParam("type") String type) {
         if ("PLAYER".equals(type)) {
             List<PostResponse> playerPosts = postService.getPlayerPosts(communityId, writerId);
@@ -32,7 +32,7 @@ public class PostController {
         }
 
         if ("USER".equals(type)) {
-            List<PostResponse> userPosts = postService.getUserPosts(communityId, writerId);
+            List<PostResponse> userPosts = postService.getUserPosts(communityId);
             return ResponseGenerator.success(SuccessMessage.GET_POSTS_SUCCESS, userPosts);
         }
 

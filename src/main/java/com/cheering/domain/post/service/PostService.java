@@ -1,24 +1,20 @@
 package com.cheering.domain.post.service;
 
 import com.cheering.domain.community.domain.Community;
-import com.cheering.domain.community.domain.UserCommunityInfo;
-import com.cheering.domain.community.domain.repository.CommunityRepository;
-import com.cheering.domain.community.domain.repository.UserCommunityInfoRepository;
+import com.cheering.domain.community.repository.CommunityRepository;
 import com.cheering.domain.post.domain.Post;
 import com.cheering.domain.post.dto.PostResponse;
 import com.cheering.domain.post.repository.PostRepository;
 import com.cheering.domain.user.domain.Player;
 import com.cheering.domain.user.domain.Team;
-import com.cheering.domain.user.domain.User;
-import com.cheering.domain.user.domain.repository.PlayerRepository;
-import com.cheering.domain.user.domain.repository.TeamRepository;
-import com.cheering.domain.user.domain.repository.UserRepository;
 import com.cheering.domain.user.dto.response.PostOwnerResponse;
+import com.cheering.domain.user.repository.PlayerRepository;
+import com.cheering.domain.user.repository.TeamRepository;
 import com.cheering.global.exception.community.NotFoundCommunityException;
-import com.cheering.global.exception.community.NotFoundUserCommunityInfoException;
 import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.NotFoundTeamException;
 import com.cheering.global.exception.user.NotFoundUserException;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,9 +27,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final CommunityRepository communityRepository;
     private final PlayerRepository playerRepository;
-    private final UserRepository userRepository;
     private final TeamRepository teamRepository;
-    private final UserCommunityInfoRepository userCommunityInfoRepository;
 
     @Transactional(readOnly = true)
     public List<PostResponse> getPlayerPosts(Long communityId, Long writerId) {
@@ -54,25 +48,23 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponse> getUserPosts(Long communityId, Long writerId) {
+    public List<PostResponse> getUserPosts(Long communityId) {
         Community findCommunity = communityRepository.findById(communityId).orElseThrow(() ->
                 new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
-        User findUser = userRepository.findById(writerId)
-                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
+        List<Post> findUserPosts = postRepository.findByCommunityAndUserIsNotNull(findCommunity);
 
-        UserCommunityInfo userCommunityInfo =
-                userCommunityInfoRepository.findByUserAndCommunity(findUser, findCommunity).orElseThrow(
-                        () -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO));
+        List<PostResponse> result = new ArrayList<>();
+        for (Post findUserPost : findUserPosts) {
+            PostOwnerResponse postOwnerResponse = PostOwnerResponse.of(findUserPost.getUser().getId(),
+                    findUserPost.getPostInfo().getWriterName());
 
-        List<Post> result = postRepository.findByCommunityAndUser(findCommunity, findUser);
+            PostResponse postResponse = PostResponse.of(findUserPost, postOwnerResponse);
 
-        PostOwnerResponse postOwnerResponse = PostOwnerResponse.builder()
-                .id(findUser.getId())
-                .name(userCommunityInfo.getNickname())
-                .build();
+            result.add(postResponse);
+        }
 
-        return PostResponse.ofList(result, postOwnerResponse);
+        return result;
     }
 
     @Transactional(readOnly = true)
