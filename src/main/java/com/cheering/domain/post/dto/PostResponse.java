@@ -15,14 +15,25 @@ public record PostResponse(Long id,
                            LocalDateTime updatedAt,
                            PostOwnerResponse owner
 ) {
-
-    public static List<PostResponse> ofList(List<Post> posts, PostOwnerResponse owner) {
-        return posts.stream().map(post -> PostResponse.builder()
+    public static PostResponse of(Post post, PostOwnerResponse postOwnerResponse) {
+        return PostResponse.builder()
+                .owner(postOwnerResponse)
                 .id(post.getId())
                 .content(post.getContent())
-                .commentCount(100L)
-                .likeCount(200L)
-                .owner(owner)
+                .commentCount(20L)
+                .likeCount(100L)
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .build();
+    }
+
+    public static List<PostResponse> ofList(List<Post> posts, PostOwnerResponse postOwnerResponse) {
+        return posts.stream().map(post -> PostResponse.builder()
+                .owner(postOwnerResponse)
+                .id(post.getId())
+                .content(post.getContent())
+                .commentCount(20L)
+                .likeCount(100L)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build()
