@@ -4,12 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.cheering.domain.user.domain.User;
+import com.cheering.domain.user.dto.request.SignInRequest;
+import com.cheering.domain.user.dto.request.SignUpRequest;
+import com.cheering.domain.user.repository.UserRepository;
+import com.cheering.domain.user.service.UserService;
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.NotFoundUserException;
-import com.cheering.user.domain.User;
-import com.cheering.user.domain.repository.UserRepository;
-import com.cheering.user.dto.request.SignInRequest;
-import com.cheering.user.dto.request.SignUpRequest;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

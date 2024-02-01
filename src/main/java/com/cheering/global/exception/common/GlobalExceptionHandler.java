@@ -82,4 +82,5 @@ public class GlobalExceptionHandler {
         log.error("handle DuplicatedCommunityJoinException", e);
         return ResponseGenerator.fail(ExceptionMessage.DUPLICATED_JOIN_COMMUNITY, null);
     }
+    
 }
