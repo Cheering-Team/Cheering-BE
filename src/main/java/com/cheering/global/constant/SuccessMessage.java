@@ -15,8 +15,11 @@ public enum SuccessMessage {
     REISSUE_ACCESS_TOKEN_SUCCESS(HttpStatus.OK, "reIssue Access-Token"),
 
     //community
-    SEARCH_COMMUNITY_SUCCESS(HttpStatus.OK, "search complete"),
-    JOIN_COMMUNITY_SUCCESS(HttpStatus.CREATED, "join community success");
+    SEARCH_COMMUNITY_SUCCESS(HttpStatus.OK, "search success"),
+    JOIN_COMMUNITY_SUCCESS(HttpStatus.CREATED, "join community success"),
+
+    //post
+    GET_POSTS_SUCCESS(HttpStatus.OK, "get posts success");
 
     private final HttpStatus httpStatus;
     private final String message;
