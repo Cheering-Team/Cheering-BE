@@ -14,4 +14,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByCommunityAndPlayer(Community community, Player player);
 
     List<Post> findByCommunityAndTeam(Community community, Team team);
+
+    List<Post> findByCommunityAndUserIsNotNull(Community community);
 }
