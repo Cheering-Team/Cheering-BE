@@ -348,31 +348,31 @@ public class CommunityService {
 
         Post fanPost1 = Post.builder().community(community1)
                 .content("팬 -> 이강인 커뮤니티1")
-                .user(fan1)
+                .owner(fan1)
                 .postInfo(fanPostInfo1)
                 .build();
 
         Post fanPost2 = Post.builder().community(community1)
                 .content("팬 -> 이강인 커뮤니티2")
-                .user(fan2)
+                .owner(fan2)
                 .postInfo(fanPostInfo2)
                 .build();
 
         Post fanPost3 = Post.builder().community(psgCommunity)
                 .content("팬 -> PSG 팀 커뮤니티")
-                .user(fan1)
+                .owner(fan1)
                 .postInfo(fanPostInfo3)
                 .build();
 
         Post playerPost1 = Post.builder().community(community1)
                 .content("아시안 컵 쉽네 ㅋ")
-                .player(playerA1)
+                .owner(playerA1)
                 .postInfo(fanPostInfo4)
                 .build();
 
         Post playerPost2 = Post.builder().community(psgCommunity)
                 .content("선수 -> PSG 팀 커뮤니티")
-                .player(playerA1)
+                .owner(playerA1)
                 .postInfo(fanPostInfo5)
                 .build();
 
