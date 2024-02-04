@@ -46,7 +46,7 @@ public class Post extends BaseEntity {
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "player_id")
-    private Player player;
+    private User player;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "team_id")

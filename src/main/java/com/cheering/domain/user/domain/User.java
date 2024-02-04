@@ -52,4 +52,9 @@ public class User extends BaseEntity {
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "community_id")
     private Community community;
+
+    public void connectTeam(Team team) {
+        this.team = team;
+        team.getPlayers().add(this);
+    }
 }

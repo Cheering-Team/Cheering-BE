@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByCommunityAndUser(Community community, User user);
 
-    List<Post> findByCommunityAndPlayer(Community community, Player player);
+    List<Post> findByCommunityAndPlayer(Community community, User player);
 
     List<Post> findByCommunityAndTeam(Community community, Team team);
 

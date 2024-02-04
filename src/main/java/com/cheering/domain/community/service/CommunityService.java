@@ -45,7 +45,6 @@ public class CommunityService {
     private final UserRepository userRepository;
     private final CommunityRepository communityRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
-    private final PlayerRepository playerRepository;
     private final PostRepository postRepository;
     private final PostInfoRepository postInfoRepository;
     private final AwsS3Util awsS3Util;
@@ -84,7 +83,7 @@ public class CommunityService {
                                                                          List<Long> joinCommunityIds) {
         List<FoundCommunitiesResponse> result = new ArrayList<>();
         for (Community teamCommunity : teamCommunities) {
-            List<Player> players = teamCommunity.getTeam().getPlayers();
+            List<User> players = teamCommunity.getTeam().getPlayers();
             List<Community> playerCommunities = getPlayerCommunitiesByPlayers(players);
 
             List<CommunityResponse> communityResponse = CommunityResponse.ofList(playerCommunities, joinCommunityIds);
@@ -118,13 +117,13 @@ public class CommunityService {
 
                 FoundCommunitiesResponse foundCommunitiesResponse;
 
-                if (joinCommunityIds.contains(community.getPlayer().getTeam().getTeamCommunity().getId())) {
+                if (joinCommunityIds.contains(community.getUser().getTeam().getTeamCommunity().getId())) {
                     foundCommunitiesResponse = FoundCommunitiesResponse.of(
-                            List.of(communityResponse), community.getPlayer().getTeam().getTeamCommunity(),
+                            List.of(communityResponse), community.getUser().getTeam().getTeamCommunity(),
                             BooleanType.TRUE);
                 } else {
                     foundCommunitiesResponse = FoundCommunitiesResponse.of(
-                            List.of(communityResponse), community.getPlayer().getTeam().getTeamCommunity(),
+                            List.of(communityResponse), community.getUser().getTeam().getTeamCommunity(),
                             BooleanType.FALSE);
                 }
 
@@ -137,13 +136,13 @@ public class CommunityService {
 
                 FoundCommunitiesResponse foundCommunitiesResponse;
 
-                if (joinCommunityIds.contains(community.getPlayer().getTeam().getTeamCommunity().getId())) {
+                if (joinCommunityIds.contains(community.getUser().getTeam().getTeamCommunity().getId())) {
                     foundCommunitiesResponse = FoundCommunitiesResponse.of(
-                            List.of(communityResponse), community.getPlayer().getTeam().getTeamCommunity(),
+                            List.of(communityResponse), community.getUser().getTeam().getTeamCommunity(),
                             BooleanType.TRUE);
                 } else {
                     foundCommunitiesResponse = FoundCommunitiesResponse.of(
-                            List.of(communityResponse), community.getPlayer().getTeam().getTeamCommunity(),
+                            List.of(communityResponse), community.getUser().getTeam().getTeamCommunity(),
                             BooleanType.FALSE);
                 }
 
@@ -202,7 +201,7 @@ public class CommunityService {
 
     private static FoundCommunitiesResponse generateFoundCommunitiesResponse(Community community, BooleanType isJoin) {
         CommunityResponse communityResponse = CommunityResponse.of(community, isJoin);
-        Community teamCommunity = community.getPlayer().getTeam().getTeamCommunity();
+        Community teamCommunity = community.getUser().getTeam().getTeamCommunity();
 
         return FoundCommunitiesResponse.of(
                 List.of(communityResponse),
@@ -210,8 +209,8 @@ public class CommunityService {
                 isJoin);
     }
 
-    private List<Community> getPlayerCommunitiesByPlayers(List<Player> players) {
-        return players.stream().map(Player::getPlayerCommunity).toList();
+    private List<Community> getPlayerCommunitiesByPlayers(List<User> players) {
+        return players.stream().map(User::getCommunity).toList();
     }
 
     @Transactional
@@ -295,32 +294,32 @@ public class CommunityService {
         communityRepository.save(community5);
         communityRepository.save(community6);
 
-        Player playerA1 = Player.builder()
-                .playerCommunity(community1)
+        User playerA1 = User.builder()
+                .community(community1)
                 .name("이강인")
                 .role(Role.ROLE_PLAYER).build();
-        Player playerA2 = Player.builder().playerCommunity(community2).name("음바페").role(Role.ROLE_PLAYER).build();
-        Player playerA3 = Player.builder().playerCommunity(community3).name("아센시오").role(Role.ROLE_PLAYER).build();
+        User playerA2 = User.builder().community(community2).name("음바페").role(Role.ROLE_PLAYER).build();
+        User playerA3 = User.builder().community(community3).name("아센시오").role(Role.ROLE_PLAYER).build();
 
         playerA1.connectTeam(teamPSG);
         playerA2.connectTeam(teamPSG);
         playerA3.connectTeam(teamPSG);
 
-        playerRepository.save(playerA1);
-        playerRepository.save(playerA2);
-        playerRepository.save(playerA3);
+        userRepository.save(playerA1);
+        userRepository.save(playerA2);
+        userRepository.save(playerA3);
 
-        Player playerB1 = Player.builder().playerCommunity(community4).name("손흥민").role(Role.ROLE_PLAYER).build();
-        Player playerB2 = Player.builder().playerCommunity(community5).name("히샬리송").role(Role.ROLE_PLAYER).build();
-        Player playerB3 = Player.builder().playerCommunity(community6).name("메디슨").role(Role.ROLE_PLAYER).build();
+        User playerB1 = User.builder().community(community4).name("손흥민").role(Role.ROLE_PLAYER).build();
+        User playerB2 = User.builder().community(community5).name("히샬리송").role(Role.ROLE_PLAYER).build();
+        User playerB3 = User.builder().community(community6).name("메디슨").role(Role.ROLE_PLAYER).build();
 
         playerB1.connectTeam(teamTottenham);
         playerB2.connectTeam(teamTottenham);
         playerB3.connectTeam(teamTottenham);
 
-        playerRepository.save(playerB1);
-        playerRepository.save(playerB2);
-        playerRepository.save(playerB3);
+        userRepository.save(playerB1);
+        userRepository.save(playerB2);
+        userRepository.save(playerB3);
 
         User fan1 = User.builder()
                 .nickname("이강인 팬")
