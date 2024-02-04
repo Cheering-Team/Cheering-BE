@@ -3,7 +3,6 @@ package com.cheering.domain.post.domain;
 import static jakarta.persistence.FetchType.LAZY;
 
 import com.cheering.domain.community.domain.Community;
-import com.cheering.domain.user.domain.Player;
 import com.cheering.domain.user.domain.Team;
 import com.cheering.domain.user.domain.User;
 import com.cheering.global.BaseEntity;

@@ -2,7 +2,6 @@ package com.cheering.domain.post.repository;
 
 import com.cheering.domain.community.domain.Community;
 import com.cheering.domain.post.domain.Post;
-import com.cheering.domain.user.domain.Player;
 import com.cheering.domain.user.domain.Team;
 import com.cheering.domain.user.domain.User;
 import java.util.List;
