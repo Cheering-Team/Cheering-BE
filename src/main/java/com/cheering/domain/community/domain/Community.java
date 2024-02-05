@@ -15,6 +15,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
+import java.net.URL;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,7 +37,7 @@ public class Community extends BaseEntity {
 
     private Long fanCount;
 
-    private String image;
+    private URL image;
 
     @Enumerated(value = EnumType.STRING)
     private Category category;

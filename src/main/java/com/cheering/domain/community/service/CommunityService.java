@@ -215,19 +215,19 @@ public class CommunityService {
 
     @Transactional
     public void setData() {
-        String teamTottenhanImageUrl = awsS3Util.getPath(
+        URL teamTottenhanImageUrl = awsS3Util.getPath(
                 "community/team-profile/team_tottenhan_image.png");
 
-        String teamPSGImageUrl = awsS3Util.getPath(
+        URL teamPSGImageUrl = awsS3Util.getPath(
                 "community/team-profile/team_PSG_image.jpeg");
 
-        String playerLeeImageUrl = awsS3Util.getPath(
+        URL playerLeeImageUrl = awsS3Util.getPath(
                 "community/player-profile/player_leeKangIn.jpg");
 
-        String playerSonImageUrl = awsS3Util.getPath(
+        URL playerSonImageUrl = awsS3Util.getPath(
                 "community/player-profile/player_SonHeungMin.png");
 
-        String userImageUrl = awsS3Util.getPath(
+        URL userImageUrl = awsS3Util.getPath(
                 "community/user-community-info-profile/user_img.avif");
 
         Community psgCommunity = Community.builder()

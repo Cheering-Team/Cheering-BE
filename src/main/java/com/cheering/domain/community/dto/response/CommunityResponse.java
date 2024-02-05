@@ -2,13 +2,14 @@ package com.cheering.domain.community.dto.response;
 
 import com.cheering.domain.community.constant.BooleanType;
 import com.cheering.domain.community.domain.Community;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public record CommunityResponse(
         Long id,
         String name,
-        String image,
+        URL image,
         Long fanCount,
         BooleanType isJoin
 ) {
