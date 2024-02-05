@@ -19,7 +19,6 @@ import com.cheering.domain.user.repository.UserRepository;
 import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.community.NotFoundUserCommunityInfoException;
 import com.cheering.global.exception.constant.ExceptionMessage;
-import com.cheering.global.exception.user.NotFoundTeamException;
 import com.cheering.global.exception.user.NotFoundUserException;
 import com.cheering.global.util.AwsS3Util;
 import java.io.IOException;
@@ -47,19 +46,16 @@ public class PostService {
     private final AwsS3Util awsS3Util;
 
     @Transactional(readOnly = true)
-    public List<PostResponse> getPlayerPosts(Long communityId, Long writerId) {
+    public List<PostResponse> getPlayerPosts(Long communityId) {
         Community findCommunity = communityRepository.findById(communityId).orElseThrow(() ->
                 new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
-        User findPlayer = userRepository.findById(writerId)
-                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
+        User findPlayer = findCommunity.getUser();
 
         List<Post> result = postRepository.findByCommunityAndOwner(findCommunity, findPlayer);
 
-        PostOwnerResponse postOwnerResponse = PostOwnerResponse.builder()
-                .id(findPlayer.getId())
-                .name(findPlayer.getName())
-                .build();
+        PostOwnerResponse postOwnerResponse = PostOwnerResponse.of(findPlayer.getId(), findPlayer.getName(),
+                findPlayer.getProfileImage());
 
         return PostResponse.ofList(result, postOwnerResponse);
     }
@@ -69,14 +65,17 @@ public class PostService {
         Community findCommunity = communityRepository.findById(communityId).orElseThrow(() ->
                 new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
-        List<Post> findUserPosts = postRepository.findByCommunityAndOwnerIsNotNull(findCommunity);
+        List<Post> findAllUserPosts = postRepository.findByCommunityAndOwnerIsNotNull(findCommunity);
+
+        List<Post> findFanPosts = findAllUserPosts.stream()
+                .filter(post -> !post.getOwner().equals(findCommunity.getUser())).toList();
 
         List<PostResponse> result = new ArrayList<>();
-        for (Post findUserPost : findUserPosts) {
-            PostOwnerResponse postOwnerResponse = PostOwnerResponse.of(findUserPost.getOwner().getId(),
-                    findUserPost.getPostInfo().getWriterName());
+        for (Post fanPost : findFanPosts) {
+            PostOwnerResponse postOwnerResponse = PostOwnerResponse.of(fanPost.getOwner().getId(),
+                    fanPost.getPostInfo().getWriterName(), fanPost.getPostInfo().getImage());
 
-            PostResponse postResponse = PostResponse.of(findUserPost, postOwnerResponse);
+            PostResponse postResponse = PostResponse.of(fanPost, postOwnerResponse);
 
             result.add(postResponse);
         }
@@ -85,18 +84,17 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponse> getTeamPosts(Long communityId, Long writerId) {
+    public List<PostResponse> getTeamPosts(Long communityId) {
         Community findCommunity = communityRepository.findById(communityId).orElseThrow(() ->
                 new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
-        Team findTeam = teamRepository.findById(writerId)
-                .orElseThrow(() -> new NotFoundTeamException(ExceptionMessage.NOT_FOUND_TEAM));
-
+        Team findTeam = findCommunity.getTeam();
         List<Post> result = postRepository.findByCommunityAndTeam(findCommunity, findTeam);
 
         PostOwnerResponse postOwnerResponse = PostOwnerResponse.builder()
                 .id(findTeam.getId())
                 .name(findTeam.getTeamCommunity().getName())
+                .profileImage(findCommunity.getImage())
                 .build();
 
         return PostResponse.ofList(result, postOwnerResponse);
@@ -125,7 +123,7 @@ public class PostService {
         postInfoRepository.save(newPostInfo);
 
         //todo: Post 객체 생성
-        String category = "post/";
+        String category = "post";
         try {
             List<URL> imageUrls = awsS3Util.uploadFiles(files, category);
 
@@ -139,12 +137,12 @@ public class PostService {
             List<ImageFile> imageFiles = imageUrls.stream()
                     .map(url -> ImageFile.builder()
                             .post(newPost)
-                            .path(url.getPath())
+                            .path(url)
                             .build())
                     .toList();
 
             imageFileRepository.saveAll(imageFiles);
-            
+
             //todo: 객체 저장 및 생성된 id 반환
             postRepository.save(newPost);
             return newPost.getId();

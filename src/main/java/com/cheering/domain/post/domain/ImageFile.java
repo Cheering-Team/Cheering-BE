@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.net.URL;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +26,7 @@ public class ImageFile {
     @Column(name = "imagefile_id")
     private Long id;
 
-    private String path;
+    private URL path;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "post_id")

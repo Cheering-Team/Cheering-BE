@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import java.net.URL;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,6 +42,8 @@ public class User extends BaseEntity {
 
     @Column(length = 25)
     private String email;
+
+    private URL profileImage;
 
     @Enumerated(value = EnumType.STRING)
     private Role role;

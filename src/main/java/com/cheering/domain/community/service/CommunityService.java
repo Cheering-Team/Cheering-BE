@@ -297,9 +297,12 @@ public class CommunityService {
         User playerA1 = User.builder()
                 .community(community1)
                 .name("이강인")
+                .profileImage(playerLeeImageUrl)
                 .role(Role.ROLE_PLAYER).build();
-        User playerA2 = User.builder().community(community2).name("음바페").role(Role.ROLE_PLAYER).build();
-        User playerA3 = User.builder().community(community3).name("아센시오").role(Role.ROLE_PLAYER).build();
+        User playerA2 = User.builder().community(community2)
+                .profileImage(userImageUrl).name("음바페").role(Role.ROLE_PLAYER).build();
+        User playerA3 = User.builder().community(community3).profileImage(userImageUrl).name("아센시오")
+                .role(Role.ROLE_PLAYER).build();
 
         playerA1.connectTeam(teamPSG);
         playerA2.connectTeam(teamPSG);
@@ -309,9 +312,12 @@ public class CommunityService {
         userRepository.save(playerA2);
         userRepository.save(playerA3);
 
-        User playerB1 = User.builder().community(community4).name("손흥민").role(Role.ROLE_PLAYER).build();
-        User playerB2 = User.builder().community(community5).name("히샬리송").role(Role.ROLE_PLAYER).build();
-        User playerB3 = User.builder().community(community6).name("메디슨").role(Role.ROLE_PLAYER).build();
+        User playerB1 = User.builder().community(community4).name("손흥민").profileImage(playerSonImageUrl)
+                .role(Role.ROLE_PLAYER).build();
+        User playerB2 = User.builder().community(community5).profileImage(userImageUrl).name("히샬리송")
+                .role(Role.ROLE_PLAYER).build();
+        User playerB3 = User.builder().community(community6).profileImage(userImageUrl).name("메디슨")
+                .role(Role.ROLE_PLAYER).build();
 
         playerB1.connectTeam(teamTottenham);
         playerB2.connectTeam(teamTottenham);
@@ -324,21 +330,28 @@ public class CommunityService {
         User fan1 = User.builder()
                 .nickname("이강인 팬")
                 .role(Role.ROLE_USER)
+                .profileImage(userImageUrl)
                 .build();
 
         User fan2 = User.builder()
                 .nickname("손흥민 팬")
                 .role(Role.ROLE_USER)
+                .profileImage(userImageUrl)
                 .build();
 
         userRepository.save(fan1);
         userRepository.save(fan2);
 
-        PostInfo fanPostInfo1 = PostInfo.builder().writerName(fan1.getNickname()).build();
-        PostInfo fanPostInfo2 = PostInfo.builder().writerName(fan2.getNickname()).build();
-        PostInfo fanPostInfo3 = PostInfo.builder().writerName(fan1.getNickname()).build();
-        PostInfo fanPostInfo4 = PostInfo.builder().writerName(playerA1.getNickname()).build();
-        PostInfo fanPostInfo5 = PostInfo.builder().writerName(playerA1.getNickname()).build();
+        PostInfo fanPostInfo1 = PostInfo.builder().writerName(fan1.getNickname())
+                .image(userImageUrl).build();
+        PostInfo fanPostInfo2 = PostInfo.builder().writerName(fan2.getNickname())
+                .image(userImageUrl).build();
+        PostInfo fanPostInfo3 = PostInfo.builder().writerName(fan1.getNickname())
+                .image(userImageUrl).build();
+        PostInfo fanPostInfo4 = PostInfo.builder().writerName(playerA1.getNickname())
+                .image(userImageUrl).build();
+        PostInfo fanPostInfo5 = PostInfo.builder().writerName(playerA1.getNickname())
+                .image(userImageUrl).build();
 
         postInfoRepository.save(fanPostInfo1);
         postInfoRepository.save(fanPostInfo2);
