@@ -35,7 +35,7 @@ public class Team {
     private Community teamCommunity;
 
     @OneToMany(mappedBy = "team")
-    private List<Player> players;
+    private List<User> players;
 
     @Enumerated(EnumType.STRING)
     Role role;

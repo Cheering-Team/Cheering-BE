@@ -11,9 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,12 +25,21 @@ public class PostController {
 
     private final PostService postService;
 
+    @PostMapping("/communities/{communityId}/posts")
+    public ResponseEntity<ResponseBodyDto<?>> createPost(@PathVariable("communityId") Long communityId,
+                                                         @RequestParam("content") String content,
+                                                         @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+
+        Long createPostId = postService.createPost(communityId, content, files);
+
+        return ResponseGenerator.success(SuccessMessage.CREATE_POST_SUCCESS, createPostId);
+    }
+
     @GetMapping("/communities/{communityId}/posts")
     public ResponseEntity<ResponseBodyDto<?>> getPosts(@PathVariable("communityId") Long communityId,
-                                                       @RequestParam(value = "writer", required = false) Long writerId,
                                                        @RequestParam("type") String type) {
         if ("PLAYER".equals(type)) {
-            List<PostResponse> playerPosts = postService.getPlayerPosts(communityId, writerId);
+            List<PostResponse> playerPosts = postService.getPlayerPosts(communityId);
             return ResponseGenerator.success(SuccessMessage.GET_POSTS_SUCCESS, playerPosts);
         }
 
@@ -37,7 +49,7 @@ public class PostController {
         }
 
         if ("TEAM".equals(type)) {
-            List<PostResponse> teamPosts = postService.getTeamPosts(communityId, writerId);
+            List<PostResponse> teamPosts = postService.getTeamPosts(communityId);
             return ResponseGenerator.success(SuccessMessage.GET_POSTS_SUCCESS, teamPosts);
         }
 

@@ -6,8 +6,8 @@ import com.cheering.domain.community.constant.Category;
 import com.cheering.domain.community.constant.CommunityType;
 import com.cheering.domain.community.constant.League;
 import com.cheering.domain.user.domain.Team;
+import com.cheering.domain.user.domain.User;
 import com.cheering.global.BaseEntity;
-import com.cheering.domain.user.domain.Player;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,6 +15,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
+import java.net.URL;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,7 +37,7 @@ public class Community extends BaseEntity {
 
     private Long fanCount;
 
-    private String image;
+    private URL image;
 
     @Enumerated(value = EnumType.STRING)
     private Category category;
@@ -44,8 +45,8 @@ public class Community extends BaseEntity {
     @Enumerated(value = EnumType.STRING)
     private League league;
 
-    @OneToOne(fetch = LAZY, mappedBy = "playerCommunity")
-    private Player player;
+    @OneToOne(fetch = LAZY, mappedBy = "community")
+    private User user;
 
     @Enumerated(EnumType.STRING)
     private CommunityType cType;
