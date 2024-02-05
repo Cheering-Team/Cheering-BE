@@ -4,9 +4,11 @@ import com.cheering.domain.community.domain.Community;
 import com.cheering.domain.community.domain.UserCommunityInfo;
 import com.cheering.domain.community.repository.CommunityRepository;
 import com.cheering.domain.community.repository.UserCommunityInfoRepository;
+import com.cheering.domain.post.domain.ImageFile;
 import com.cheering.domain.post.domain.Post;
 import com.cheering.domain.post.domain.PostInfo;
 import com.cheering.domain.post.dto.PostResponse;
+import com.cheering.domain.post.repository.ImageFileRepository;
 import com.cheering.domain.post.repository.PostInfoRepository;
 import com.cheering.domain.post.repository.PostRepository;
 import com.cheering.domain.user.domain.Team;
@@ -19,6 +21,9 @@ import com.cheering.global.exception.community.NotFoundUserCommunityInfoExceptio
 import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.user.NotFoundTeamException;
 import com.cheering.global.exception.user.NotFoundUserException;
+import com.cheering.global.util.AwsS3Util;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +43,8 @@ public class PostService {
     private final UserRepository userRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final PostInfoRepository postInfoRepository;
+    private final ImageFileRepository imageFileRepository;
+    private final AwsS3Util awsS3Util;
 
     @Transactional(readOnly = true)
     public List<PostResponse> getPlayerPosts(Long communityId, Long writerId) {
@@ -114,19 +121,47 @@ public class PostService {
                 .image(findUserCommunityInfo.getProfileImage())
                 .writerName(findUserCommunityInfo.getNickname())
                 .build();
+
         postInfoRepository.save(newPostInfo);
 
         //todo: Post 객체 생성
-        Post newPost = Post.builder().postInfo(newPostInfo)
-                .content(content)
-                .owner(loginUser)
-                .community(findCommunity)
-                .owner(loginUser)
-                .build();
+        String category = "post/";
+        try {
+            List<URL> imageUrls = awsS3Util.uploadFiles(files, category);
 
-        //todo: 객체 저장 및 생성된 id 반환
-        postRepository.save(newPost);
-        return newPost.getId();
+            Post newPost = Post.builder().postInfo(newPostInfo)
+                    .content(content)
+                    .owner(loginUser)
+                    .community(findCommunity)
+                    .owner(loginUser)
+                    .build();
+
+            List<ImageFile> imageFiles = imageUrls.stream()
+                    .map(url -> ImageFile.builder()
+                            .post(newPost)
+                            .path(url.getPath())
+                            .build())
+                    .toList();
+
+            imageFileRepository.saveAll(imageFiles);
+            
+            //todo: 객체 저장 및 생성된 id 반환
+            postRepository.save(newPost);
+            return newPost.getId();
+        } catch (IOException e) {
+            Post newPost = Post.builder().postInfo(newPostInfo)
+                    .content(content)
+                    .owner(loginUser)
+                    .community(findCommunity)
+                    .owner(loginUser)
+                    .build();
+
+            //todo: 객체 저장 및 생성된 id 반환
+            postRepository.save(newPost);
+            return newPost.getId();
+        }
+
+
     }
 
     private User getLoginUser() {

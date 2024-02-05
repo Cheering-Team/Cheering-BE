@@ -14,7 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import java.net.URL;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -51,16 +50,7 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "team_id")
     private Team team;
 
-    @OneToMany
+    @OneToMany(mappedBy = "post")
     private List<ImageFile> files;
 
-    public void setFiles(List<URL> imageURLs) {
-
-        this.files = imageURLs.stream()
-                .map(url -> ImageFile.builder()
-                        .post(this)
-                        .path(url.getPath())
-                        .build())
-                .toList();
-    }
 }
