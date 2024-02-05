@@ -12,7 +12,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import java.net.URL;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,4 +50,17 @@ public class Post extends BaseEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "team_id")
     private Team team;
+
+    @OneToMany
+    private List<ImageFile> files;
+
+    public void setFiles(List<URL> imageURLs) {
+
+        this.files = imageURLs.stream()
+                .map(url -> ImageFile.builder()
+                        .post(this)
+                        .path(url.getPath())
+                        .build())
+                .toList();
+    }
 }
