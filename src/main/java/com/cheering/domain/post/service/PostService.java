@@ -75,7 +75,9 @@ public class PostService {
             PostOwnerResponse postOwnerResponse = PostOwnerResponse.of(fanPost.getOwner().getId(),
                     fanPost.getPostInfo().getWriterName(), fanPost.getPostInfo().getImage());
 
-            PostResponse postResponse = PostResponse.of(fanPost, postOwnerResponse);
+            List<URL> imageUrls = fanPost.getFiles().stream().map(ImageFile::getPath).toList();
+            
+            PostResponse postResponse = PostResponse.of(fanPost, postOwnerResponse, imageUrls);
 
             result.add(postResponse);
         }

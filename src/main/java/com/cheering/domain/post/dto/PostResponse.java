@@ -18,11 +18,12 @@ public record PostResponse(Long id,
                            LocalDateTime updatedAt,
                            PostOwnerResponse owner
 ) {
-    public static PostResponse of(Post post, PostOwnerResponse postOwnerResponse) {
+    public static PostResponse of(Post post, PostOwnerResponse postOwnerResponse, List<URL> files) {
         return PostResponse.builder()
                 .owner(postOwnerResponse)
                 .id(post.getId())
                 .content(post.getContent())
+                .image(files)
                 .commentCount(20L)
                 .likeCount(100L)
                 .createdAt(post.getCreatedAt())

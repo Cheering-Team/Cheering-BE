@@ -68,7 +68,7 @@ public class AwsS3Util {
             URL url = uploadFile(file, category);
             fileUrls.add(url);
         }
-
+        
         log.info("uploadFiles url: {}", fileUrls);
 
         return fileUrls;
