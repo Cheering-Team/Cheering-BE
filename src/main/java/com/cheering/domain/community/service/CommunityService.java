@@ -215,20 +215,15 @@ public class CommunityService {
 
     @Transactional
     public void setData() {
-        URL teamTottenhanImageUrl = awsS3Util.getPath(
-                "community/team-profile/team_tottenhan_image.png");
+        URL teamTottenhanImageUrl = awsS3Util.getPath("community/team-profile/team_tottenhan_image.png");
 
-        URL teamPSGImageUrl = awsS3Util.getPath(
-                "community/team-profile/team_PSG_image.jpeg");
+        URL teamPSGImageUrl = awsS3Util.getPath("community/team-profile/team_PSG_image.jpeg");
 
-        URL playerLeeImageUrl = awsS3Util.getPath(
-                "community/player-profile/player_leeKangIn.jpg");
+        URL playerLeeImageUrl = awsS3Util.getPath("community/player-profile/player_leeKangIn.jpg");
 
-        URL playerSonImageUrl = awsS3Util.getPath(
-                "community/player-profile/player_SonHeungMin.png");
+        URL playerSonImageUrl = awsS3Util.getPath("community/player-profile/player_SonHeungMin.png");
 
-        URL userImageUrl = awsS3Util.getPath(
-                "community/user-community-info-profile/user_img.avif");
+        URL userImageUrl = awsS3Util.getPath("community/user-community-info-profile/user_img.avif");
 
         Community psgCommunity = Community.builder()
                 .name("파리 생제르맹")
