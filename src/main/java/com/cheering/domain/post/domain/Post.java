@@ -3,7 +3,6 @@ package com.cheering.domain.post.domain;
 import static jakarta.persistence.FetchType.LAZY;
 
 import com.cheering.domain.community.domain.Community;
-import com.cheering.domain.user.domain.Player;
 import com.cheering.domain.user.domain.Team;
 import com.cheering.domain.user.domain.User;
 import com.cheering.global.BaseEntity;
@@ -13,7 +12,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,13 +44,13 @@ public class Post extends BaseEntity {
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
-
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "player_id")
-    private Player player;
+    private User owner;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "team_id")
     private Team team;
+
+    @OneToMany(mappedBy = "post")
+    private List<ImageFile> files;
+
 }

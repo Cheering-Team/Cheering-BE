@@ -32,10 +32,10 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagementConfigurer -> sessionManagementConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // 해당 API에 대해서는 요청을 허가
+                        // 해당 경로의 요청은 명시된 권한 필요
                         .requestMatchers("/api/communities/**").hasRole("USER")
                         .requestMatchers("/api/users/**").hasRole("USER")
-                        // 이 밖에 모든 요청에 대해서 인증을 필요로 한다는 설정
+                        // 해당 요청은 아무나 접근 가능
                         .requestMatchers("/api/signup").permitAll()
                         .requestMatchers("/api/signin").permitAll()
                         .requestMatchers("/api/set-data").permitAll()

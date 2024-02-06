@@ -15,11 +15,9 @@ import com.cheering.domain.post.domain.Post;
 import com.cheering.domain.post.domain.PostInfo;
 import com.cheering.domain.post.repository.PostInfoRepository;
 import com.cheering.domain.post.repository.PostRepository;
-import com.cheering.domain.user.domain.Player;
 import com.cheering.domain.user.domain.Role;
 import com.cheering.domain.user.domain.Team;
 import com.cheering.domain.user.domain.User;
-import com.cheering.domain.user.repository.PlayerRepository;
 import com.cheering.domain.user.repository.TeamRepository;
 import com.cheering.domain.user.repository.UserRepository;
 import com.cheering.global.exception.community.DuplicatedCommunityJoinException;
@@ -47,7 +45,6 @@ public class CommunityService {
     private final UserRepository userRepository;
     private final CommunityRepository communityRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
-    private final PlayerRepository playerRepository;
     private final PostRepository postRepository;
     private final PostInfoRepository postInfoRepository;
     private final AwsS3Util awsS3Util;
@@ -86,7 +83,7 @@ public class CommunityService {
                                                                          List<Long> joinCommunityIds) {
         List<FoundCommunitiesResponse> result = new ArrayList<>();
         for (Community teamCommunity : teamCommunities) {
-            List<Player> players = teamCommunity.getTeam().getPlayers();
+            List<User> players = teamCommunity.getTeam().getPlayers();
             List<Community> playerCommunities = getPlayerCommunitiesByPlayers(players);
 
             List<CommunityResponse> communityResponse = CommunityResponse.ofList(playerCommunities, joinCommunityIds);
@@ -120,13 +117,13 @@ public class CommunityService {
 
                 FoundCommunitiesResponse foundCommunitiesResponse;
 
-                if (joinCommunityIds.contains(community.getPlayer().getTeam().getTeamCommunity().getId())) {
+                if (joinCommunityIds.contains(community.getUser().getTeam().getTeamCommunity().getId())) {
                     foundCommunitiesResponse = FoundCommunitiesResponse.of(
-                            List.of(communityResponse), community.getPlayer().getTeam().getTeamCommunity(),
+                            List.of(communityResponse), community.getUser().getTeam().getTeamCommunity(),
                             BooleanType.TRUE);
                 } else {
                     foundCommunitiesResponse = FoundCommunitiesResponse.of(
-                            List.of(communityResponse), community.getPlayer().getTeam().getTeamCommunity(),
+                            List.of(communityResponse), community.getUser().getTeam().getTeamCommunity(),
                             BooleanType.FALSE);
                 }
 
@@ -139,13 +136,13 @@ public class CommunityService {
 
                 FoundCommunitiesResponse foundCommunitiesResponse;
 
-                if (joinCommunityIds.contains(community.getPlayer().getTeam().getTeamCommunity().getId())) {
+                if (joinCommunityIds.contains(community.getUser().getTeam().getTeamCommunity().getId())) {
                     foundCommunitiesResponse = FoundCommunitiesResponse.of(
-                            List.of(communityResponse), community.getPlayer().getTeam().getTeamCommunity(),
+                            List.of(communityResponse), community.getUser().getTeam().getTeamCommunity(),
                             BooleanType.TRUE);
                 } else {
                     foundCommunitiesResponse = FoundCommunitiesResponse.of(
-                            List.of(communityResponse), community.getPlayer().getTeam().getTeamCommunity(),
+                            List.of(communityResponse), community.getUser().getTeam().getTeamCommunity(),
                             BooleanType.FALSE);
                 }
 
@@ -204,7 +201,7 @@ public class CommunityService {
 
     private static FoundCommunitiesResponse generateFoundCommunitiesResponse(Community community, BooleanType isJoin) {
         CommunityResponse communityResponse = CommunityResponse.of(community, isJoin);
-        Community teamCommunity = community.getPlayer().getTeam().getTeamCommunity();
+        Community teamCommunity = community.getUser().getTeam().getTeamCommunity();
 
         return FoundCommunitiesResponse.of(
                 List.of(communityResponse),
@@ -212,26 +209,21 @@ public class CommunityService {
                 isJoin);
     }
 
-    private List<Community> getPlayerCommunitiesByPlayers(List<Player> players) {
-        return players.stream().map(Player::getPlayerCommunity).toList();
+    private List<Community> getPlayerCommunitiesByPlayers(List<User> players) {
+        return players.stream().map(User::getCommunity).toList();
     }
 
     @Transactional
     public void setData() {
-        String teamTottenhanImageUrl = awsS3Util.getPath(
-                "community/team-profile/team_tottenhan_image.png");
+        URL teamTottenhanImageUrl = awsS3Util.getPath("community/team-profile/team_tottenhan_image.png");
 
-        String teamPSGImageUrl = awsS3Util.getPath(
-                "community/team-profile/team_PSG_image.jpeg");
+        URL teamPSGImageUrl = awsS3Util.getPath("community/team-profile/team_PSG_image.jpeg");
 
-        String playerLeeImageUrl = awsS3Util.getPath(
-                "community/player-profile/player_leeKangIn.jpg");
+        URL playerLeeImageUrl = awsS3Util.getPath("community/player-profile/player_leeKangIn.jpg");
 
-        String playerSonImageUrl = awsS3Util.getPath(
-                "community/player-profile/player_SonHeungMin.png");
+        URL playerSonImageUrl = awsS3Util.getPath("community/player-profile/player_SonHeungMin.png");
 
-        String userImageUrl = awsS3Util.getPath(
-                "community/user-community-info-profile/user_img.avif");
+        URL userImageUrl = awsS3Util.getPath("community/user-community-info-profile/user_img.avif");
 
         Community psgCommunity = Community.builder()
                 .name("파리 생제르맹")
@@ -297,51 +289,64 @@ public class CommunityService {
         communityRepository.save(community5);
         communityRepository.save(community6);
 
-        Player playerA1 = Player.builder()
-                .playerCommunity(community1)
+        User playerA1 = User.builder()
+                .community(community1)
                 .name("이강인")
+                .profileImage(playerLeeImageUrl)
                 .role(Role.ROLE_PLAYER).build();
-        Player playerA2 = Player.builder().playerCommunity(community2).name("음바페").role(Role.ROLE_PLAYER).build();
-        Player playerA3 = Player.builder().playerCommunity(community3).name("아센시오").role(Role.ROLE_PLAYER).build();
+        User playerA2 = User.builder().community(community2)
+                .profileImage(userImageUrl).name("음바페").role(Role.ROLE_PLAYER).build();
+        User playerA3 = User.builder().community(community3).profileImage(userImageUrl).name("아센시오")
+                .role(Role.ROLE_PLAYER).build();
 
         playerA1.connectTeam(teamPSG);
         playerA2.connectTeam(teamPSG);
         playerA3.connectTeam(teamPSG);
 
-        playerRepository.save(playerA1);
-        playerRepository.save(playerA2);
-        playerRepository.save(playerA3);
+        userRepository.save(playerA1);
+        userRepository.save(playerA2);
+        userRepository.save(playerA3);
 
-        Player playerB1 = Player.builder().playerCommunity(community4).name("손흥민").role(Role.ROLE_PLAYER).build();
-        Player playerB2 = Player.builder().playerCommunity(community5).name("히샬리송").role(Role.ROLE_PLAYER).build();
-        Player playerB3 = Player.builder().playerCommunity(community6).name("메디슨").role(Role.ROLE_PLAYER).build();
+        User playerB1 = User.builder().community(community4).name("손흥민").profileImage(playerSonImageUrl)
+                .role(Role.ROLE_PLAYER).build();
+        User playerB2 = User.builder().community(community5).profileImage(userImageUrl).name("히샬리송")
+                .role(Role.ROLE_PLAYER).build();
+        User playerB3 = User.builder().community(community6).profileImage(userImageUrl).name("메디슨")
+                .role(Role.ROLE_PLAYER).build();
 
         playerB1.connectTeam(teamTottenham);
         playerB2.connectTeam(teamTottenham);
         playerB3.connectTeam(teamTottenham);
 
-        playerRepository.save(playerB1);
-        playerRepository.save(playerB2);
-        playerRepository.save(playerB3);
+        userRepository.save(playerB1);
+        userRepository.save(playerB2);
+        userRepository.save(playerB3);
 
         User fan1 = User.builder()
                 .nickname("이강인 팬")
                 .role(Role.ROLE_USER)
+                .profileImage(userImageUrl)
                 .build();
 
         User fan2 = User.builder()
                 .nickname("손흥민 팬")
                 .role(Role.ROLE_USER)
+                .profileImage(userImageUrl)
                 .build();
 
         userRepository.save(fan1);
         userRepository.save(fan2);
 
-        PostInfo fanPostInfo1 = PostInfo.builder().writerName(fan1.getNickname()).build();
-        PostInfo fanPostInfo2 = PostInfo.builder().writerName(fan2.getNickname()).build();
-        PostInfo fanPostInfo3 = PostInfo.builder().writerName(fan1.getNickname()).build();
-        PostInfo fanPostInfo4 = PostInfo.builder().writerName(playerA1.getNickname()).build();
-        PostInfo fanPostInfo5 = PostInfo.builder().writerName(playerA1.getNickname()).build();
+        PostInfo fanPostInfo1 = PostInfo.builder().writerName(fan1.getNickname())
+                .image(userImageUrl).build();
+        PostInfo fanPostInfo2 = PostInfo.builder().writerName(fan2.getNickname())
+                .image(userImageUrl).build();
+        PostInfo fanPostInfo3 = PostInfo.builder().writerName(fan1.getNickname())
+                .image(userImageUrl).build();
+        PostInfo fanPostInfo4 = PostInfo.builder().writerName(playerA1.getNickname())
+                .image(userImageUrl).build();
+        PostInfo fanPostInfo5 = PostInfo.builder().writerName(playerA1.getNickname())
+                .image(userImageUrl).build();
 
         postInfoRepository.save(fanPostInfo1);
         postInfoRepository.save(fanPostInfo2);
@@ -351,31 +356,31 @@ public class CommunityService {
 
         Post fanPost1 = Post.builder().community(community1)
                 .content("팬 -> 이강인 커뮤니티1")
-                .user(fan1)
+                .owner(fan1)
                 .postInfo(fanPostInfo1)
                 .build();
 
         Post fanPost2 = Post.builder().community(community1)
                 .content("팬 -> 이강인 커뮤니티2")
-                .user(fan2)
+                .owner(fan2)
                 .postInfo(fanPostInfo2)
                 .build();
 
         Post fanPost3 = Post.builder().community(psgCommunity)
                 .content("팬 -> PSG 팀 커뮤니티")
-                .user(fan1)
+                .owner(fan1)
                 .postInfo(fanPostInfo3)
                 .build();
 
         Post playerPost1 = Post.builder().community(community1)
                 .content("아시안 컵 쉽네 ㅋ")
-                .player(playerA1)
+                .owner(playerA1)
                 .postInfo(fanPostInfo4)
                 .build();
 
         Post playerPost2 = Post.builder().community(psgCommunity)
                 .content("선수 -> PSG 팀 커뮤니티")
-                .player(playerA1)
+                .owner(playerA1)
                 .postInfo(fanPostInfo5)
                 .build();
 

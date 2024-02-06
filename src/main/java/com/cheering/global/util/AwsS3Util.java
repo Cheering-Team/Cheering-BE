@@ -68,14 +68,14 @@ public class AwsS3Util {
             URL url = uploadFile(file, category);
             fileUrls.add(url);
         }
-
+        
         log.info("uploadFiles url: {}", fileUrls);
 
         return fileUrls;
     }
 
-    public String getPath(String path) {
-        return s3Client.getUrl(bucket, path).toString();
+    public URL getPath(String path) {
+        return s3Client.getUrl(bucket, path);
     }
 
     public byte[] downloadFile(String image) {

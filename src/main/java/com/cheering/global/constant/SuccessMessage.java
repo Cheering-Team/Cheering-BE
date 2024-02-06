@@ -19,7 +19,8 @@ public enum SuccessMessage {
     JOIN_COMMUNITY_SUCCESS(HttpStatus.CREATED, "join community success"),
 
     //post
-    GET_POSTS_SUCCESS(HttpStatus.OK, "get posts success");
+    GET_POSTS_SUCCESS(HttpStatus.OK, "get posts success"),
+    CREATE_POST_SUCCESS(HttpStatus.CREATED, "create post success");
 
     private final HttpStatus httpStatus;
     private final String message;
