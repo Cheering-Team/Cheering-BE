@@ -41,7 +41,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class CommunityService {
 
     private final TeamRepository teamRepository;
-
     private final UserRepository userRepository;
     private final CommunityRepository communityRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
@@ -153,13 +152,6 @@ public class CommunityService {
         return result;
     }
 
-    private User getLoginUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String loginId = authentication.getName();
-        return userRepository.findById(Long.valueOf(loginId))
-                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
-    }
-
     @Transactional
     public UserCommunityInfoResponse joinCommunity(Long communityId, String nickname, MultipartFile file) {
         User user = getLoginUser();
@@ -199,7 +191,7 @@ public class CommunityService {
         }
     }
 
-    private static FoundCommunitiesResponse generateFoundCommunitiesResponse(Community community, BooleanType isJoin) {
+    private FoundCommunitiesResponse generateFoundCommunitiesResponse(Community community, BooleanType isJoin) {
         CommunityResponse communityResponse = CommunityResponse.of(community, isJoin);
         Community teamCommunity = community.getUser().getTeam().getTeamCommunity();
 
@@ -211,6 +203,21 @@ public class CommunityService {
 
     private List<Community> getPlayerCommunitiesByPlayers(List<User> players) {
         return players.stream().map(User::getCommunity).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public void getCommunity(Long communityId) {
+        Community findCommunity = communityRepository.findById(communityId)
+                .orElseThrow(() -> new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
+
+
+    }
+
+    private User getLoginUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String loginId = authentication.getName();
+        return userRepository.findById(Long.valueOf(loginId))
+                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
     }
 
     @Transactional
@@ -291,12 +298,12 @@ public class CommunityService {
 
         User playerA1 = User.builder()
                 .community(community1)
-                .name("이강인")
+                .koreanName("이강인")
                 .profileImage(playerLeeImageUrl)
                 .role(Role.ROLE_PLAYER).build();
         User playerA2 = User.builder().community(community2)
-                .profileImage(userImageUrl).name("음바페").role(Role.ROLE_PLAYER).build();
-        User playerA3 = User.builder().community(community3).profileImage(userImageUrl).name("아센시오")
+                .profileImage(userImageUrl).koreanName("음바페").role(Role.ROLE_PLAYER).build();
+        User playerA3 = User.builder().community(community3).profileImage(userImageUrl).koreanName("아센시오")
                 .role(Role.ROLE_PLAYER).build();
 
         playerA1.connectTeam(teamPSG);
@@ -307,11 +314,11 @@ public class CommunityService {
         userRepository.save(playerA2);
         userRepository.save(playerA3);
 
-        User playerB1 = User.builder().community(community4).name("손흥민").profileImage(playerSonImageUrl)
+        User playerB1 = User.builder().community(community4).koreanName("손흥민").profileImage(playerSonImageUrl)
                 .role(Role.ROLE_PLAYER).build();
-        User playerB2 = User.builder().community(community5).profileImage(userImageUrl).name("히샬리송")
+        User playerB2 = User.builder().community(community5).profileImage(userImageUrl).koreanName("히샬리송")
                 .role(Role.ROLE_PLAYER).build();
-        User playerB3 = User.builder().community(community6).profileImage(userImageUrl).name("메디슨")
+        User playerB3 = User.builder().community(community6).profileImage(userImageUrl).koreanName("메디슨")
                 .role(Role.ROLE_PLAYER).build();
 
         playerB1.connectTeam(teamTottenham);

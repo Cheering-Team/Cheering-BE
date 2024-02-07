@@ -3,7 +3,7 @@ package com.cheering.domain.user.service;
 import com.cheering.domain.community.constant.BooleanType;
 import com.cheering.domain.community.domain.Community;
 import com.cheering.domain.community.domain.UserCommunityInfo;
-import com.cheering.domain.community.dto.response.CommunityResponse;
+import com.cheering.domain.community.dto.response.SearchCommunityResponse;
 import com.cheering.domain.community.repository.UserCommunityInfoRepository;
 import com.cheering.domain.user.domain.Role;
 import com.cheering.domain.user.domain.User;
@@ -60,7 +60,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<CommunityResponse> getUserCommunities() {
+    public List<SearchCommunityResponse> getUserCommunities() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long loginId = Long.valueOf(authentication.getName());
 
@@ -73,17 +73,17 @@ public class UserService {
             throw new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY);
         }
 
-        List<CommunityResponse> result = new ArrayList<>();
+        List<SearchCommunityResponse> result = new ArrayList<>();
         for (UserCommunityInfo userCommunityInfo : userCommunities) {
             Community community = userCommunityInfo.getCommunity();
 
-            CommunityResponse communityResponse = new CommunityResponse(community.getId(),
+            SearchCommunityResponse searchCommunityResponse = new SearchCommunityResponse(community.getId(),
                     community.getName(),
                     community.getImage(),
                     community.getFanCount(),
                     BooleanType.TRUE);
 
-            result.add(communityResponse);
+            result.add(searchCommunityResponse);
         }
 
         return result;

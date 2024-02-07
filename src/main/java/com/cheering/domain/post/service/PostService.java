@@ -14,7 +14,6 @@ import com.cheering.domain.post.repository.PostRepository;
 import com.cheering.domain.user.domain.Team;
 import com.cheering.domain.user.domain.User;
 import com.cheering.domain.user.dto.response.PostOwnerResponse;
-import com.cheering.domain.user.repository.TeamRepository;
 import com.cheering.domain.user.repository.UserRepository;
 import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.community.NotFoundUserCommunityInfoException;
@@ -38,7 +37,6 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final CommunityRepository communityRepository;
-    private final TeamRepository teamRepository;
     private final UserRepository userRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final PostInfoRepository postInfoRepository;
@@ -54,7 +52,7 @@ public class PostService {
 
         List<Post> result = postRepository.findByCommunityAndOwner(findCommunity, findPlayer);
 
-        PostOwnerResponse postOwnerResponse = PostOwnerResponse.of(findPlayer.getId(), findPlayer.getName(),
+        PostOwnerResponse postOwnerResponse = PostOwnerResponse.of(findPlayer.getId(), findPlayer.getKoreanName(),
                 findPlayer.getProfileImage());
 
         return PostResponse.ofList(result, postOwnerResponse);
@@ -76,7 +74,7 @@ public class PostService {
                     fanPost.getPostInfo().getWriterName(), fanPost.getPostInfo().getImage());
 
             List<URL> imageUrls = fanPost.getFiles().stream().map(ImageFile::getPath).toList();
-            
+
             PostResponse postResponse = PostResponse.of(fanPost, postOwnerResponse, imageUrls);
 
             result.add(postResponse);

@@ -16,10 +16,10 @@ public record FoundCommunitiesResponse(
         URL image,
         Long fanCount,
         BooleanType isJoin,
-        List<CommunityResponse> playerCommunities
+        List<SearchCommunityResponse> playerCommunities
 ) {
 
-    public static FoundCommunitiesResponse of(List<CommunityResponse> communityResponse,
+    public static FoundCommunitiesResponse of(List<SearchCommunityResponse> searchCommunityResponse,
                                               Community teamCommunity, BooleanType isJoin) {
 
         return builder().id(teamCommunity.getId())
@@ -28,7 +28,7 @@ public record FoundCommunitiesResponse(
                 .fanCount(teamCommunity.getFanCount())
                 .league(teamCommunity.getLeague().getKorean())
                 .image(teamCommunity.getImage())
-                .playerCommunities(communityResponse)
+                .playerCommunities(searchCommunityResponse)
                 .isJoin(isJoin)
                 .build();
     }
