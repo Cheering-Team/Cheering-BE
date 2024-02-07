@@ -27,7 +27,7 @@ public record FoundCommunitiesResponse(
                 .category(teamCommunity.getCategory().getKorean())
                 .fanCount(teamCommunity.getFanCount())
                 .league(teamCommunity.getLeague().getKorean())
-                .image(teamCommunity.getImage())
+                .image(teamCommunity.getThumbnailImage())
                 .playerCommunities(searchCommunityResponse)
                 .isJoin(isJoin)
                 .build();

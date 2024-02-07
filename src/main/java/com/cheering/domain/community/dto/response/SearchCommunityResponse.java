@@ -14,7 +14,7 @@ public record SearchCommunityResponse(
         BooleanType isJoin
 ) {
     public static SearchCommunityResponse of(Community community, BooleanType isJoin) {
-        return new SearchCommunityResponse(community.getId(), community.getName(), community.getImage(),
+        return new SearchCommunityResponse(community.getId(), community.getName(), community.getThumbnailImage(),
                 community.getFanCount(), isJoin);
     }
 
@@ -26,7 +26,7 @@ public record SearchCommunityResponse(
             if (joinCommunityIds.contains(community.getId())) {
                 SearchCommunityResponse searchCommunityResponse = new SearchCommunityResponse(community.getId(),
                         community.getName(),
-                        community.getImage(),
+                        community.getThumbnailImage(),
                         community.getFanCount(),
                         BooleanType.TRUE);
 
@@ -34,7 +34,7 @@ public record SearchCommunityResponse(
             } else {
                 SearchCommunityResponse searchCommunityResponse = new SearchCommunityResponse(community.getId(),
                         community.getName(),
-                        community.getImage(),
+                        community.getThumbnailImage(),
                         community.getFanCount(),
                         BooleanType.FALSE);
 

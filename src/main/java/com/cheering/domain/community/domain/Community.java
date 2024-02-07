@@ -37,7 +37,9 @@ public class Community extends BaseEntity {
 
     private Long fanCount;
 
-    private URL image;
+    private URL backgroundImage;
+
+    private URL thumbnailImage;
 
     @Enumerated(value = EnumType.STRING)
     private Category category;

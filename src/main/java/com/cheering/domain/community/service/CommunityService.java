@@ -8,6 +8,7 @@ import com.cheering.domain.community.domain.Community;
 import com.cheering.domain.community.domain.UserCommunityInfo;
 import com.cheering.domain.community.dto.response.CommunityResponse;
 import com.cheering.domain.community.dto.response.FoundCommunitiesResponse;
+import com.cheering.domain.community.dto.response.SearchCommunityResponse;
 import com.cheering.domain.community.dto.response.UserCommunityInfoResponse;
 import com.cheering.domain.community.repository.CommunityRepository;
 import com.cheering.domain.community.repository.UserCommunityInfoRepository;
@@ -85,15 +86,16 @@ public class CommunityService {
             List<User> players = teamCommunity.getTeam().getPlayers();
             List<Community> playerCommunities = getPlayerCommunitiesByPlayers(players);
 
-            List<CommunityResponse> communityResponse = CommunityResponse.ofList(playerCommunities, joinCommunityIds);
+            List<SearchCommunityResponse> searchCommunityResponse = SearchCommunityResponse.ofList(playerCommunities,
+                    joinCommunityIds);
 
             FoundCommunitiesResponse foundCommunitiesResponse;
 
             if (joinCommunityIds.contains(teamCommunity.getId())) {
-                foundCommunitiesResponse = FoundCommunitiesResponse.of(communityResponse,
+                foundCommunitiesResponse = FoundCommunitiesResponse.of(searchCommunityResponse,
                         teamCommunity, BooleanType.TRUE);
             } else {
-                foundCommunitiesResponse = FoundCommunitiesResponse.of(communityResponse,
+                foundCommunitiesResponse = FoundCommunitiesResponse.of(searchCommunityResponse,
                         teamCommunity, BooleanType.FALSE);
             }
 
@@ -109,8 +111,9 @@ public class CommunityService {
 
         for (Community community : playerCommunities) {
             if (joinCommunityIds.contains(community.getId())) {
-                CommunityResponse communityResponse = new CommunityResponse(community.getId(), community.getName(),
-                        community.getImage(),
+                SearchCommunityResponse searchCommunityResponse = new SearchCommunityResponse(community.getId(),
+                        community.getName(),
+                        community.getThumbnailImage(),
                         community.getFanCount(),
                         BooleanType.TRUE);
 
@@ -118,18 +121,19 @@ public class CommunityService {
 
                 if (joinCommunityIds.contains(community.getUser().getTeam().getTeamCommunity().getId())) {
                     foundCommunitiesResponse = FoundCommunitiesResponse.of(
-                            List.of(communityResponse), community.getUser().getTeam().getTeamCommunity(),
+                            List.of(searchCommunityResponse), community.getUser().getTeam().getTeamCommunity(),
                             BooleanType.TRUE);
                 } else {
                     foundCommunitiesResponse = FoundCommunitiesResponse.of(
-                            List.of(communityResponse), community.getUser().getTeam().getTeamCommunity(),
+                            List.of(searchCommunityResponse), community.getUser().getTeam().getTeamCommunity(),
                             BooleanType.FALSE);
                 }
 
                 result.add(foundCommunitiesResponse);
             } else {
-                CommunityResponse communityResponse = new CommunityResponse(community.getId(), community.getName(),
-                        community.getImage(),
+                SearchCommunityResponse searchCommunityResponse = new SearchCommunityResponse(community.getId(),
+                        community.getName(),
+                        community.getThumbnailImage(),
                         community.getFanCount(),
                         BooleanType.FALSE);
 
@@ -137,11 +141,11 @@ public class CommunityService {
 
                 if (joinCommunityIds.contains(community.getUser().getTeam().getTeamCommunity().getId())) {
                     foundCommunitiesResponse = FoundCommunitiesResponse.of(
-                            List.of(communityResponse), community.getUser().getTeam().getTeamCommunity(),
+                            List.of(searchCommunityResponse), community.getUser().getTeam().getTeamCommunity(),
                             BooleanType.TRUE);
                 } else {
                     foundCommunitiesResponse = FoundCommunitiesResponse.of(
-                            List.of(communityResponse), community.getUser().getTeam().getTeamCommunity(),
+                            List.of(searchCommunityResponse), community.getUser().getTeam().getTeamCommunity(),
                             BooleanType.FALSE);
                 }
 
@@ -192,11 +196,11 @@ public class CommunityService {
     }
 
     private FoundCommunitiesResponse generateFoundCommunitiesResponse(Community community, BooleanType isJoin) {
-        CommunityResponse communityResponse = CommunityResponse.of(community, isJoin);
+        SearchCommunityResponse searchCommunityResponse = SearchCommunityResponse.of(community, isJoin);
         Community teamCommunity = community.getUser().getTeam().getTeamCommunity();
 
         return FoundCommunitiesResponse.of(
-                List.of(communityResponse),
+                List.of(searchCommunityResponse),
                 teamCommunity,
                 isJoin);
     }
@@ -206,11 +210,19 @@ public class CommunityService {
     }
 
     @Transactional(readOnly = true)
-    public void getCommunity(Long communityId) {
+    public CommunityResponse getCommunity(Long communityId) {
         Community findCommunity = communityRepository.findById(communityId)
                 .orElseThrow(() -> new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
+        User communityOwner = findCommunity.getUser();
 
+        return CommunityResponse.builder()
+                .koreanName(communityOwner.getKoreanName())
+                .englishName(communityOwner.getEnglishName())
+                .teamName(communityOwner.getTeam().getTeamCommunity().getName())
+                .fanCount(findCommunity.getFanCount())
+                .backgroundImage(findCommunity.getBackgroundImage())
+                .build();
     }
 
     private User getLoginUser() {
@@ -236,7 +248,7 @@ public class CommunityService {
                 .name("파리 생제르맹")
                 .category(Category.SOCCER)
                 .league(League.FRENCH_LEAGUE1)
-                .image(teamPSGImageUrl)
+                .thumbnailImage(teamPSGImageUrl)
                 .cType(CommunityType.TEAM_COMMUNITY)
                 .fanCount(3000L)
                 .build();
@@ -245,7 +257,7 @@ public class CommunityService {
                 .name("토트넘")
                 .category(Category.SOCCER)
                 .league(League.EPL)
-                .image(teamTottenhanImageUrl)
+                .thumbnailImage(teamTottenhanImageUrl)
                 .cType(CommunityType.TEAM_COMMUNITY)
                 .fanCount(4000L)
                 .build();
@@ -264,30 +276,31 @@ public class CommunityService {
         Community community1 = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("이강인")
-                .fanCount(1L).image(playerLeeImageUrl).build();
+                .fanCount(1L).thumbnailImage(playerLeeImageUrl).backgroundImage(playerLeeImageUrl).build();
         Community community2 = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("음바페")
-                .fanCount(2L).image(userImageUrl).build();
+                .fanCount(2L).thumbnailImage(userImageUrl).build();
         Community community3 = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("아센시오")
-                .fanCount(3L).image(userImageUrl).build();
+                .fanCount(3L).thumbnailImage(userImageUrl).build();
 
         Community community4 = Community.builder()
                 .name("손흥민")
                 .fanCount(4L)
-                .image(playerSonImageUrl)
+                .thumbnailImage(playerSonImageUrl)
+                .backgroundImage(playerSonImageUrl)
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .build();
         Community community5 = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("히샬리송")
-                .fanCount(5L).image(userImageUrl).build();
+                .fanCount(5L).thumbnailImage(userImageUrl).build();
         Community community6 = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("메디슨")
-                .fanCount(6L).image(userImageUrl).build();
+                .fanCount(6L).thumbnailImage(userImageUrl).build();
 
         communityRepository.save(community1);
         communityRepository.save(community2);
@@ -299,11 +312,20 @@ public class CommunityService {
         User playerA1 = User.builder()
                 .community(community1)
                 .koreanName("이강인")
+                .englishName("Lee Kang In")
                 .profileImage(playerLeeImageUrl)
                 .role(Role.ROLE_PLAYER).build();
-        User playerA2 = User.builder().community(community2)
-                .profileImage(userImageUrl).koreanName("음바페").role(Role.ROLE_PLAYER).build();
-        User playerA3 = User.builder().community(community3).profileImage(userImageUrl).koreanName("아센시오")
+
+        User playerA2 = User.builder()
+                .community(community2)
+                .profileImage(userImageUrl)
+                .koreanName("음바페")
+                .role(Role.ROLE_PLAYER).build();
+
+        User playerA3 = User.builder()
+                .community(community3)
+                .profileImage(userImageUrl)
+                .koreanName("아센시오")
                 .role(Role.ROLE_PLAYER).build();
 
         playerA1.connectTeam(teamPSG);
@@ -314,11 +336,22 @@ public class CommunityService {
         userRepository.save(playerA2);
         userRepository.save(playerA3);
 
-        User playerB1 = User.builder().community(community4).koreanName("손흥민").profileImage(playerSonImageUrl)
+        User playerB1 = User.builder()
+                .community(community4)
+                .koreanName("손흥민")
+                .englishName("Son Heung Min")
+                .profileImage(playerSonImageUrl)
                 .role(Role.ROLE_PLAYER).build();
-        User playerB2 = User.builder().community(community5).profileImage(userImageUrl).koreanName("히샬리송")
+
+        User playerB2 = User.builder()
+                .community(community5)
+                .profileImage(userImageUrl)
+                .koreanName("히샬리송")
                 .role(Role.ROLE_PLAYER).build();
-        User playerB3 = User.builder().community(community6).profileImage(userImageUrl).koreanName("메디슨")
+
+        User playerB3 = User.builder()
+                .community(community6)
+                .profileImage(userImageUrl).koreanName("메디슨")
                 .role(Role.ROLE_PLAYER).build();
 
         playerB1.connectTeam(teamTottenham);

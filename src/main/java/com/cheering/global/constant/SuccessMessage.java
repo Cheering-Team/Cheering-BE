@@ -17,6 +17,7 @@ public enum SuccessMessage {
     //community
     SEARCH_COMMUNITY_SUCCESS(HttpStatus.OK, "search success"),
     JOIN_COMMUNITY_SUCCESS(HttpStatus.CREATED, "join community success"),
+    GET_COMMUNITY_SUCCESS(HttpStatus.OK, "get community success"),
 
     //post
     GET_POSTS_SUCCESS(HttpStatus.OK, "get posts success"),

@@ -94,7 +94,7 @@ public class PostService {
         PostOwnerResponse postOwnerResponse = PostOwnerResponse.builder()
                 .id(findTeam.getId())
                 .name(findTeam.getTeamCommunity().getName())
-                .profileImage(findCommunity.getImage())
+                .profileImage(findCommunity.getThumbnailImage())
                 .build();
 
         return PostResponse.ofList(result, postOwnerResponse);

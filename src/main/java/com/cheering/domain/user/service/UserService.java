@@ -79,7 +79,7 @@ public class UserService {
 
             SearchCommunityResponse searchCommunityResponse = new SearchCommunityResponse(community.getId(),
                     community.getName(),
-                    community.getImage(),
+                    community.getThumbnailImage(),
                     community.getFanCount(),
                     BooleanType.TRUE);
 
