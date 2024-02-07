@@ -60,7 +60,8 @@ public class AwsS3Util {
         // 다중 업로드 && 리스트 ","을 기준으로 하나의 문자열 반환
         // files 갯수 0 이면 반환 ""
         if (files == null || files.isEmpty()) {
-            return null;
+            log.error("file is Empty or file is null");
+            throw new IOException();
         }
 
         List<URL> fileUrls = new ArrayList<>();
@@ -68,7 +69,7 @@ public class AwsS3Util {
             URL url = uploadFile(file, category);
             fileUrls.add(url);
         }
-        
+
         log.info("uploadFiles url: {}", fileUrls);
 
         return fileUrls;
