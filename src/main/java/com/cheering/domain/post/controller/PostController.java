@@ -55,4 +55,12 @@ public class PostController {
 
         return ResponseGenerator.fail(ExceptionMessage.INVALID_WRITER_TYPE, null);
     }
+
+    @GetMapping("/communities/{communityId}/posts/{postId}")
+    public ResponseEntity<ResponseBodyDto<?>> detailPost(@PathVariable("communityId") Long communityId,
+                                                         @PathVariable("postId") Long postId) {
+        PostResponse findPostResponse = postService.detailPost(communityId, postId);
+
+        return ResponseGenerator.success(SuccessMessage.DETAIL_POST_SUCCESS, findPostResponse);
+    }
 }
