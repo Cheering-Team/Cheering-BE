@@ -32,7 +32,10 @@ public class User extends BaseEntity {
     private Long id;
 
     @Column(length = 20)
-    private String name;
+    private String koreanName;
+
+    @Column(length = 20)
+    private String englishName;
 
     @Column(length = 20)
     private String nickname;
@@ -43,6 +46,7 @@ public class User extends BaseEntity {
     @Column(length = 25)
     private String email;
 
+    @Column(name = "profile_image")
     private URL profileImage;
 
     @Enumerated(value = EnumType.STRING)

@@ -16,11 +16,11 @@ public record PostResponse(Long id,
                            List<URL> image,
                            LocalDateTime createdAt,
                            LocalDateTime updatedAt,
-                           PostOwnerResponse owner
+                           PostOwnerResponse writer
 ) {
     public static PostResponse of(Post post, PostOwnerResponse postOwnerResponse, List<URL> files) {
         return PostResponse.builder()
-                .owner(postOwnerResponse)
+                .writer(postOwnerResponse)
                 .id(post.getId())
                 .content(post.getContent())
                 .image(files)
@@ -33,7 +33,7 @@ public record PostResponse(Long id,
 
     public static List<PostResponse> ofList(List<Post> posts, PostOwnerResponse postOwnerResponse) {
         return posts.stream().map(post -> PostResponse.builder()
-                .owner(postOwnerResponse)
+                .writer(postOwnerResponse)
                 .id(post.getId())
                 .content(post.getContent())
                 .image(post.getFiles().stream().map(ImageFile::getPath).toList())

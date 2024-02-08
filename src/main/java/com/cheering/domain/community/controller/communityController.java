@@ -1,5 +1,6 @@
 package com.cheering.domain.community.controller;
 
+import com.cheering.domain.community.dto.response.CommunityResponse;
 import com.cheering.domain.community.dto.response.FoundCommunitiesResponse;
 import com.cheering.domain.community.dto.response.UserCommunityInfoResponse;
 import com.cheering.domain.community.service.CommunityService;
@@ -40,6 +41,14 @@ public class communityController {
         UserCommunityInfoResponse response = communityService.joinCommunity(communityId, nickname, file);
 
         return ResponseGenerator.success(SuccessMessage.JOIN_COMMUNITY_SUCCESS, response);
+    }
+
+    @GetMapping("/communities/{id}")
+    public ResponseEntity<ResponseBodyDto<?>> getCommunity(@PathVariable("id") Long communityId) {
+
+        CommunityResponse communityResponse = communityService.getCommunity(communityId);
+
+        return ResponseGenerator.success(SuccessMessage.GET_COMMUNITY_SUCCESS, communityResponse);
     }
 
     @GetMapping("/set-data")

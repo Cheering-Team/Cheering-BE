@@ -9,17 +9,17 @@ import com.cheering.auth.jwt.JwtConstant;
 import com.cheering.auth.jwt.JwtGenerator;
 import com.cheering.auth.jwt.JwtProvider;
 import com.cheering.auth.redis.RedisRepository;
-import com.cheering.domain.community.dto.response.CommunityResponse;
+import com.cheering.domain.community.dto.response.SearchCommunityResponse;
 import com.cheering.domain.user.domain.User;
+import com.cheering.domain.user.dto.request.SignInRequest;
+import com.cheering.domain.user.dto.request.SignUpRequest;
+import com.cheering.domain.user.dto.response.SignInResponse;
+import com.cheering.domain.user.dto.response.SignUpResponse;
 import com.cheering.domain.user.service.UserService;
 import com.cheering.global.constant.SuccessMessage;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.global.exception.constant.ExceptionMessage;
-import com.cheering.domain.user.dto.request.SignInRequest;
-import com.cheering.domain.user.dto.request.SignUpRequest;
-import com.cheering.domain.user.dto.response.SignInResponse;
-import com.cheering.domain.user.dto.response.SignUpResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -102,7 +102,7 @@ public class UserController {
 
     @GetMapping("/users/communities")
     public ResponseEntity<ResponseBodyDto<?>> getUserCommunities() {
-        List<CommunityResponse> userCommunities = userService.getUserCommunities();
+        List<SearchCommunityResponse> userCommunities = userService.getUserCommunities();
         return ResponseGenerator.success(SuccessMessage.SEARCH_COMMUNITY_SUCCESS, userCommunities);
     }
 

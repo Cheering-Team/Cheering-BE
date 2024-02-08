@@ -28,7 +28,8 @@ public enum ExceptionMessage {
     NOT_FOUND_COMMUNITY_INFO(NOT_FOUND, "not found user community info"),
 
     //post
-    INVALID_WRITER_TYPE(UNAUTHORIZED, "invalid writer type");
+    INVALID_WRITER_TYPE(UNAUTHORIZED, "invalid writer type"),
+    NOT_FOUND_POST(NOT_FOUND, "not found post");
 
     private final HttpStatus httpStatus;
     private final String message;
