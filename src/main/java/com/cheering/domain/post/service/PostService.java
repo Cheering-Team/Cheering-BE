@@ -18,6 +18,7 @@ import com.cheering.domain.user.repository.UserRepository;
 import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.community.NotFoundUserCommunityInfoException;
 import com.cheering.global.exception.constant.ExceptionMessage;
+import com.cheering.global.exception.post.NotFoundPostException;
 import com.cheering.global.exception.user.NotFoundUserException;
 import com.cheering.global.util.AwsS3Util;
 import java.io.IOException;
@@ -167,5 +168,17 @@ public class PostService {
         String loginId = authentication.getName();
         return userRepository.findById(Long.valueOf(loginId))
                 .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
+    }
+
+    public PostResponse detailPost(Long communityId, Long postId) {
+        Post findPost = postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
+
+        PostOwnerResponse postOwnerResponse = PostOwnerResponse.of(findPost.getOwner().getId(),
+                findPost.getPostInfo().getWriterName(), findPost.getPostInfo()
+                        .getImage());
+
+        List<URL> imageUrls = findPost.getFiles().stream().map(ImageFile::getPath).toList();
+        return PostResponse.of(findPost, postOwnerResponse, imageUrls);
     }
 }
