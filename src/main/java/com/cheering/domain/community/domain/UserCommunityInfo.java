@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 public class UserCommunityInfo {
     @Id
     @GeneratedValue
-    @Column(name = "user_communities_id")
+    @Column(name = "user_community_info_id")
     private Long id;
 
     private String nickname;
