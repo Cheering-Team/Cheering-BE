@@ -159,8 +159,6 @@ public class PostService {
             postRepository.save(newPost);
             return newPost.getId();
         }
-
-
     }
 
     private User getLoginUser() {

@@ -25,7 +25,8 @@ public enum SuccessMessage {
     DETAIL_POST_SUCCESS(HttpStatus.OK, "detail post success"),
 
     //comment
-    CREATE_COMMENT_SUCCESS(HttpStatus.CREATED, "create comment success");
+    CREATE_COMMENT_SUCCESS(HttpStatus.CREATED, "create comment success"),
+    GET_COMMENT_SUCCESS(HttpStatus.OK, "get comment success");
 
     private final HttpStatus httpStatus;
     private final String message;
