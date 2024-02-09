@@ -4,10 +4,10 @@ import java.net.URL;
 import lombok.Builder;
 
 @Builder
-public record PostOwnerResponse(Long id,
-                                String name,
-                                URL profileImage) {
-    public static PostOwnerResponse of(Long id, String name, URL profileImage) {
+public record WriterResponse(Long id,
+                             String name,
+                             URL profileImage) {
+    public static WriterResponse of(Long id, String name, URL profileImage) {
         return builder()
                 .id(id)
                 .name(name)

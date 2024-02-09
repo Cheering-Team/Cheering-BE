@@ -13,7 +13,7 @@ import com.cheering.domain.post.repository.PostInfoRepository;
 import com.cheering.domain.post.repository.PostRepository;
 import com.cheering.domain.user.domain.Team;
 import com.cheering.domain.user.domain.User;
-import com.cheering.domain.user.dto.response.PostOwnerResponse;
+import com.cheering.domain.user.dto.response.WriterResponse;
 import com.cheering.domain.user.repository.UserRepository;
 import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.community.NotFoundUserCommunityInfoException;
@@ -53,10 +53,10 @@ public class PostService {
 
         List<Post> result = postRepository.findByCommunityAndOwner(findCommunity, findPlayer);
 
-        PostOwnerResponse postOwnerResponse = PostOwnerResponse.of(findPlayer.getId(), findPlayer.getKoreanName(),
+        WriterResponse writerResponse = WriterResponse.of(findPlayer.getId(), findPlayer.getKoreanName(),
                 findPlayer.getProfileImage());
 
-        return PostResponse.ofList(result, postOwnerResponse);
+        return PostResponse.ofList(result, writerResponse);
     }
 
     @Transactional(readOnly = true)
@@ -71,12 +71,12 @@ public class PostService {
 
         List<PostResponse> result = new ArrayList<>();
         for (Post fanPost : findFanPosts) {
-            PostOwnerResponse postOwnerResponse = PostOwnerResponse.of(fanPost.getOwner().getId(),
+            WriterResponse writerResponse = WriterResponse.of(fanPost.getOwner().getId(),
                     fanPost.getPostInfo().getWriterName(), fanPost.getPostInfo().getImage());
 
             List<URL> imageUrls = fanPost.getFiles().stream().map(ImageFile::getPath).toList();
 
-            PostResponse postResponse = PostResponse.of(fanPost, postOwnerResponse, imageUrls);
+            PostResponse postResponse = PostResponse.of(fanPost, writerResponse, imageUrls);
 
             result.add(postResponse);
         }
@@ -92,13 +92,13 @@ public class PostService {
         Team findTeam = findCommunity.getTeam();
         List<Post> result = postRepository.findByCommunityAndTeam(findCommunity, findTeam);
 
-        PostOwnerResponse postOwnerResponse = PostOwnerResponse.builder()
+        WriterResponse writerResponse = WriterResponse.builder()
                 .id(findTeam.getId())
                 .name(findTeam.getTeamCommunity().getName())
                 .profileImage(findCommunity.getThumbnailImage())
                 .build();
 
-        return PostResponse.ofList(result, postOwnerResponse);
+        return PostResponse.ofList(result, writerResponse);
     }
 
     @Transactional
@@ -174,11 +174,11 @@ public class PostService {
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
 
-        PostOwnerResponse postOwnerResponse = PostOwnerResponse.of(findPost.getOwner().getId(),
+        WriterResponse writerResponse = WriterResponse.of(findPost.getOwner().getId(),
                 findPost.getPostInfo().getWriterName(), findPost.getPostInfo()
                         .getImage());
 
         List<URL> imageUrls = findPost.getFiles().stream().map(ImageFile::getPath).toList();
-        return PostResponse.of(findPost, postOwnerResponse, imageUrls);
+        return PostResponse.of(findPost, writerResponse, imageUrls);
     }
 }
