@@ -13,7 +13,6 @@ import com.cheering.domain.community.dto.response.UserCommunityInfoResponse;
 import com.cheering.domain.community.repository.CommunityRepository;
 import com.cheering.domain.community.repository.UserCommunityInfoRepository;
 import com.cheering.domain.post.domain.Post;
-import com.cheering.domain.post.domain.PostInfo;
 import com.cheering.domain.post.repository.PostInfoRepository;
 import com.cheering.domain.post.repository.PostRepository;
 import com.cheering.domain.user.domain.Role;

@@ -6,7 +6,6 @@ import com.cheering.domain.community.repository.CommunityRepository;
 import com.cheering.domain.community.repository.UserCommunityInfoRepository;
 import com.cheering.domain.post.domain.ImageFile;
 import com.cheering.domain.post.domain.Post;
-import com.cheering.domain.post.domain.PostInfo;
 import com.cheering.domain.post.dto.PostResponse;
 import com.cheering.domain.post.repository.ImageFileRepository;
 import com.cheering.domain.post.repository.PostInfoRepository;
