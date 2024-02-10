@@ -2,7 +2,7 @@ package com.cheering.domain.post.dto;
 
 import com.cheering.domain.post.domain.ImageFile;
 import com.cheering.domain.post.domain.Post;
-import com.cheering.domain.user.dto.response.PostOwnerResponse;
+import com.cheering.domain.user.dto.response.WriterResponse;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,11 +16,11 @@ public record PostResponse(Long id,
                            List<URL> image,
                            LocalDateTime createdAt,
                            LocalDateTime updatedAt,
-                           PostOwnerResponse writer
+                           WriterResponse writer
 ) {
-    public static PostResponse of(Post post, PostOwnerResponse postOwnerResponse, List<URL> files) {
+    public static PostResponse of(Post post, WriterResponse writerResponse, List<URL> files) {
         return PostResponse.builder()
-                .writer(postOwnerResponse)
+                .writer(writerResponse)
                 .id(post.getId())
                 .content(post.getContent())
                 .image(files)
@@ -31,9 +31,9 @@ public record PostResponse(Long id,
                 .build();
     }
 
-    public static List<PostResponse> ofList(List<Post> posts, PostOwnerResponse postOwnerResponse) {
+    public static List<PostResponse> ofList(List<Post> posts, WriterResponse writerResponse) {
         return posts.stream().map(post -> PostResponse.builder()
-                .writer(postOwnerResponse)
+                .writer(writerResponse)
                 .id(post.getId())
                 .content(post.getContent())
                 .image(post.getFiles().stream().map(ImageFile::getPath).toList())

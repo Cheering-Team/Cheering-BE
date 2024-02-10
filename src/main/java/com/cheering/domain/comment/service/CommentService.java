@@ -1,6 +1,7 @@
 package com.cheering.domain.comment.service;
 
 import com.cheering.domain.comment.domain.Comment;
+import com.cheering.domain.comment.dto.CommentResponse;
 import com.cheering.domain.comment.repository.CommentRepository;
 import com.cheering.domain.community.domain.Community;
 import com.cheering.domain.community.domain.UserCommunityInfo;
@@ -15,6 +16,7 @@ import com.cheering.global.exception.community.NotFoundUserCommunityInfoExceptio
 import com.cheering.global.exception.constant.ExceptionMessage;
 import com.cheering.global.exception.post.NotFoundPostException;
 import com.cheering.global.exception.user.NotFoundUserException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,12 +46,13 @@ public class CommentService {
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
 
-        Comment newComment = Comment.builder().content(content)
+        Comment newComment = Comment.builder()
+                .content(content)
                 .post(findPost)
                 .content(content)
                 .writerInfo(findUserCommunityInfo)
                 .build();
-
+        
         commentRepository.save(newComment);
 
         return newComment.getId();
@@ -62,4 +65,13 @@ public class CommentService {
                 .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
     }
 
+    public List<CommentResponse> getComments(Long communityId, Long postId) {
+        Post findPost = postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
+        List<Comment> findComments = commentRepository.findCommentsByPost(findPost);
+
+        //todo: 추후 reCommentCount 계산 로직 구현 필요
+
+        return CommentResponse.ofList(findComments, 3L);
+    }
 }
