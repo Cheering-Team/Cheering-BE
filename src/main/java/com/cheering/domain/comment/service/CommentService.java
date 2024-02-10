@@ -52,7 +52,7 @@ public class CommentService {
                 .content(content)
                 .writerInfo(findUserCommunityInfo)
                 .build();
-
+        
         commentRepository.save(newComment);
 
         return newComment.getId();
