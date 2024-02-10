@@ -2,9 +2,8 @@ package com.cheering.domain.post.domain;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-import com.cheering.domain.community.domain.Community;
+import com.cheering.domain.community.domain.UserCommunityInfo;
 import com.cheering.domain.user.domain.Team;
-import com.cheering.domain.user.domain.User;
 import com.cheering.global.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,17 +33,9 @@ public class Post extends BaseEntity {
 
     private String content;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "community_id")
-    private Community community;
-
     @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "post_info_id")
-    private PostInfo postInfo;
-
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "user_id")
-    private User owner;
+    @JoinColumn(name = "user_community_info_id")
+    private UserCommunityInfo writerInfo;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "team_id")

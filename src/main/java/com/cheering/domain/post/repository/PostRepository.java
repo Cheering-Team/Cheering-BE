@@ -8,9 +8,9 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
-    List<Post> findByCommunityAndOwner(Community community, User user);
+    List<Post> findByWriterInfoCommunityAndWriterInfoUser(Community community, User user);
 
-    List<Post> findByCommunityAndTeam(Community community, Team team);
+    List<Post> findByWriterInfoCommunityAndTeam(Community community, Team team);
 
-    List<Post> findByCommunityAndOwnerIsNotNull(Community community);
+    List<Post> findByWriterInfoCommunityAndWriterInfoUserIsNotNull(Community community);
 }
