@@ -13,7 +13,6 @@ import com.cheering.domain.community.dto.response.UserCommunityInfoResponse;
 import com.cheering.domain.community.repository.CommunityRepository;
 import com.cheering.domain.community.repository.UserCommunityInfoRepository;
 import com.cheering.domain.post.domain.Post;
-import com.cheering.domain.post.repository.PostInfoRepository;
 import com.cheering.domain.post.repository.PostRepository;
 import com.cheering.domain.user.domain.Role;
 import com.cheering.domain.user.domain.Team;
@@ -45,7 +44,6 @@ public class CommunityService {
     private final CommunityRepository communityRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final PostRepository postRepository;
-    private final PostInfoRepository postInfoRepository;
     private final AwsS3Util awsS3Util;
 
     public List<FoundCommunitiesResponse> findCommunitiesByName(String name) {
@@ -295,11 +293,15 @@ public class CommunityService {
         Community community5 = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("히샬리송")
-                .fanCount(5L).thumbnailImage(userImageUrl).build();
+                .fanCount(5L)
+                .thumbnailImage(userImageUrl)
+                .build();
         Community community6 = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("메디슨")
-                .fanCount(6L).thumbnailImage(userImageUrl).build();
+                .fanCount(6L)
+                .thumbnailImage(userImageUrl)
+                .build();
 
         communityRepository.save(community1);
         communityRepository.save(community2);
@@ -376,54 +378,68 @@ public class CommunityService {
         userRepository.save(fan1);
         userRepository.save(fan2);
 
-        PostInfo fanPostInfo1 = PostInfo.builder().writerName(fan1.getNickname())
-                .image(userImageUrl).build();
-        PostInfo fanPostInfo2 = PostInfo.builder().writerName(fan2.getNickname())
-                .image(userImageUrl).build();
-        PostInfo fanPostInfo3 = PostInfo.builder().writerName(fan1.getNickname())
-                .image(userImageUrl).build();
-        PostInfo fanPostInfo4 = PostInfo.builder().writerName(playerA1.getNickname())
-                .image(userImageUrl).build();
-        PostInfo fanPostInfo5 = PostInfo.builder().writerName(playerA1.getNickname())
-                .image(userImageUrl).build();
+        UserCommunityInfo fanPostInfo1 = UserCommunityInfo.builder()
+                .nickname(fan1.getNickname())
+                .user(fan1)
+                .community(community1)
+                .profileImage(userImageUrl).build();
 
-        postInfoRepository.save(fanPostInfo1);
-        postInfoRepository.save(fanPostInfo2);
-        postInfoRepository.save(fanPostInfo3);
-        postInfoRepository.save(fanPostInfo4);
-        postInfoRepository.save(fanPostInfo5);
+        UserCommunityInfo fanPostInfo2 = UserCommunityInfo.builder()
+                .nickname(fan2.getNickname())
+                .user(fan2)
+                .community(community1)
+                .profileImage(userImageUrl).build();
 
-        Post fanPost1 = Post.builder().community(community1)
+        UserCommunityInfo fanPostInfo3 = UserCommunityInfo.builder()
+                .nickname(fan1.getNickname())
+                .user((fan1))
+                .community(psgCommunity)
+                .profileImage(userImageUrl).build();
+
+        UserCommunityInfo playerPostInfo1 = UserCommunityInfo.builder()
+                .user(playerA1)
+                .community(community1)
+                .nickname(playerA1.getNickname())
+                .profileImage(userImageUrl).build();
+
+        UserCommunityInfo playerPostInfo2 = UserCommunityInfo.builder()
+                .nickname(playerA1.getNickname())
+                .user(playerA1)
+                .community(psgCommunity)
+                .profileImage(userImageUrl).build();
+
+        userCommunityInfoRepository.save(fanPostInfo1);
+        userCommunityInfoRepository.save(fanPostInfo2);
+        userCommunityInfoRepository.save(fanPostInfo3);
+        userCommunityInfoRepository.save(playerPostInfo1);
+        userCommunityInfoRepository.save(playerPostInfo2);
+
+        Post fanPost1 = Post.builder()
                 .content("팬 -> 이강인 커뮤니티1")
-                .owner(fan1)
-                .postInfo(fanPostInfo1)
+                .writerInfo(fanPostInfo1)
                 .build();
 
-        Post fanPost2 = Post.builder().community(community1)
+        Post fanPost2 = Post.builder()
                 .content("팬 -> 이강인 커뮤니티2")
-                .owner(fan2)
-                .postInfo(fanPostInfo2)
+                .writerInfo(fanPostInfo2)
                 .build();
 
-        Post fanPost3 = Post.builder().community(psgCommunity)
+        Post fanPost3 = Post.builder()
                 .content("팬 -> PSG 팀 커뮤니티")
-                .owner(fan1)
-                .postInfo(fanPostInfo3)
+                .writerInfo(fanPostInfo3)
                 .build();
 
-        Post playerPost1 = Post.builder().community(community1)
+        Post playerPost1 = Post.builder()
                 .content("아시안 컵 쉽네 ㅋ")
-                .owner(playerA1)
-                .postInfo(fanPostInfo4)
+                .writerInfo(playerPostInfo1)
                 .build();
 
-        Post playerPost2 = Post.builder().community(psgCommunity)
+        Post playerPost2 = Post.builder()
                 .content("선수 -> PSG 팀 커뮤니티")
-                .owner(playerA1)
-                .postInfo(fanPostInfo5)
+                .writerInfo(playerPostInfo2)
                 .build();
 
-        Post teamPost = Post.builder().community(psgCommunity)
+        Post teamPost = Post.builder()
                 .content("PSG 팀 게시글 입니다.")
                 .team(teamPSG)
                 .build();
