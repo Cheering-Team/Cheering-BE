@@ -1,4 +1,4 @@
-package com.cheering.domain.comment.dto;
+package com.cheering.domain.comment.dto.response;
 
 import com.cheering.domain.comment.domain.Comment;
 import com.cheering.domain.community.domain.UserCommunityInfo;
@@ -22,7 +22,7 @@ public record CommentResponse(Long id,
 
         for (Comment comment : comments) {
             UserCommunityInfo writerInfo = comment.getWriterInfo();
-            
+
             WriterResponse writerResponse = WriterResponse.of(writerInfo.getUser().getId(), writerInfo.getNickname(),
                     writerInfo.getProfileImage());
 

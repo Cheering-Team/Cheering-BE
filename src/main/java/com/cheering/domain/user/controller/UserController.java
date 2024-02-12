@@ -110,7 +110,7 @@ public class UserController {
     public ResponseEntity<ResponseBodyDto<?>> reIssueAccessToken(HttpServletRequest request,
                                                                  HttpServletResponse response) {
         String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
-        String newAccessToken = null;
+        String newAccessToken;
 
         try {
             if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken, request)) {
