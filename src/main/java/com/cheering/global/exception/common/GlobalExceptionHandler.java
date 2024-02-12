@@ -4,7 +4,10 @@ import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.global.exception.community.DuplicatedCommunityJoinException;
 import com.cheering.global.exception.community.NotFoundCommunityException;
+import com.cheering.global.exception.community.NotFoundUserCommunityInfoException;
 import com.cheering.global.exception.constant.ExceptionMessage;
+import com.cheering.global.exception.post.InvalidWriterTypeException;
+import com.cheering.global.exception.post.NotFoundPostException;
 import com.cheering.global.exception.user.DuplicatedEmailException;
 import com.cheering.global.exception.user.InvalidEmailFormatException;
 import com.cheering.global.exception.user.MisMatchPasswordException;
@@ -82,5 +85,31 @@ public class GlobalExceptionHandler {
         log.error("handle DuplicatedCommunityJoinException", e);
         return ResponseGenerator.fail(ExceptionMessage.DUPLICATED_JOIN_COMMUNITY, null);
     }
-    
+
+    //존재하지 않는 유저 커뮤니티 정보 조회 예외
+    @ExceptionHandler(NotFoundUserCommunityInfoException.class)
+    public ResponseEntity<ResponseBodyDto<?>> handleNotFoundUserCommunityInfoException(
+            NotFoundUserCommunityInfoException e
+    ) {
+        log.error("handle NotFoundUserCommunityInfoException", e);
+        return ResponseGenerator.fail(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO, null);
+    }
+
+    //작성자 타입 미스매치 예외
+    @ExceptionHandler(InvalidWriterTypeException.class)
+    public ResponseEntity<ResponseBodyDto<?>> handleInvalidWriterTypeException(
+            InvalidWriterTypeException e
+    ) {
+        log.error("handle InvalidWriterTypeException", e);
+        return ResponseGenerator.fail(ExceptionMessage.INVALID_WRITER_TYPE, null);
+    }
+
+    //존재하지 않는 게시글 조회 예외
+    @ExceptionHandler(NotFoundPostException.class)
+    public ResponseEntity<ResponseBodyDto<?>> handleNotFoundPostException(
+            NotFoundPostException e
+    ) {
+        log.error("handle NotFoundPostException", e);
+        return ResponseGenerator.fail(ExceptionMessage.NOT_FOUND_POST, null);
+    }
 }
