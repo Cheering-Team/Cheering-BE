@@ -24,6 +24,7 @@ public class LoginUserAuthentication implements Authentication {
         if (isAuthenticated) {
             return roles;
         }
+        
         return Collections.singletonList(new SimpleGrantedAuthority(Role.ROLE_USER.name()));
     }
 

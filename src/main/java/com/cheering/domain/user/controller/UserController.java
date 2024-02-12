@@ -20,9 +20,7 @@ import com.cheering.global.constant.SuccessMessage;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.global.exception.constant.ExceptionMessage;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +88,7 @@ public class UserController {
 
     @GetMapping("/signout")
     public ResponseEntity<ResponseBodyDto<?>> signOut(HttpServletRequest request) {
-        String refreshToken = (String) request.getHeader("Refresh-Token");
+        String refreshToken = (String) request.getHeader(JwtConstant.REFRESH_TOKEN_KEY_NAME);
 
         String deleteValue = redisRepository.delete(refreshToken.substring(7));
 
@@ -107,25 +105,10 @@ public class UserController {
     }
 
     @GetMapping("refresh")
-    public ResponseEntity<ResponseBodyDto<?>> reIssueAccessToken(HttpServletRequest request,
-                                                                 HttpServletResponse response) {
+    public ResponseEntity<ResponseBodyDto<?>> reIssueAccessToken(HttpServletRequest request) {
         String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
-        String newAccessToken;
+        String newAccessToken = jwtTokenProvider.getAccessToken(refreshToken);
 
-        try {
-            if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken, request)) {
-                log.info("Authenticated User");
-                newAccessToken = jwtTokenProvider.reIssueAccessToken(refreshToken);
-
-                response.setHeader("Access-Token", JwtConstant.GRANT_TYPE + " " + newAccessToken);
-                return ResponseGenerator.success(SuccessMessage.REISSUE_ACCESS_TOKEN_SUCCESS, null);
-            }
-        } catch (ExpiredJwtException e) {
-            log.error("expired Refresh-Token", e);
-
-            return ResponseGenerator.fail(ExceptionMessage.EXPIRED_REFRESH_TOKEN, null);
-        }
-
-        return null;
+        return ResponseGenerator.success(SuccessMessage.REISSUE_ACCESS_TOKEN_SUCCESS, newAccessToken);
     }
 }

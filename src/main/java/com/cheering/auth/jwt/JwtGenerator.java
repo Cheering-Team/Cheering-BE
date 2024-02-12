@@ -68,7 +68,6 @@ public class JwtGenerator {
         if (redisUserDto != null) {
             return generateAccessToken(redisUserDto.id(), redisUserDto.authorities(), expireTime);
         } else {
-            System.out.println("redisUserDto is null");
             // 리프레시 토큰이 만료됐으므로 다시 로그인 해야 함
             return null;
         }

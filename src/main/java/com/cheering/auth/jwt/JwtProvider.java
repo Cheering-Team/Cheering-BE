@@ -1,6 +1,8 @@
 package com.cheering.auth.jwt;
 
 import com.cheering.auth.LoginUserAuthentication;
+import com.cheering.global.exception.auth.ExpiredRefreshTokenException;
+import com.cheering.global.exception.constant.ExceptionMessage;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -57,13 +59,12 @@ public class JwtProvider {
     }
 
     // 토큰 정보를 검증하는 메서드
-    public boolean validateToken(String token, HttpServletRequest request) throws ExpiredJwtException {
+    public boolean validateToken(String token) throws ExpiredJwtException {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token);
-
             return true;
         } catch (SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT Token", e);
@@ -90,24 +91,39 @@ public class JwtProvider {
         }
     }
 
-    public String reIssueAccessToken(String refreshToken) {
-        return jwtGenerator.reIssueAccessToken(refreshToken);
+    public String getAccessToken(String refreshToken) {
+        try {
+            if (refreshToken != null && validateToken(refreshToken)) {
+                log.info("Authenticated User");
+
+                return jwtGenerator.reIssueAccessToken(refreshToken);
+            }
+        } catch (ExpiredJwtException e) {
+            log.error("expired Refresh-Token", e);
+            throw new ExpiredRefreshTokenException(ExceptionMessage.EXPIRED_REFRESH_TOKEN);
+        }
+
+        return null;
     }
 
     // Request Header에서 토큰 정보 추출
     public String resolveAccessToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(JwtConstant.ACCESS_TOKEN_KEY_NAME);
+
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(JwtConstant.GRANT_TYPE)) {
             return bearerToken.substring(7);
         }
+
         return null;
     }
 
     public String resolveRefreshToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(JwtConstant.REFRESH_TOKEN_KEY_NAME);
+
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(JwtConstant.GRANT_TYPE)) {
             return bearerToken.substring(7);
         }
+
         return null;
     }
 }
