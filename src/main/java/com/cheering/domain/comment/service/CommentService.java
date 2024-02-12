@@ -1,7 +1,7 @@
 package com.cheering.domain.comment.service;
 
 import com.cheering.domain.comment.domain.Comment;
-import com.cheering.domain.comment.dto.CommentResponse;
+import com.cheering.domain.comment.dto.response.CommentResponse;
 import com.cheering.domain.comment.repository.CommentRepository;
 import com.cheering.domain.community.domain.Community;
 import com.cheering.domain.community.domain.UserCommunityInfo;
@@ -52,7 +52,7 @@ public class CommentService {
                 .content(content)
                 .writerInfo(findUserCommunityInfo)
                 .build();
-        
+
         commentRepository.save(newComment);
 
         return newComment.getId();
