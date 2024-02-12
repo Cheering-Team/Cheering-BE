@@ -96,7 +96,7 @@ public class JwtProvider {
 
     // Request Header에서 토큰 정보 추출
     public String resolveAccessToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Access-Token");
+        String bearerToken = request.getHeader(JwtConstant.ACCESS_TOKEN_KEY_NAME);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(JwtConstant.GRANT_TYPE)) {
             return bearerToken.substring(7);
         }
@@ -104,7 +104,7 @@ public class JwtProvider {
     }
 
     public String resolveRefreshToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Refresh-Token");
+        String bearerToken = request.getHeader(JwtConstant.REFRESH_TOKEN_KEY_NAME);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(JwtConstant.GRANT_TYPE)) {
             return bearerToken.substring(7);
         }

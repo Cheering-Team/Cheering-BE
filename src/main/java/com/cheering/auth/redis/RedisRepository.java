@@ -24,7 +24,6 @@ public class RedisRepository {
             String value = mapper.writeValueAsString(dto);
             redis.set(key, value, REFRESH_TOKEN_EXPIRE_TIME / 1000);
         } catch (JsonProcessingException e) {
-
             throw new RuntimeException(e);
         }
     }
