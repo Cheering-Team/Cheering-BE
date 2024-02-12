@@ -62,15 +62,14 @@ public class JwtGenerator {
     public String reIssueAccessToken(String refreshToken) {
         RedisUserDto redisUserDto = redisRepository.get(refreshToken);
 
-        long now = (new Date()).getTime();
-        Date expireTime = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
-
         if (redisUserDto != null) {
+            long now = (new Date()).getTime();
+            Date expireTime = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+
             return generateAccessToken(redisUserDto.id(), redisUserDto.authorities(), expireTime);
-        } else {
-            // 리프레시 토큰이 만료됐으므로 다시 로그인 해야 함
-            return null;
         }
+
+        return null;
     }
 
     private String generateAccessToken(String id, List<String> authorities, Date expireTime) {
