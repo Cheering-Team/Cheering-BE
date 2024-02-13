@@ -26,7 +26,11 @@ public enum SuccessMessage {
 
     //comment
     CREATE_COMMENT_SUCCESS(HttpStatus.CREATED, "create comment success"),
-    GET_COMMENT_SUCCESS(HttpStatus.OK, "get comment success");
+    GET_COMMENT_SUCCESS(HttpStatus.OK, "get comment success"),
+
+    //re_comment
+    CREATE_RE_COMMENT_SUCCESS(HttpStatus.CREATED, "create re-comment success"),
+    GET_RE_COMMENT_SUCCESS(HttpStatus.OK, "get re-comments-success");
 
     private final HttpStatus httpStatus;
     private final String message;
