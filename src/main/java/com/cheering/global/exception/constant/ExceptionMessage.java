@@ -31,7 +31,10 @@ public enum ExceptionMessage {
 
     //post
     INVALID_WRITER_TYPE(UNAUTHORIZED, "invalid writer type"),
-    NOT_FOUND_POST(NOT_FOUND, "not found post");
+    NOT_FOUND_POST(NOT_FOUND, "not found post"),
+
+    //comment
+    NOT_FOUND_COMMENT(NOT_FOUND, "not found comment");
 
     private final HttpStatus httpStatus;
     private final String message;

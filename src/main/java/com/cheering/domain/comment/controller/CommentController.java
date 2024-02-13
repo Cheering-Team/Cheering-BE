@@ -9,6 +9,8 @@ import com.cheering.global.dto.ResponseGenerator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,8 +35,10 @@ public class CommentController {
     @PostMapping("communities/{communityId}/posts/{postId}/comments")
     public ResponseEntity<ResponseBodyDto<?>> createComment(@PathVariable("communityId") Long communityId,
                                                             @PathVariable("postId") Long postId,
-                                                            @RequestBody CommentRequest commentRequest
+                                                            @RequestBody CommentRequest commentRequest,
+                                                            @AuthenticationPrincipal Authentication user
     ) {
+        System.out.println("loginUser" + user);
         Long newCommentId = commentService.createComment(communityId, postId, commentRequest.content());
 
         return ResponseGenerator.success(SuccessMessage.CREATE_COMMENT_SUCCESS, newCommentId);
