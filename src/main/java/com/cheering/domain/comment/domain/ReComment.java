@@ -3,6 +3,7 @@ package com.cheering.domain.comment.domain;
 import static jakarta.persistence.FetchType.LAZY;
 
 import com.cheering.domain.community.domain.UserCommunityInfo;
+import com.cheering.global.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,7 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class ReComment {
+public class ReComment extends BaseEntity {
     @Id
     @GeneratedValue
     @Column(name = "re_comment_id")
