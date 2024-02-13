@@ -58,13 +58,6 @@ public class CommentService {
         return newComment.getId();
     }
 
-    private User getLoginUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String loginId = authentication.getName();
-        return userRepository.findById(Long.valueOf(loginId))
-                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
-    }
-
     public List<CommentResponse> getComments(Long communityId, Long postId) {
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
@@ -73,5 +66,12 @@ public class CommentService {
         //todo: 추후 reCommentCount 계산 로직 구현 필요
 
         return CommentResponse.ofList(findComments, 3L);
+    }
+
+    private User getLoginUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String loginId = authentication.getName();
+        return userRepository.findById(Long.valueOf(loginId))
+                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
     }
 }

@@ -3,6 +3,7 @@ package com.cheering.global.exception.common;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.global.exception.auth.ExpiredRefreshTokenException;
+import com.cheering.global.exception.comment.NotFoundCommentException;
 import com.cheering.global.exception.community.DuplicatedCommunityJoinException;
 import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.community.NotFoundUserCommunityInfoException;
@@ -121,5 +122,12 @@ public class GlobalExceptionHandler {
     ) {
         log.error("handle ExpiredRefreshTokenException", e);
         return ResponseGenerator.fail(ExceptionMessage.EXPIRED_REFRESH_TOKEN, null);
+    }
+
+    //존재하지 않는 댓글 조회 예외
+    @ExceptionHandler(NotFoundCommentException.class)
+    public ResponseEntity<ResponseBodyDto<?>> handleNotFoundCommentException(NotFoundCommentException e) {
+        log.error("handle NotFoundCommentException", e);
+        return ResponseGenerator.fail(ExceptionMessage.NOT_FOUND_COMMENT, null);
     }
 }
