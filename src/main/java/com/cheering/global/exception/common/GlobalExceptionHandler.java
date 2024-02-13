@@ -2,6 +2,7 @@ package com.cheering.global.exception.common;
 
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
+import com.cheering.global.exception.auth.ExpiredRefreshTokenException;
 import com.cheering.global.exception.community.DuplicatedCommunityJoinException;
 import com.cheering.global.exception.community.NotFoundCommunityException;
 import com.cheering.global.exception.community.NotFoundUserCommunityInfoException;
@@ -111,5 +112,14 @@ public class GlobalExceptionHandler {
     ) {
         log.error("handle NotFoundPostException", e);
         return ResponseGenerator.fail(ExceptionMessage.NOT_FOUND_POST, null);
+    }
+
+    //리프레시 토큰 만료 예외
+    @ExceptionHandler(ExpiredRefreshTokenException.class)
+    public ResponseEntity<ResponseBodyDto<?>> handleExpiredRefreshTokenException(
+            ExpiredRefreshTokenException e
+    ) {
+        log.error("handle ExpiredRefreshTokenException", e);
+        return ResponseGenerator.fail(ExceptionMessage.EXPIRED_REFRESH_TOKEN, null);
     }
 }
