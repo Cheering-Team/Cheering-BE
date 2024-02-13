@@ -88,13 +88,14 @@ public class UserController {
 
     @GetMapping("/signout")
     public ResponseEntity<ResponseBodyDto<?>> signOut(HttpServletRequest request) {
-        String refreshToken = (String) request.getHeader(JwtConstant.REFRESH_TOKEN_KEY_NAME);
+        String refreshToken = request.getHeader(JwtConstant.REFRESH_TOKEN_KEY_NAME);
 
         String deleteValue = redisRepository.delete(refreshToken.substring(7));
 
         if (deleteValue == null) {
             return ResponseGenerator.fail(ExceptionMessage.FAIL_SIGN_OUT, null);
         }
+
         return ResponseGenerator.success(SuccessMessage.SIGN_OUT_SUCCESS, null);
     }
 
@@ -104,7 +105,7 @@ public class UserController {
         return ResponseGenerator.success(SuccessMessage.SEARCH_COMMUNITY_SUCCESS, userCommunities);
     }
 
-    @GetMapping("refresh")
+    @GetMapping("/refresh")
     public ResponseEntity<ResponseBodyDto<?>> reIssueAccessToken(HttpServletRequest request) {
         String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
         String newAccessToken = jwtTokenProvider.getAccessToken(refreshToken);
