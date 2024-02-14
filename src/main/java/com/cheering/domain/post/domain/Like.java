@@ -2,6 +2,7 @@ package com.cheering.domain.post.domain;
 
 import static jakarta.persistence.FetchType.LAZY;
 
+import com.cheering.domain.community.constant.BooleanType;
 import com.cheering.domain.user.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,7 +27,7 @@ public class Like {
     @Column(name = "like_id")
     private Long id;
 
-    private Long count;
+    private BooleanType like;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")

@@ -39,7 +39,6 @@ public class ReCommentController {
     public ResponseEntity<ResponseBodyDto<?>> getReComments(@PathVariable("communityId") Long communityId,
                                                             @PathVariable("postId") Long postId,
                                                             @PathVariable("commentId") Long commentId) {
-
         List<ReCommentResponse> findReComments = reCommentService.getReComments(commentId);
 
         return ResponseGenerator.success(SuccessMessage.GET_RE_COMMENT_SUCCESS, findReComments);
