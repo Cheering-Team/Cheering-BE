@@ -12,7 +12,9 @@ import com.cheering.domain.community.dto.response.SearchCommunityResponse;
 import com.cheering.domain.community.dto.response.UserCommunityInfoResponse;
 import com.cheering.domain.community.repository.CommunityRepository;
 import com.cheering.domain.community.repository.UserCommunityInfoRepository;
+import com.cheering.domain.post.domain.Interesting;
 import com.cheering.domain.post.domain.Post;
+import com.cheering.domain.post.repository.InterestingRepository;
 import com.cheering.domain.post.repository.PostRepository;
 import com.cheering.domain.user.domain.Role;
 import com.cheering.domain.user.domain.Team;
@@ -45,6 +47,7 @@ public class CommunityService {
     private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final PostRepository postRepository;
     private final AwsS3Util awsS3Util;
+    private final InterestingRepository interestingRepository;
 
     public List<FoundCommunitiesResponse> findCommunitiesByName(String name) {
         List<Community> communities = communityRepository.findByNameContainingIgnoreCase(name);
@@ -450,5 +453,12 @@ public class CommunityService {
         postRepository.save(playerPost1);
         postRepository.save(playerPost2);
         postRepository.save(teamPost);
+
+        Interesting interesting = Interesting.builder().status(BooleanType.FALSE)
+                .user(playerA1)
+                .post(playerPost1)
+                .build();
+
+        interestingRepository.save(interesting);
     }
 }

@@ -1,13 +1,16 @@
 package com.cheering.domain.post.service;
 
+import com.cheering.domain.community.constant.BooleanType;
 import com.cheering.domain.community.domain.Community;
 import com.cheering.domain.community.domain.UserCommunityInfo;
 import com.cheering.domain.community.repository.CommunityRepository;
 import com.cheering.domain.community.repository.UserCommunityInfoRepository;
 import com.cheering.domain.post.domain.ImageFile;
+import com.cheering.domain.post.domain.Interesting;
 import com.cheering.domain.post.domain.Post;
 import com.cheering.domain.post.dto.PostResponse;
 import com.cheering.domain.post.repository.ImageFileRepository;
+import com.cheering.domain.post.repository.InterestingRepository;
 import com.cheering.domain.post.repository.PostRepository;
 import com.cheering.domain.user.domain.Team;
 import com.cheering.domain.user.domain.User;
@@ -23,6 +26,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,6 +44,7 @@ public class PostService {
     private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final ImageFileRepository imageFileRepository;
     private final AwsS3Util awsS3Util;
+    private final InterestingRepository interestingRepository;
 
     @Transactional(readOnly = true)
     public List<PostResponse> getPlayerPosts(Long communityId) {
@@ -162,5 +167,26 @@ public class PostService {
 
         List<URL> imageUrls = findPost.getFiles().stream().map(ImageFile::getPath).toList();
         return PostResponse.of(findPost, writerResponse, imageUrls);
+    }
+
+    @Transactional
+    public void toggleInteresting(Long communityId, Long postId) {
+        User loginUser = getLoginUser();
+
+        Post findPost = postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
+
+        Optional<Interesting> findInteresting = interestingRepository.findByUserAndPost(loginUser, findPost);
+        findInteresting.ifPresentOrElse(Interesting::changeStatus,
+                () -> {
+                    Interesting newInteresting = Interesting.builder()
+                            .post(findPost)
+                            .user(loginUser)
+                            .status(BooleanType.TRUE)
+                            .build();
+
+                    interestingRepository.save(newInteresting);
+                }
+        );
     }
 }
