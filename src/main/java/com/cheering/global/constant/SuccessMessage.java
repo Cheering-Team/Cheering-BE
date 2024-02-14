@@ -23,9 +23,8 @@ public enum SuccessMessage {
     GET_POSTS_SUCCESS(HttpStatus.OK, "get posts success"),
     CREATE_POST_SUCCESS(HttpStatus.CREATED, "create post success"),
     DETAIL_POST_SUCCESS(HttpStatus.OK, "detail post success"),
-    LIKE_SUCCESS(HttpStatus.OK, "like success"),
-    CANCEL_LIKE_SUCCESS(HttpStatus.OK, "like cancel success"),
-    
+    CHANGE_INTERESTING_SUCCESS(HttpStatus.OK, "change like status success"),
+
     //comment
     CREATE_COMMENT_SUCCESS(HttpStatus.CREATED, "create comment success"),
     GET_COMMENT_SUCCESS(HttpStatus.OK, "get comment success"),

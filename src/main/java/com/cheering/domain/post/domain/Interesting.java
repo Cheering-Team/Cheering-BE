@@ -6,6 +6,8 @@ import com.cheering.domain.community.constant.BooleanType;
 import com.cheering.domain.user.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -21,13 +23,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class Like {
+public class Interesting {
     @Id
     @GeneratedValue
     @Column(name = "like_id")
     private Long id;
 
-    private BooleanType like;
+    @Enumerated(EnumType.STRING)
+    private BooleanType status;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
@@ -36,4 +39,12 @@ public class Like {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
+
+    public void changeStatus() {
+        if (BooleanType.TRUE.equals(status)) {
+            status = BooleanType.FALSE;
+        } else {
+            status = BooleanType.TRUE;
+        }
+    }
 }
