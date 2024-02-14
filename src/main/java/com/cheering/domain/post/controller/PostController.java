@@ -63,4 +63,11 @@ public class PostController {
 
         return ResponseGenerator.success(SuccessMessage.DETAIL_POST_SUCCESS, findPostResponse);
     }
+
+    @PostMapping("/communities/{communityId}/posts/{postId}/like")
+    public ResponseEntity<ResponseBodyDto<?>> toggleInteresting(@PathVariable("communityId") Long communityId,
+                                                                @PathVariable("postId") Long postId) {
+        postService.toggleInteresting(communityId, postId);
+        return ResponseGenerator.success(SuccessMessage.CHANGE_INTERESTING_SUCCESS, null);
+    }
 }
