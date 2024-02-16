@@ -52,17 +52,21 @@ public class PostService {
                 new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
         User findPlayer = findCommunity.getUser();
-        
+
         UserCommunityInfo findWriterInfo = userCommunityInfoRepository.findByUserAndCommunity(findPlayer,
                         findCommunity)
                 .orElseThrow(() -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO));
 
-        List<Post> result = postRepository.findByWriterInfoCommunityAndWriterInfoUser(findCommunity, findPlayer);
+        List<Post> findPosts = postRepository.findByWriterInfoCommunityAndWriterInfoUser(findCommunity, findPlayer);
+
+        User loginUser = getLoginUser();
+
+        List<Interesting> interestings = getInterestingByPostAndUser(findPosts, loginUser);
 
         WriterResponse writerResponse = WriterResponse.of(findPlayer.getId(), findWriterInfo.getNickname(),
                 findWriterInfo.getProfileImage());
 
-        return PostResponse.ofList(result, writerResponse);
+        return PostResponse.ofList(findPosts, interestings, writerResponse);
     }
 
     @Transactional(readOnly = true)
@@ -75,14 +79,22 @@ public class PostService {
         List<Post> findFanPosts = findAllUserPosts.stream()
                 .filter(post -> !post.getWriterInfo().getUser().equals(findCommunity.getUser())).toList();
 
+        User loginUser = getLoginUser();
+        List<Interesting> interestings = getInterestingByPostAndUser(findFanPosts, loginUser);
+
         List<PostResponse> result = new ArrayList<>();
+
         for (Post fanPost : findFanPosts) {
             WriterResponse writerResponse = WriterResponse.of(fanPost.getWriterInfo().getUser().getId(),
                     fanPost.getWriterInfo().getNickname(), fanPost.getWriterInfo().getProfileImage());
 
             List<URL> imageUrls = fanPost.getFiles().stream().map(ImageFile::getPath).toList();
 
-            PostResponse postResponse = PostResponse.of(fanPost, writerResponse, imageUrls);
+            Interesting likeStatus = interestings.stream()
+                    .filter(interesting -> interesting.getPost().equals(fanPost))
+                    .findFirst().orElseThrow(RuntimeException::new);
+
+            PostResponse postResponse = PostResponse.of(fanPost, likeStatus.getStatus(), writerResponse, imageUrls);
 
             result.add(postResponse);
         }
@@ -104,7 +116,24 @@ public class PostService {
                 .profileImage(findCommunity.getThumbnailImage())
                 .build();
 
-        return PostResponse.ofList(result, writerResponse);
+        return PostResponse.ofList(result, null, writerResponse);
+    }
+
+    private List<Interesting> getInterestingByPostAndUser(List<Post> findPosts, User loginUser) {
+        List<Interesting> result = new ArrayList<>();
+
+        for (Post post : findPosts) {
+            Interesting findInteresting = interestingRepository.findByUserAndPost(loginUser, post).orElseGet(() ->
+                    Interesting.builder()
+                            .user(loginUser)
+                            .post(post)
+                            .status(BooleanType.FALSE)
+                            .build());
+
+            result.add(findInteresting);
+        }
+
+        return result;
     }
 
     @Transactional
@@ -169,8 +198,18 @@ public class PostService {
         WriterResponse writerResponse = WriterResponse.of(findPost.getWriterInfo().getUser().getId(),
                 findPost.getWriterInfo().getNickname(), findPost.getWriterInfo().getProfileImage());
 
+        User loginUser = getLoginUser();
+
+        Interesting interesting = interestingRepository.findByUserAndPost(loginUser, findPost)
+                .orElseGet(() -> Interesting.builder()
+                        .post(findPost)
+                        .user(loginUser)
+                        .status(BooleanType.FALSE)
+                        .build());
+
         List<URL> imageUrls = findPost.getFiles().stream().map(ImageFile::getPath).toList();
-        return PostResponse.of(findPost, writerResponse, imageUrls);
+        
+        return PostResponse.of(findPost, interesting.getStatus(), writerResponse, imageUrls);
     }
 
     @Transactional
