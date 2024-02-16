@@ -402,8 +402,8 @@ public class CommunityService {
         UserCommunityInfo playerPostInfo1 = UserCommunityInfo.builder()
                 .user(playerA1)
                 .community(community1)
-                .nickname(playerA1.getNickname())
-                .profileImage(userImageUrl).build();
+                .nickname(playerA1.getKoreanName())
+                .profileImage(playerLeeImageUrl).build();
 
         UserCommunityInfo playerPostInfo2 = UserCommunityInfo.builder()
                 .nickname(playerA1.getNickname())
