@@ -40,11 +40,13 @@ public class Interesting {
     @JoinColumn(name = "post_id")
     private Post post;
 
-    public void changeStatus() {
+    public BooleanType changeStatus() {
         if (BooleanType.TRUE.equals(status)) {
             status = BooleanType.FALSE;
         } else {
             status = BooleanType.TRUE;
         }
+
+        return status;
     }
 }

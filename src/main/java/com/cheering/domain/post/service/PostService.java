@@ -208,28 +208,29 @@ public class PostService {
                         .build());
 
         List<URL> imageUrls = findPost.getFiles().stream().map(ImageFile::getPath).toList();
-        
+
         return PostResponse.of(findPost, interesting.getStatus(), writerResponse, imageUrls);
     }
 
     @Transactional
-    public void toggleInteresting(Long communityId, Long postId) {
+    public BooleanType toggleInteresting(Long communityId, Long postId) {
         User loginUser = getLoginUser();
 
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
 
         Optional<Interesting> findInteresting = interestingRepository.findByUserAndPost(loginUser, findPost);
-        findInteresting.ifPresentOrElse(Interesting::changeStatus,
-                () -> {
-                    Interesting newInteresting = Interesting.builder()
-                            .post(findPost)
-                            .user(loginUser)
-                            .status(BooleanType.TRUE)
-                            .build();
+        if (findInteresting.isEmpty()) {
+            Interesting newInteresting = Interesting.builder()
+                    .post(findPost)
+                    .user(loginUser)
+                    .status(BooleanType.TRUE)
+                    .build();
 
-                    interestingRepository.save(newInteresting);
-                }
-        );
+            interestingRepository.save(newInteresting);
+            return BooleanType.TRUE;
+        }
+
+        return findInteresting.get().changeStatus();
     }
 }
