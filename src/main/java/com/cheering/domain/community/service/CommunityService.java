@@ -406,9 +406,9 @@ public class CommunityService {
                 .profileImage(playerLeeImageUrl).build();
 
         UserCommunityInfo playerPostInfo2 = UserCommunityInfo.builder()
-                .nickname(playerA1.getNickname())
                 .user(playerA1)
                 .community(psgCommunity)
+                .nickname(playerA1.getKoreanName())
                 .profileImage(userImageUrl).build();
 
         userCommunityInfoRepository.save(fanPostInfo1);

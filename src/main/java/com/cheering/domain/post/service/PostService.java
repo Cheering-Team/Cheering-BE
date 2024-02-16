@@ -52,11 +52,15 @@ public class PostService {
                 new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
 
         User findPlayer = findCommunity.getUser();
+        
+        UserCommunityInfo findWriterInfo = userCommunityInfoRepository.findByUserAndCommunity(findPlayer,
+                        findCommunity)
+                .orElseThrow(() -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO));
 
         List<Post> result = postRepository.findByWriterInfoCommunityAndWriterInfoUser(findCommunity, findPlayer);
 
-        WriterResponse writerResponse = WriterResponse.of(findPlayer.getId(), findPlayer.getKoreanName(),
-                findPlayer.getProfileImage());
+        WriterResponse writerResponse = WriterResponse.of(findPlayer.getId(), findWriterInfo.getNickname(),
+                findWriterInfo.getProfileImage());
 
         return PostResponse.ofList(result, writerResponse);
     }
