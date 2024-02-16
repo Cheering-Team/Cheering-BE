@@ -1,5 +1,6 @@
 package com.cheering.domain.post.controller;
 
+import com.cheering.domain.community.constant.BooleanType;
 import com.cheering.domain.post.dto.PostResponse;
 import com.cheering.domain.post.service.PostService;
 import com.cheering.global.constant.SuccessMessage;
@@ -62,5 +63,16 @@ public class PostController {
         PostResponse findPostResponse = postService.detailPost(communityId, postId);
 
         return ResponseGenerator.success(SuccessMessage.DETAIL_POST_SUCCESS, findPostResponse);
+    }
+
+    @PostMapping("/communities/{communityId}/posts/{postId}/like")
+    public ResponseEntity<ResponseBodyDto<?>> toggleInteresting(@PathVariable("communityId") Long communityId,
+                                                                @PathVariable("postId") Long postId) {
+        BooleanType toggleResult = postService.toggleInteresting(communityId, postId);
+        if (BooleanType.TRUE.equals(toggleResult)) {
+            return ResponseGenerator.success(SuccessMessage.LIKE_SUCCESS, null);
+        }
+
+        return ResponseGenerator.success(SuccessMessage.LIKE_CANCEL_SUCCESS, null);
     }
 }

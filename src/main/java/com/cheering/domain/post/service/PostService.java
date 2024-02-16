@@ -1,13 +1,16 @@
 package com.cheering.domain.post.service;
 
+import com.cheering.domain.community.constant.BooleanType;
 import com.cheering.domain.community.domain.Community;
 import com.cheering.domain.community.domain.UserCommunityInfo;
 import com.cheering.domain.community.repository.CommunityRepository;
 import com.cheering.domain.community.repository.UserCommunityInfoRepository;
 import com.cheering.domain.post.domain.ImageFile;
+import com.cheering.domain.post.domain.Interesting;
 import com.cheering.domain.post.domain.Post;
 import com.cheering.domain.post.dto.PostResponse;
 import com.cheering.domain.post.repository.ImageFileRepository;
+import com.cheering.domain.post.repository.InterestingRepository;
 import com.cheering.domain.post.repository.PostRepository;
 import com.cheering.domain.user.domain.Team;
 import com.cheering.domain.user.domain.User;
@@ -23,6 +26,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,6 +44,7 @@ public class PostService {
     private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final ImageFileRepository imageFileRepository;
     private final AwsS3Util awsS3Util;
+    private final InterestingRepository interestingRepository;
 
     @Transactional(readOnly = true)
     public List<PostResponse> getPlayerPosts(Long communityId) {
@@ -48,12 +53,20 @@ public class PostService {
 
         User findPlayer = findCommunity.getUser();
 
-        List<Post> result = postRepository.findByWriterInfoCommunityAndWriterInfoUser(findCommunity, findPlayer);
+        UserCommunityInfo findWriterInfo = userCommunityInfoRepository.findByUserAndCommunity(findPlayer,
+                        findCommunity)
+                .orElseThrow(() -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO));
 
-        WriterResponse writerResponse = WriterResponse.of(findPlayer.getId(), findPlayer.getKoreanName(),
-                findPlayer.getProfileImage());
+        List<Post> findPosts = postRepository.findByWriterInfoCommunityAndWriterInfoUser(findCommunity, findPlayer);
 
-        return PostResponse.ofList(result, writerResponse);
+        User loginUser = getLoginUser();
+
+        List<Interesting> interestings = getInterestingByPostAndUser(findPosts, loginUser);
+
+        WriterResponse writerResponse = WriterResponse.of(findPlayer.getId(), findWriterInfo.getNickname(),
+                findWriterInfo.getProfileImage());
+
+        return PostResponse.ofList(findPosts, interestings, writerResponse);
     }
 
     @Transactional(readOnly = true)
@@ -66,14 +79,22 @@ public class PostService {
         List<Post> findFanPosts = findAllUserPosts.stream()
                 .filter(post -> !post.getWriterInfo().getUser().equals(findCommunity.getUser())).toList();
 
+        User loginUser = getLoginUser();
+        List<Interesting> interestings = getInterestingByPostAndUser(findFanPosts, loginUser);
+
         List<PostResponse> result = new ArrayList<>();
+
         for (Post fanPost : findFanPosts) {
             WriterResponse writerResponse = WriterResponse.of(fanPost.getWriterInfo().getUser().getId(),
                     fanPost.getWriterInfo().getNickname(), fanPost.getWriterInfo().getProfileImage());
 
             List<URL> imageUrls = fanPost.getFiles().stream().map(ImageFile::getPath).toList();
 
-            PostResponse postResponse = PostResponse.of(fanPost, writerResponse, imageUrls);
+            Interesting likeStatus = interestings.stream()
+                    .filter(interesting -> interesting.getPost().equals(fanPost))
+                    .findFirst().orElseThrow(RuntimeException::new);
+
+            PostResponse postResponse = PostResponse.of(fanPost, likeStatus.getStatus(), writerResponse, imageUrls);
 
             result.add(postResponse);
         }
@@ -95,7 +116,24 @@ public class PostService {
                 .profileImage(findCommunity.getThumbnailImage())
                 .build();
 
-        return PostResponse.ofList(result, writerResponse);
+        return PostResponse.ofList(result, null, writerResponse);
+    }
+
+    private List<Interesting> getInterestingByPostAndUser(List<Post> findPosts, User loginUser) {
+        List<Interesting> result = new ArrayList<>();
+
+        for (Post post : findPosts) {
+            Interesting findInteresting = interestingRepository.findByUserAndPost(loginUser, post).orElseGet(() ->
+                    Interesting.builder()
+                            .user(loginUser)
+                            .post(post)
+                            .status(BooleanType.FALSE)
+                            .build());
+
+            result.add(findInteresting);
+        }
+
+        return result;
     }
 
     @Transactional
@@ -160,7 +198,39 @@ public class PostService {
         WriterResponse writerResponse = WriterResponse.of(findPost.getWriterInfo().getUser().getId(),
                 findPost.getWriterInfo().getNickname(), findPost.getWriterInfo().getProfileImage());
 
+        User loginUser = getLoginUser();
+
+        Interesting interesting = interestingRepository.findByUserAndPost(loginUser, findPost)
+                .orElseGet(() -> Interesting.builder()
+                        .post(findPost)
+                        .user(loginUser)
+                        .status(BooleanType.FALSE)
+                        .build());
+
         List<URL> imageUrls = findPost.getFiles().stream().map(ImageFile::getPath).toList();
-        return PostResponse.of(findPost, writerResponse, imageUrls);
+
+        return PostResponse.of(findPost, interesting.getStatus(), writerResponse, imageUrls);
+    }
+
+    @Transactional
+    public BooleanType toggleInteresting(Long communityId, Long postId) {
+        User loginUser = getLoginUser();
+
+        Post findPost = postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
+
+        Optional<Interesting> findInteresting = interestingRepository.findByUserAndPost(loginUser, findPost);
+        if (findInteresting.isEmpty()) {
+            Interesting newInteresting = Interesting.builder()
+                    .post(findPost)
+                    .user(loginUser)
+                    .status(BooleanType.TRUE)
+                    .build();
+
+            interestingRepository.save(newInteresting);
+            return BooleanType.TRUE;
+        }
+
+        return findInteresting.get().changeStatus();
     }
 }

@@ -12,7 +12,9 @@ import com.cheering.domain.community.dto.response.SearchCommunityResponse;
 import com.cheering.domain.community.dto.response.UserCommunityInfoResponse;
 import com.cheering.domain.community.repository.CommunityRepository;
 import com.cheering.domain.community.repository.UserCommunityInfoRepository;
+import com.cheering.domain.post.domain.Interesting;
 import com.cheering.domain.post.domain.Post;
+import com.cheering.domain.post.repository.InterestingRepository;
 import com.cheering.domain.post.repository.PostRepository;
 import com.cheering.domain.user.domain.Role;
 import com.cheering.domain.user.domain.Team;
@@ -45,6 +47,7 @@ public class CommunityService {
     private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final PostRepository postRepository;
     private final AwsS3Util awsS3Util;
+    private final InterestingRepository interestingRepository;
 
     public List<FoundCommunitiesResponse> findCommunitiesByName(String name) {
         List<Community> communities = communityRepository.findByNameContainingIgnoreCase(name);
@@ -310,7 +313,7 @@ public class CommunityService {
         communityRepository.save(community5);
         communityRepository.save(community6);
 
-        User playerA1 = User.builder()
+        User playerLee = User.builder()
                 .community(community1)
                 .koreanName("이강인")
                 .englishName("Lee Kang In")
@@ -329,11 +332,11 @@ public class CommunityService {
                 .koreanName("아센시오")
                 .role(Role.ROLE_PLAYER).build();
 
-        playerA1.connectTeam(teamPSG);
+        playerLee.connectTeam(teamPSG);
         playerA2.connectTeam(teamPSG);
         playerA3.connectTeam(teamPSG);
 
-        userRepository.save(playerA1);
+        userRepository.save(playerLee);
         userRepository.save(playerA2);
         userRepository.save(playerA3);
 
@@ -397,22 +400,22 @@ public class CommunityService {
                 .profileImage(userImageUrl).build();
 
         UserCommunityInfo playerPostInfo1 = UserCommunityInfo.builder()
-                .user(playerA1)
+                .user(playerLee)
                 .community(community1)
-                .nickname(playerA1.getNickname())
-                .profileImage(userImageUrl).build();
+                .nickname(playerLee.getKoreanName())
+                .profileImage(playerLeeImageUrl).build();
 
-        UserCommunityInfo playerPostInfo2 = UserCommunityInfo.builder()
-                .nickname(playerA1.getNickname())
-                .user(playerA1)
+        UserCommunityInfo teamPostInfo1 = UserCommunityInfo.builder()
+                .user(playerLee)
                 .community(psgCommunity)
+                .nickname(playerLee.getKoreanName())
                 .profileImage(userImageUrl).build();
 
         userCommunityInfoRepository.save(fanPostInfo1);
         userCommunityInfoRepository.save(fanPostInfo2);
         userCommunityInfoRepository.save(fanPostInfo3);
         userCommunityInfoRepository.save(playerPostInfo1);
-        userCommunityInfoRepository.save(playerPostInfo2);
+        userCommunityInfoRepository.save(teamPostInfo1);
 
         Post fanPost1 = Post.builder()
                 .content("팬 -> 이강인 커뮤니티1")
@@ -435,8 +438,8 @@ public class CommunityService {
                 .build();
 
         Post playerPost2 = Post.builder()
-                .content("선수 -> PSG 팀 커뮤니티")
-                .writerInfo(playerPostInfo2)
+                .content("선수 -> 선수 커뮤니티")
+                .writerInfo(playerPostInfo1)
                 .build();
 
         Post teamPost = Post.builder()
@@ -450,5 +453,18 @@ public class CommunityService {
         postRepository.save(playerPost1);
         postRepository.save(playerPost2);
         postRepository.save(teamPost);
+
+        Interesting interesting1 = Interesting.builder().status(BooleanType.TRUE)
+                .user(playerLee)
+                .post(playerPost1)
+                .build();
+
+        Interesting interesting2 = Interesting.builder().status(BooleanType.FALSE)
+                .user(playerLee)
+                .post(playerPost2)
+                .build();
+
+        interestingRepository.save(interesting1);
+        interestingRepository.save(interesting2);
     }
 }
