@@ -249,6 +249,7 @@ public class CommunityService {
                 .category(Category.SOCCER)
                 .league(League.FRENCH_LEAGUE1)
                 .thumbnailImage(teamPSGImageUrl)
+
                 .cType(CommunityType.TEAM_COMMUNITY)
                 .fanCount(3000L)
                 .build();
@@ -366,6 +367,23 @@ public class CommunityService {
         userRepository.save(playerB2);
         userRepository.save(playerB3);
 
+        User psgAdmin = User.builder()
+                .community(psgCommunity)
+                .koreanName("PSG 관리자")
+                .englishName("PSG Admin")
+                .profileImage(playerLeeImageUrl)
+                .role(Role.ROLE_USER).build();
+
+        User ttnAdmin = User.builder()
+                .community(tottenhamCommunity)
+                .koreanName("토트넘 관리자")
+                .englishName("tottenham Admin")
+                .profileImage(playerSonImageUrl)
+                .role(Role.ROLE_USER).build();
+
+        userRepository.save(psgAdmin);
+        userRepository.save(ttnAdmin);
+
         User fan1 = User.builder()
                 .nickname("이강인 팬")
                 .role(Role.ROLE_USER)
@@ -411,11 +429,25 @@ public class CommunityService {
                 .nickname(playerLee.getKoreanName())
                 .profileImage(userImageUrl).build();
 
+        UserCommunityInfo psgAdminInfo = UserCommunityInfo.builder()
+                .user(psgAdmin)
+                .community(psgCommunity)
+                .nickname(psgAdmin.getKoreanName())
+                .profileImage(userImageUrl).build();
+
+        UserCommunityInfo ttnAdminInfo = UserCommunityInfo.builder()
+                .user(ttnAdmin)
+                .community(psgCommunity)
+                .nickname(ttnAdmin.getKoreanName())
+                .profileImage(userImageUrl).build();
+
         userCommunityInfoRepository.save(fanPostInfo1);
         userCommunityInfoRepository.save(fanPostInfo2);
         userCommunityInfoRepository.save(fanPostInfo3);
         userCommunityInfoRepository.save(playerPostInfo1);
         userCommunityInfoRepository.save(teamPostInfo1);
+        userCommunityInfoRepository.save(psgAdminInfo);
+        userCommunityInfoRepository.save(ttnAdminInfo);
 
         Post fanPost1 = Post.builder()
                 .content("팬 -> 이강인 커뮤니티1")
