@@ -235,13 +235,9 @@ public class CommunityService {
     @Transactional
     public void setData() {
         URL teamTottenhanImageUrl = awsS3Util.getPath("community/team-profile/team_tottenhan_image.png");
-
         URL teamPSGImageUrl = awsS3Util.getPath("community/team-profile/team_PSG_image.jpeg");
-
         URL playerLeeImageUrl = awsS3Util.getPath("community/player-profile/player_leeKangIn.jpg");
-
         URL playerSonImageUrl = awsS3Util.getPath("community/player-profile/player_SonHeungMin.png");
-
         URL userImageUrl = awsS3Util.getPath("community/user-community-info-profile/user_img.avif");
 
         Community psgCommunity = Community.builder()
@@ -249,7 +245,6 @@ public class CommunityService {
                 .category(Category.SOCCER)
                 .league(League.FRENCH_LEAGUE1)
                 .thumbnailImage(teamPSGImageUrl)
-
                 .cType(CommunityType.TEAM_COMMUNITY)
                 .fanCount(3000L)
                 .build();
@@ -274,7 +269,7 @@ public class CommunityService {
         teamRepository.save(teamPSG);
         teamRepository.save(teamTottenham);
 
-        Community community1 = Community.builder()
+        Community leeCommunity = Community.builder()
                 .cType(CommunityType.PLAYER_COMMUNITY)
                 .name("이강인")
                 .fanCount(1L).thumbnailImage(playerLeeImageUrl).backgroundImage(playerLeeImageUrl).build();
@@ -287,7 +282,7 @@ public class CommunityService {
                 .name("아센시오")
                 .fanCount(3L).thumbnailImage(userImageUrl).build();
 
-        Community community4 = Community.builder()
+        Community sonCommunity = Community.builder()
                 .name("손흥민")
                 .fanCount(4L)
                 .thumbnailImage(playerSonImageUrl)
@@ -307,15 +302,15 @@ public class CommunityService {
                 .thumbnailImage(userImageUrl)
                 .build();
 
-        communityRepository.save(community1);
+        communityRepository.save(leeCommunity);
         communityRepository.save(community2);
         communityRepository.save(community3);
-        communityRepository.save(community4);
+        communityRepository.save(sonCommunity);
         communityRepository.save(community5);
         communityRepository.save(community6);
 
         User playerLee = User.builder()
-                .community(community1)
+                .community(leeCommunity)
                 .koreanName("이강인")
                 .englishName("Lee Kang In")
                 .profileImage(playerLeeImageUrl)
@@ -341,8 +336,8 @@ public class CommunityService {
         userRepository.save(playerA2);
         userRepository.save(playerA3);
 
-        User playerB1 = User.builder()
-                .community(community4)
+        User playerSon = User.builder()
+                .community(sonCommunity)
                 .koreanName("손흥민")
                 .englishName("Son Heung Min")
                 .profileImage(playerSonImageUrl)
@@ -359,11 +354,11 @@ public class CommunityService {
                 .profileImage(userImageUrl).koreanName("메디슨")
                 .role(Role.ROLE_PLAYER).build();
 
-        playerB1.connectTeam(teamTottenham);
+        playerSon.connectTeam(teamTottenham);
         playerB2.connectTeam(teamTottenham);
         playerB3.connectTeam(teamTottenham);
 
-        userRepository.save(playerB1);
+        userRepository.save(playerSon);
         userRepository.save(playerB2);
         userRepository.save(playerB3);
 
@@ -402,13 +397,13 @@ public class CommunityService {
         UserCommunityInfo fanPostInfo1 = UserCommunityInfo.builder()
                 .nickname(fan1.getNickname())
                 .user(fan1)
-                .community(community1)
+                .community(leeCommunity)
                 .profileImage(userImageUrl).build();
 
         UserCommunityInfo fanPostInfo2 = UserCommunityInfo.builder()
                 .nickname(fan2.getNickname())
                 .user(fan2)
-                .community(community1)
+                .community(leeCommunity)
                 .profileImage(userImageUrl).build();
 
         UserCommunityInfo fanPostInfo3 = UserCommunityInfo.builder()
@@ -417,11 +412,17 @@ public class CommunityService {
                 .community(psgCommunity)
                 .profileImage(userImageUrl).build();
 
-        UserCommunityInfo playerPostInfo1 = UserCommunityInfo.builder()
+        UserCommunityInfo playerLeeInfo = UserCommunityInfo.builder()
                 .user(playerLee)
-                .community(community1)
+                .community(leeCommunity)
                 .nickname(playerLee.getKoreanName())
                 .profileImage(playerLeeImageUrl).build();
+
+        UserCommunityInfo playerSonInfo = UserCommunityInfo.builder()
+                .user(playerSon)
+                .community(sonCommunity)
+                .nickname(playerSon.getKoreanName())
+                .profileImage(playerSonImageUrl).build();
 
         UserCommunityInfo teamPostInfo1 = UserCommunityInfo.builder()
                 .user(playerLee)
@@ -444,7 +445,8 @@ public class CommunityService {
         userCommunityInfoRepository.save(fanPostInfo1);
         userCommunityInfoRepository.save(fanPostInfo2);
         userCommunityInfoRepository.save(fanPostInfo3);
-        userCommunityInfoRepository.save(playerPostInfo1);
+        userCommunityInfoRepository.save(playerLeeInfo);
+        userCommunityInfoRepository.save(playerSonInfo);
         userCommunityInfoRepository.save(teamPostInfo1);
         userCommunityInfoRepository.save(psgAdminInfo);
         userCommunityInfoRepository.save(ttnAdminInfo);
@@ -466,12 +468,12 @@ public class CommunityService {
 
         Post playerPost1 = Post.builder()
                 .content("아시안 컵 쉽네 ㅋ")
-                .writerInfo(playerPostInfo1)
+                .writerInfo(playerLeeInfo)
                 .build();
 
         Post playerPost2 = Post.builder()
                 .content("선수 -> 선수 커뮤니티")
-                .writerInfo(playerPostInfo1)
+                .writerInfo(playerSonInfo)
                 .build();
 
         Post teamPost = Post.builder()
