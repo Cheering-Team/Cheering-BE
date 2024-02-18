@@ -65,9 +65,19 @@ public class PostController {
         return ResponseGenerator.success(SuccessMessage.DETAIL_POST_SUCCESS, findPostResponse);
     }
 
+    @GetMapping("/communities/posts")
+    public ResponseEntity<ResponseBodyDto<?>> getUserCommunityPosts() {
+
+        List<PostResponse> findPostResponse = postService.getUserCommunityPosts();
+
+        return ResponseGenerator.success(SuccessMessage.GET_POSTS_SUCCESS, findPostResponse);
+    }
+
+
     @PostMapping("/communities/{communityId}/posts/{postId}/like")
     public ResponseEntity<ResponseBodyDto<?>> toggleInteresting(@PathVariable("communityId") Long communityId,
                                                                 @PathVariable("postId") Long postId) {
+
         BooleanType toggleResult = postService.toggleInteresting(communityId, postId);
         if (BooleanType.TRUE.equals(toggleResult)) {
             return ResponseGenerator.success(SuccessMessage.LIKE_SUCCESS, null);

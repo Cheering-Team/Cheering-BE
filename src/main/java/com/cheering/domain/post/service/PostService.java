@@ -25,6 +25,7 @@ import com.cheering.global.util.AwsS3Util;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -106,6 +107,10 @@ public class PostService {
     public List<PostResponse> getTeamPosts(Long communityId) {
         Community findCommunity = communityRepository.findById(communityId).orElseThrow(() ->
                 new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
+
+        if (findCommunity.getTeam() == null) {
+            return new ArrayList<>();
+        }
 
         Team findTeam = findCommunity.getTeam();
         List<Post> result = postRepository.findByWriterInfoCommunityAndTeam(findCommunity, findTeam);
@@ -232,5 +237,28 @@ public class PostService {
         }
 
         return findInteresting.get().changeStatus();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostResponse> getUserCommunityPosts() {
+        User loginUser = getLoginUser();
+        List<UserCommunityInfo> userCommunityInfos = userCommunityInfoRepository.findByUser(loginUser);
+
+        List<PostResponse> result = new ArrayList<>();
+
+        for (UserCommunityInfo userCommunityInfo : userCommunityInfos) {
+            Long communityId = userCommunityInfo.getCommunity().getId();
+
+            List<PostResponse> playerPosts = getPlayerPosts(communityId);
+            List<PostResponse> userPosts = getUserPosts(communityId);
+            List<PostResponse> teamPosts = getTeamPosts(communityId);
+
+            result.addAll(playerPosts);
+            result.addAll(userPosts);
+            result.addAll(teamPosts);
+        }
+
+        return result.stream().sorted(Comparator.comparing(PostResponse::createdAt))
+                .toList();
     }
 }
