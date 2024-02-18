@@ -24,19 +24,23 @@ public record PostResponse(Long id,
                            WriterResponse writer
 ) {
     public static PostResponse of(Post post, BooleanType likeStatus, WriterResponse writerResponse, List<URL> files) {
+
+        int commentCount = post.getComments().size();
+        Long likeCount = post.getLikes().stream().filter(like -> like.getStatus().equals(BooleanType.TRUE)).count();
+
         return PostResponse.builder()
                 .writer(writerResponse)
                 .id(post.getId())
                 .content(post.getContent())
                 .image(files)
                 .likeStatus(likeStatus)
-                .commentCount(20L)
-                .likeCount(100L)
+                .commentCount((long) commentCount)
+                .likeCount(likeCount)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
     }
-    
+
     public static List<PostResponse> ofList(List<Post> posts, List<Interesting> interestings,
                                             WriterResponse writerResponse) {
         List<PostResponse> result = new ArrayList<>();
@@ -46,6 +50,9 @@ public record PostResponse(Long id,
                     .filter(interesting -> interesting.getPost().equals(post))
                     .findFirst();
 
+            int commentCount = post.getComments().size();
+            Long likeCount = post.getLikes().stream().filter(like -> like.getStatus().equals(BooleanType.TRUE)).count();
+
             if (likeStatus.isPresent()) {
                 PostResponse postResponse = PostResponse.builder()
                         .writer(writerResponse)
@@ -53,8 +60,8 @@ public record PostResponse(Long id,
                         .content(post.getContent())
                         .image(post.getFiles().stream().map(ImageFile::getPath).toList())
                         .likeStatus(likeStatus.get().getStatus())
-                        .commentCount(20L)
-                        .likeCount(100L)
+                        .commentCount((long) commentCount)
+                        .likeCount(likeCount)
                         .createdAt(post.getCreatedAt())
                         .updatedAt(post.getUpdatedAt())
                         .build();
@@ -67,8 +74,8 @@ public record PostResponse(Long id,
                         .content(post.getContent())
                         .image(post.getFiles().stream().map(ImageFile::getPath).toList())
                         .likeStatus(BooleanType.FALSE)
-                        .commentCount(20L)
-                        .likeCount(100L)
+                        .commentCount((long) commentCount)
+                        .likeCount(likeCount)
                         .createdAt(post.getCreatedAt())
                         .updatedAt(post.getUpdatedAt())
                         .build();
