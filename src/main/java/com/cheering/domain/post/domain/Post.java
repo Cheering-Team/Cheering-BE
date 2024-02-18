@@ -2,6 +2,7 @@ package com.cheering.domain.post.domain;
 
 import static jakarta.persistence.FetchType.LAZY;
 
+import com.cheering.domain.comment.domain.Comment;
 import com.cheering.domain.community.domain.UserCommunityInfo;
 import com.cheering.domain.user.domain.Team;
 import com.cheering.global.BaseEntity;
@@ -12,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -43,4 +45,9 @@ public class Post extends BaseEntity {
     @OneToMany(mappedBy = "post")
     private List<ImageFile> files;
 
+    @OneToMany(mappedBy = "post")
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post")
+    private List<Interesting> likes = new ArrayList<>();
 }
