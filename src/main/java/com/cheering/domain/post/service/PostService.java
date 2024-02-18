@@ -250,11 +250,9 @@ public class PostService {
             Long communityId = userCommunityInfo.getCommunity().getId();
 
             List<PostResponse> playerPosts = getPlayerPosts(communityId);
-            List<PostResponse> userPosts = getUserPosts(communityId);
             List<PostResponse> teamPosts = getTeamPosts(communityId);
 
             result.addAll(playerPosts);
-            result.addAll(userPosts);
             result.addAll(teamPosts);
         }
 
