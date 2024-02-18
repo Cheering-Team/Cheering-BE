@@ -65,7 +65,7 @@ public class CommentService {
 
         //todo: 추후 reCommentCount 계산 로직 구현 필요
 
-        return CommentResponse.ofList(findComments, 3L);
+        return CommentResponse.ofList(findComments);
     }
 
     private User getLoginUser() {

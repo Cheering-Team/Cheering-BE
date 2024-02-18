@@ -12,6 +12,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,8 +37,11 @@ public class Comment extends BaseEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
-    
+
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_community_info_id")
     private UserCommunityInfo writerInfo;
+
+    @OneToMany(mappedBy = "comment")
+    private List<ReComment> reComments = new ArrayList<>();
 }

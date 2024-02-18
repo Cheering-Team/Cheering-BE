@@ -17,7 +17,7 @@ public record CommentResponse(Long id,
                               WriterResponse writer
 ) {
 
-    public static List<CommentResponse> ofList(List<Comment> comments, Long reCommentCount) {
+    public static List<CommentResponse> ofList(List<Comment> comments) {
         List<CommentResponse> result = new ArrayList<>();
 
         for (Comment comment : comments) {
@@ -25,6 +25,8 @@ public record CommentResponse(Long id,
 
             WriterResponse writerResponse = WriterResponse.of(writerInfo.getUser().getId(), writerInfo.getNickname(),
                     writerInfo.getProfileImage());
+
+            Long reCommentCount = (long) comment.getReComments().size();
 
             CommentResponse commentResponse = builder().id(comment.getId())
                     .reCommentCount(reCommentCount)
