@@ -62,9 +62,7 @@ public class CommentService {
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
         List<Comment> findComments = commentRepository.findCommentsByPost(findPost);
-
-        //todo: 추후 reCommentCount 계산 로직 구현 필요
-
+        
         return CommentResponse.ofList(findComments);
     }
 

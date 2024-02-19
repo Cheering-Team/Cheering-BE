@@ -30,7 +30,6 @@ public class PostController {
     public ResponseEntity<ResponseBodyDto<?>> createPost(@PathVariable("communityId") Long communityId,
                                                          @RequestParam("content") String content,
                                                          @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-
         Long createPostId = postService.createPost(communityId, content, files);
 
         return ResponseGenerator.success(SuccessMessage.CREATE_POST_SUCCESS, createPostId);
