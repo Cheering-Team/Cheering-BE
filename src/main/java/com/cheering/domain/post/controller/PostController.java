@@ -7,7 +7,11 @@ import com.cheering.global.constant.SuccessMessage;
 import com.cheering.global.dto.ResponseBodyDto;
 import com.cheering.global.dto.ResponseGenerator;
 import com.cheering.global.exception.constant.ExceptionMessage;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +34,16 @@ public class PostController {
     public ResponseEntity<ResponseBodyDto<?>> createPost(@PathVariable("communityId") Long communityId,
                                                          @RequestParam("content") String content,
                                                          @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+        
+        try {
+            InputStream inputStream = files.get(0).getInputStream();
+            BufferedImage bufferedImage = ImageIO.read(inputStream);
+            int width = bufferedImage.getWidth();
+            int height = bufferedImage.getHeight();
+            System.out.println(String.format("width = %d height = %d", width, height));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         Long createPostId = postService.createPost(communityId, content, files);
 
