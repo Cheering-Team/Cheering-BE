@@ -8,7 +8,7 @@ import com.cheering.domain.community.repository.UserCommunityInfoRepository;
 import com.cheering.domain.post.domain.ImageFile;
 import com.cheering.domain.post.domain.Interesting;
 import com.cheering.domain.post.domain.Post;
-import com.cheering.domain.post.dto.FileInfo;
+import com.cheering.domain.post.dto.ImageFileInfo;
 import com.cheering.domain.post.dto.PostResponse;
 import com.cheering.domain.post.repository.ImageFileRepository;
 import com.cheering.domain.post.repository.InterestingRepository;
@@ -24,7 +24,6 @@ import com.cheering.global.exception.post.NotFoundPostException;
 import com.cheering.global.exception.user.NotFoundUserException;
 import com.cheering.global.util.AwsS3Util;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -55,8 +54,7 @@ public class PostService {
 
         User findPlayer = findCommunity.getUser();
 
-        UserCommunityInfo findWriterInfo = userCommunityInfoRepository.findByUserAndCommunity(findPlayer,
-                        findCommunity)
+        UserCommunityInfo findWriterInfo = userCommunityInfoRepository.findByUserAndCommunity(findPlayer, findCommunity)
                 .orElseThrow(() -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO));
 
         List<Post> findPosts = postRepository.findByWriterInfoCommunityAndWriterInfoUser(findCommunity, findPlayer);
@@ -90,13 +88,14 @@ public class PostService {
             WriterResponse writerResponse = WriterResponse.of(fanPost.getWriterInfo().getUser().getId(),
                     fanPost.getWriterInfo().getNickname(), fanPost.getWriterInfo().getProfileImage());
 
-            List<URL> imageUrls = fanPost.getFiles().stream().map(ImageFile::getPath).toList();
-
+            List<ImageFile> imageFiles = fanPost.getFiles();
+            List<ImageFileInfo> imageFileInfos = ImageFileInfo.ofList(imageFiles);
             Interesting likeStatus = interestings.stream()
                     .filter(interesting -> interesting.getPost().equals(fanPost))
                     .findFirst().orElseThrow(RuntimeException::new);
 
-            PostResponse postResponse = PostResponse.of(fanPost, likeStatus.getStatus(), writerResponse, imageUrls);
+            PostResponse postResponse = PostResponse.of(fanPost, likeStatus.getStatus(), writerResponse,
+                    imageFileInfos);
 
             result.add(postResponse);
         }
@@ -159,7 +158,7 @@ public class PostService {
         //todo: Post 객체 생성
         String category = "post";
         try {
-            List<FileInfo> imageInfos = awsS3Util.uploadFiles(files, category);
+            List<ImageFileInfo> imageInfos = awsS3Util.uploadFiles(files, category);
 
             Post newPost = Post.builder()
                     .writerInfo(findUserCommunityInfo)
@@ -174,7 +173,7 @@ public class PostService {
                             .height(imageInfo.height())
                             .build())
                     .toList();
-            
+
             imageFileRepository.saveAll(imageFiles);
 
             //todo: 객체 저장 및 생성된 id 반환
@@ -215,9 +214,10 @@ public class PostService {
                         .status(BooleanType.FALSE)
                         .build());
 
-        List<URL> imageUrls = findPost.getFiles().stream().map(ImageFile::getPath).toList();
+        List<ImageFile> imageFiles = findPost.getFiles();
+        List<ImageFileInfo> imageFileInfos = ImageFileInfo.ofList(imageFiles);
 
-        return PostResponse.of(findPost, interesting.getStatus(), writerResponse, imageUrls);
+        return PostResponse.of(findPost, interesting.getStatus(), writerResponse, imageFileInfos);
     }
 
     @Transactional
