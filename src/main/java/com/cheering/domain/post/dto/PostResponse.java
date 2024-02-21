@@ -1,11 +1,9 @@
 package com.cheering.domain.post.dto;
 
 import com.cheering.domain.community.constant.BooleanType;
-import com.cheering.domain.post.domain.ImageFile;
 import com.cheering.domain.post.domain.Interesting;
 import com.cheering.domain.post.domain.Post;
 import com.cheering.domain.user.dto.response.WriterResponse;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +16,14 @@ public record PostResponse(Long id,
                            Long commentCount,
                            Long likeCount,
                            BooleanType likeStatus,
+                           List<ImageFileInfo> image,
                            Long communityId,
-                           List<URL> image,
                            LocalDateTime createdAt,
                            LocalDateTime updatedAt,
                            WriterResponse writer
 ) {
-    public static PostResponse of(Post post, BooleanType likeStatus, WriterResponse writerResponse, List<URL> files) {
+    public static PostResponse of(Post post, BooleanType likeStatus, WriterResponse writerResponse,
+                                  List<ImageFileInfo> files) {
 
         int commentCount = post.getComments().size();
         Long likeCount = post.getLikes().stream().filter(like -> like.getStatus().equals(BooleanType.TRUE)).count();
@@ -55,12 +54,19 @@ public record PostResponse(Long id,
             int commentCount = post.getComments().size();
             Long likeCount = post.getLikes().stream().filter(like -> like.getStatus().equals(BooleanType.TRUE)).count();
 
+            List<ImageFileInfo> imageFileInfos = post.getFiles().stream().map(imageFile -> ImageFileInfo.builder()
+                    .url(imageFile.getPath())
+                    .width(imageFile.getWidth())
+                    .height(imageFile.getHeight())
+                    .build()).toList();
+
+            PostResponse postResponse;
             if (likeStatus.isPresent()) {
-                PostResponse postResponse = PostResponse.builder()
+                postResponse = PostResponse.builder()
                         .writer(writerResponse)
                         .id(post.getId())
                         .content(post.getContent())
-                        .image(post.getFiles().stream().map(ImageFile::getPath).toList())
+                        .image(imageFileInfos)
                         .communityId(post.getWriterInfo().getCommunity().getId())
                         .likeStatus(likeStatus.get().getStatus())
                         .commentCount((long) commentCount)
@@ -68,14 +74,12 @@ public record PostResponse(Long id,
                         .createdAt(post.getCreatedAt())
                         .updatedAt(post.getUpdatedAt())
                         .build();
-
-                result.add(postResponse);
             } else {
-                PostResponse postResponse = PostResponse.builder()
+                postResponse = PostResponse.builder()
                         .writer(writerResponse)
                         .id(post.getId())
                         .content(post.getContent())
-                        .image(post.getFiles().stream().map(ImageFile::getPath).toList())
+                        .image(imageFileInfos)
                         .communityId(post.getWriterInfo().getCommunity().getId())
                         .likeStatus(BooleanType.FALSE)
                         .commentCount((long) commentCount)
@@ -83,9 +87,8 @@ public record PostResponse(Long id,
                         .createdAt(post.getCreatedAt())
                         .updatedAt(post.getUpdatedAt())
                         .build();
-
-                result.add(postResponse);
             }
+            result.add(postResponse);
         }
 
         return result;
