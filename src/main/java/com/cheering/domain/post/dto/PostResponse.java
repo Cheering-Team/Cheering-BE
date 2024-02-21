@@ -17,6 +17,7 @@ public record PostResponse(Long id,
                            Long likeCount,
                            BooleanType likeStatus,
                            List<ImageFileInfo> image,
+                           Long communityId,
                            LocalDateTime createdAt,
                            LocalDateTime updatedAt,
                            WriterResponse writer
@@ -32,6 +33,7 @@ public record PostResponse(Long id,
                 .id(post.getId())
                 .content(post.getContent())
                 .image(files)
+                .communityId(post.getWriterInfo().getCommunity().getId())
                 .likeStatus(likeStatus)
                 .commentCount((long) commentCount)
                 .likeCount(likeCount)
@@ -65,6 +67,7 @@ public record PostResponse(Long id,
                         .id(post.getId())
                         .content(post.getContent())
                         .image(imageFileInfos)
+                        .communityId(post.getWriterInfo().getCommunity().getId())
                         .likeStatus(likeStatus.get().getStatus())
                         .commentCount((long) commentCount)
                         .likeCount(likeCount)
@@ -77,6 +80,7 @@ public record PostResponse(Long id,
                         .id(post.getId())
                         .content(post.getContent())
                         .image(imageFileInfos)
+                        .communityId(post.getWriterInfo().getCommunity().getId())
                         .likeStatus(BooleanType.FALSE)
                         .commentCount((long) commentCount)
                         .likeCount(likeCount)
