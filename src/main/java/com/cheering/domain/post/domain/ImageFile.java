@@ -28,6 +28,10 @@ public class ImageFile {
 
     private URL path;
 
+    private int width;
+    
+    private int height;
+
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
