@@ -8,6 +8,7 @@ import com.cheering.domain.community.repository.UserCommunityInfoRepository;
 import com.cheering.domain.post.domain.ImageFile;
 import com.cheering.domain.post.domain.Interesting;
 import com.cheering.domain.post.domain.Post;
+import com.cheering.domain.post.dto.FileInfo;
 import com.cheering.domain.post.dto.PostResponse;
 import com.cheering.domain.post.repository.ImageFileRepository;
 import com.cheering.domain.post.repository.InterestingRepository;
@@ -158,20 +159,22 @@ public class PostService {
         //todo: Post 객체 생성
         String category = "post";
         try {
-            List<URL> imageUrls = awsS3Util.uploadFiles(files, category);
+            List<FileInfo> imageInfos = awsS3Util.uploadFiles(files, category);
 
             Post newPost = Post.builder()
                     .writerInfo(findUserCommunityInfo)
                     .content(content)
                     .build();
 
-            List<ImageFile> imageFiles = imageUrls.stream()
-                    .map(url -> ImageFile.builder()
+            List<ImageFile> imageFiles = imageInfos.stream()
+                    .map(imageInfo -> ImageFile.builder()
                             .post(newPost)
-                            .path(url)
+                            .path(imageInfo.url())
+                            .width(imageInfo.width())
+                            .height(imageInfo.height())
                             .build())
                     .toList();
-
+            
             imageFileRepository.saveAll(imageFiles);
 
             //todo: 객체 저장 및 생성된 id 반환

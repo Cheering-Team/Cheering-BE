@@ -5,11 +5,15 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.util.IOUtils;
+import com.cheering.domain.post.dto.FileInfo;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,7 +60,7 @@ public class AwsS3Util {
         return metadata;
     }
 
-    public List<URL> uploadFiles(List<MultipartFile> files, String category) throws IOException {
+    public List<FileInfo> uploadFiles(List<MultipartFile> files, String category) throws IOException {
         // 다중 업로드 && 리스트 ","을 기준으로 하나의 문자열 반환
         // files 갯수 0 이면 반환 ""
         if (files == null || files.isEmpty()) {
@@ -64,15 +68,28 @@ public class AwsS3Util {
             throw new IOException();
         }
 
-        List<URL> fileUrls = new ArrayList<>();
+        List<FileInfo> fileInfos = new ArrayList<>();
         for (MultipartFile file : files) {
             URL url = uploadFile(file, category);
-            fileUrls.add(url);
+
+            InputStream inputStream = file.getInputStream();
+            BufferedImage bufferedImage = ImageIO.read(inputStream);
+
+            int width = bufferedImage.getWidth();
+            int height = bufferedImage.getHeight();
+
+            FileInfo fileInfo = FileInfo.builder()
+                    .url(url)
+                    .width(width)
+                    .height(height)
+                    .build();
+
+            fileInfos.add(fileInfo);
         }
 
-        log.info("uploadFiles url: {}", fileUrls);
+        log.info("uploadFiles url: {}", fileInfos);
 
-        return fileUrls;
+        return fileInfos;
     }
 
     public URL getPath(String path) {
