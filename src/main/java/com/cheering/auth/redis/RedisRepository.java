@@ -4,6 +4,7 @@ import static com.cheering.auth.jwt.JwtConstant.REFRESH_TOKEN_EXPIRE_TIME;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
@@ -34,7 +35,7 @@ public class RedisRepository {
             String seperatedKey = keyString.replaceAll("\\x00", "");
             try {
                 return mapper.readValue(seperatedKey, RedisUserDto.class);
-            } catch (JsonProcessingException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
