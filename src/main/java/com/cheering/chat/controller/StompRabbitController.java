@@ -32,7 +32,6 @@ public class StompRabbitController {
     public void send(ChatDto chat, @DestinationVariable("chatRoomId") String chatRoomId) {
 
 //        chat.setRegDate(LocalDateTime.now());
-        System.out.println("message get result : " + chat.getMessage());
         template.convertAndSend(CHAT_EXCHANGE_NAME, "room." + chatRoomId, chat);
         //template.convertAndSend( "room." + chatRoomId, chat);
         //template.convertAndSend("amq.topic", "room." + chatRoomId, chat);
