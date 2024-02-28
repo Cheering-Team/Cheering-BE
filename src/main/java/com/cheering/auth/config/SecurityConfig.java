@@ -40,8 +40,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/signin").permitAll()
                         .requestMatchers("/api/set-data").permitAll()
                         .requestMatchers("/api/email").permitAll()
-                        .requestMatchers("/api/refresh").permitAll())
-//                        .anyRequest().permitAll())
+                        .requestMatchers("/api/refresh").permitAll()
+                        .anyRequest().permitAll())
                 .exceptionHandling(authenticationEntryPoint -> authenticationEntryPoint
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
                 // JWT 인증을 위하여 직접 구현한 필터를 UsernamePasswordAuthenticationFilter 전에 실행
