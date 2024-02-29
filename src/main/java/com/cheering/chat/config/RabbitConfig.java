@@ -69,7 +69,7 @@ public class RabbitConfig {
         factory.setHost("3.37.244.109");
         factory.setUsername("guest");
         factory.setPassword("guest");
-        factory.setPort(5672);
+        factory.setPort(61613);
 
         return factory;
     }
