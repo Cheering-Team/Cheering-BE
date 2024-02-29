@@ -66,10 +66,10 @@ public class RabbitConfig {
     @Bean
     public ConnectionFactory connectionFactory() {
         CachingConnectionFactory factory = new CachingConnectionFactory();
-        factory.setHost("3.37.244.109");
+        factory.setHost("localhost");
         factory.setUsername("admin");
         factory.setPassword("0000");
-        factory.setPort(61613);
+        factory.setPort(5672);
 
         return factory;
     }
