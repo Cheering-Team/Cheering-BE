@@ -10,3 +10,7 @@ COPY ${JAR_FILE} app.jar
 
 # 빌드된 이미지가 run될 때 실행할 명령어
 ENTRYPOINT ["java","-jar","app.jar"]
+
+FROM rabbitmq:management
+RUN rabbitmq-plugins enable --offline rabbitmq_stomp
+EXPOSE 15671 15672 61613
