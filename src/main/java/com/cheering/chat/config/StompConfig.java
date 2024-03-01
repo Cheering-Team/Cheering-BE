@@ -27,8 +27,8 @@ public class StompConfig implements WebSocketMessageBrokerConfigurer {
         registry.enableStompBrokerRelay("/queue", "/topic", "/exchange", "/amq/queue")
                 .setRelayHost("3.37.244.109")
                 .setRelayPort(61613)
-                .setClientLogin("guest")
-                .setClientPasscode("guest");
+                .setClientLogin("admin")
+                .setClientPasscode("0000");
     }
 }
 
