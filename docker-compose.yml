@@ -6,13 +6,18 @@ services:
       - "6379:6379"
     extra_hosts:
       - "host.docker.internal:host-gateway"
-  spring:
-    container_name: spring
+  blue:
+    container_name: blue
     image: whereami2048/cheering_docker
     expose:
       - 8080
     ports:
       - "8080:8080"
-      - "5672:5672"
-      - "15672:15672"
-      - "61613:61613"
+
+  green:
+    container_name: green
+    image: whereami2048/cheering_docker
+    expose:
+      - 8080
+    ports:
+      - "8081:8080"
