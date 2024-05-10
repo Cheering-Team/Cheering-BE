@@ -28,7 +28,7 @@ jobs:
 
       - name: Build with Gradle Wrapper
         run: |
-          echo ${{secrets.APPLICATION_SECRET}} | base64 --decode > ./src/main/resources/applcation-secret.yml
+          echo ${{secrets.APPLICATION_SECRET}} | base64 --decode > ./src/main/resources/application-secret.yml
           cat ./src/main/resources/application-secret.yml
           ./gradlew build
 
