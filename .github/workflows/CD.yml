@@ -1,10 +1,8 @@
-name: CICD
+name: CD
 
 on:
   push:
-    branches: [ "test/cicd" ]
-  pull_request:
-    branches: [ "test/cicd" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
