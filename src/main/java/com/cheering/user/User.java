@@ -2,8 +2,8 @@ package com.cheering.user;
 
 import static jakarta.persistence.FetchType.LAZY;
 
+import com.cheering.BaseTimeEntity;
 import com.cheering.community.Community;
-import com.cheering.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class User extends BaseEntity {
+public class User extends BaseTimeEntity {
     @Id
     @GeneratedValue
     @Column(name = "user_id")
