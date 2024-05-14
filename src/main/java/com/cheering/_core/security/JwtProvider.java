@@ -54,7 +54,7 @@ public class JwtProvider {
                 .map(SimpleGrantedAuthority::new)
                 .toList();
 
-        return new LoginUserAuthentication(id, authorities);
+        return new CustomUserDetails(id, authorities);
     }
 
     // 토큰 정보를 검증하는 메서드

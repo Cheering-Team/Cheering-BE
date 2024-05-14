@@ -1,17 +1,16 @@
 package com.cheering.user;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Getter
 public enum Role {
-    ROLE_USER("USER"),
-    ROLE_PLAYER("PLAYER"),
-    ROLE_TEAM("TEAM"),
-    ROLE_ADMIN("ADMIN");
+    ROLE_USER("사용자"),
+    ROLE_ADMIN("관리자");
 
-    private final String type;
+    private final String value;
 
 
 }
