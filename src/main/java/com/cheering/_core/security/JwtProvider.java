@@ -90,20 +90,20 @@ public class JwtProvider {
         }
     }
 
-    public String getAccessToken(String refreshToken) {
-        try {
-            if (refreshToken != null && validateToken(refreshToken)) {
-                log.info("Authenticated User");
-
-                return jwtGenerator.reIssueAccessToken(refreshToken);
-            }
-        } catch (ExpiredJwtException e) {
-            log.error("expired Refresh-Token", e);
-            throw new ExpiredRefreshTokenException(ExceptionMessage.EXPIRED_REFRESH_TOKEN);
-        }
-
-        return null;
-    }
+//    public String getAccessToken(String refreshToken) {
+//        try {
+//            if (refreshToken != null && validateToken(refreshToken)) {
+//                log.info("Authenticated User");
+//
+//                return jwtGenerator.reIssueAccessToken(refreshToken);
+//            }
+//        } catch (ExpiredJwtException e) {
+//            log.error("expired Refresh-Token", e);
+//            throw new ExpiredRefreshTokenException(ExceptionMessage.EXPIRED_REFRESH_TOKEN);
+//        }
+//
+//        return null;
+//    }
 
     // Request Header에서 토큰 정보 추출
     public String resolveAccessToken(HttpServletRequest request) {
