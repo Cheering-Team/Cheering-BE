@@ -1,5 +1,6 @@
 package com.cheering.user;
 
+import com.cheering._core.util.RedisUtils;
 import com.cheering._core.util.SmsUtil;
 import com.cheering.community.BooleanType;
 import com.cheering.community.Community;
@@ -31,6 +32,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final SmsUtil smsUtil;
+    private final RedisUtils redisUtils;
 
     @Transactional
     public void sendSMS(UserRequest.SendSMSDTO requestDTO) {
@@ -39,6 +41,7 @@ public class UserService {
         String verificationCode = String.valueOf((Math.random() * 900000) + 100000);
         smsUtil.sendOne(phone, verificationCode);
 
+        redisUtils.setDataExpire(phone, verificationCode, 60 * 5L);
     }
 
 //    @Transactional
