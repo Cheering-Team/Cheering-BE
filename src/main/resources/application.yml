@@ -29,9 +29,15 @@ spring:
     activate:
       on-profile: blue
 
+  data:
+    redis:
+      host: blue_redis
+      port: 6379
+
 server:
   port: 8080
   serverAddress: 15.165.150.47
+
 
 serverName: blue_server
 
@@ -41,6 +47,11 @@ spring:
   config:
     activate:
       on-profile: green
+
+  data:
+    redis:
+      host: green_redis
+      port: 6379
 
 server:
   port: 8081
