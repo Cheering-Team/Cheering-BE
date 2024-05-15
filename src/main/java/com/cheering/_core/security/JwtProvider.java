@@ -37,25 +37,25 @@ public class JwtProvider {
         this.jwtGenerator = jwtGenerator;
     }
 
-    // Jwt 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
-    public Authentication getAuthentication(String accessToken) {
-        // Jwt 토큰 복호화
-        Claims claims = parseClaims(accessToken);
-
-        if (claims.get("auth") == null) {
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
-        }
-
-        String id = claims.get("id").toString();
-
-        // 클레임에서 권한 정보 가져오기
-        Collection<? extends GrantedAuthority> authorities = Arrays
-                .stream(claims.get("auth").toString().split(","))
-                .map(SimpleGrantedAuthority::new)
-                .toList();
-
-        return new LoginUserAuthentication(id, authorities);
-    }
+//    // Jwt 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
+//    public Authentication getAuthentication(String accessToken) {
+//        // Jwt 토큰 복호화
+//        Claims claims = parseClaims(accessToken);
+//
+//        if (claims.get("auth") == null) {
+//            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+//        }
+//
+//        String id = claims.get("id").toString();
+//
+//        // 클레임에서 권한 정보 가져오기
+//        Collection<? extends GrantedAuthority> authorities = Arrays
+//                .stream(claims.get("auth").toString().split(","))
+//                .map(SimpleGrantedAuthority::new)
+//                .toList();
+//
+//        return new CustomUserDetails(id, authorities);
+//    }
 
     // 토큰 정보를 검증하는 메서드
     public boolean validateToken(String token) throws ExpiredJwtException {
@@ -90,20 +90,20 @@ public class JwtProvider {
         }
     }
 
-    public String getAccessToken(String refreshToken) {
-        try {
-            if (refreshToken != null && validateToken(refreshToken)) {
-                log.info("Authenticated User");
-
-                return jwtGenerator.reIssueAccessToken(refreshToken);
-            }
-        } catch (ExpiredJwtException e) {
-            log.error("expired Refresh-Token", e);
-            throw new ExpiredRefreshTokenException(ExceptionMessage.EXPIRED_REFRESH_TOKEN);
-        }
-
-        return null;
-    }
+//    public String getAccessToken(String refreshToken) {
+//        try {
+//            if (refreshToken != null && validateToken(refreshToken)) {
+//                log.info("Authenticated User");
+//
+//                return jwtGenerator.reIssueAccessToken(refreshToken);
+//            }
+//        } catch (ExpiredJwtException e) {
+//            log.error("expired Refresh-Token", e);
+//            throw new ExpiredRefreshTokenException(ExceptionMessage.EXPIRED_REFRESH_TOKEN);
+//        }
+//
+//        return null;
+//    }
 
     // Request Header에서 토큰 정보 추출
     public String resolveAccessToken(HttpServletRequest request) {

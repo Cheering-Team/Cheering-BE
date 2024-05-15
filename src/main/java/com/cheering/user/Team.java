@@ -34,8 +34,8 @@ public class Team {
     @JoinColumn(name = "team_community_id")
     private Community teamCommunity;
 
-    @OneToMany(mappedBy = "team")
-    private List<User> players;
+//    @OneToMany(mappedBy = "team")
+//    private List<User> players;
 
     @Enumerated(EnumType.STRING)
     Role role;
