@@ -29,7 +29,7 @@ public class SmsUtil {
     // 단일 메시지 발송 예제
     public SingleMessageSentResponse sendOne(String to, String verificationCode) {
         Message message = new Message();
-        message.setFrom(senderNumber);
+        message.setFrom("01062013110");
         message.setTo(to);
         message.setText("[치어링] 인증번호 ["+verificationCode+"]를 입력해주세요.\n");
 

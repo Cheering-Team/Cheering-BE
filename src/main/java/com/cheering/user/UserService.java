@@ -38,7 +38,7 @@ public class UserService {
     public void sendSMS(UserRequest.SendSMSDTO requestDTO) {
         String phone = requestDTO.phone();
 
-        String verificationCode = String.valueOf((Math.random() * 900000) + 100000);
+        String verificationCode = String.valueOf((int) (Math.random() * 900000) + 100000);
         smsUtil.sendOne(phone, verificationCode);
 
         redisUtils.setDataExpire(phone, verificationCode, 60 * 5L);

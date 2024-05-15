@@ -43,9 +43,9 @@ public class Community extends BaseTimeEntity {
 
     @Enumerated(value = EnumType.STRING)
     private League league;
-
-    @OneToOne(fetch = LAZY, mappedBy = "community")
-    private User user;
+//
+//    @OneToOne(fetch = LAZY, mappedBy = "community")
+//    private User user;
 
     @Enumerated(EnumType.STRING)
     private CommunityType cType;
