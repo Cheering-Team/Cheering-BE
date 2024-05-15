@@ -1,5 +1,6 @@
 package com.cheering.user;
 
+import com.cheering._core.util.SmsUtil;
 import com.cheering.community.BooleanType;
 import com.cheering.community.Community;
 import com.cheering.community.UserCommunityInfo;
@@ -29,78 +30,88 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserCommunityInfoRepository userCommunityInfoRepository;
+    private final SmsUtil smsUtil;
 
     @Transactional
-    public User signUp(SignUpRequest signUpRequest) {
-        User newMember = User.builder()
-                .email(signUpRequest.email())
-                .password(signUpRequest.password())
-                .nickname(signUpRequest.nickName())
-                .role(Role.ROLE_USER)
-                .build();
+    public void sendSMS(UserRequest.SendSMSDTO requestDTO) {
+        String phone = requestDTO.phone();
 
-        return userRepository.save(newMember);
+        String verificationCode = String.valueOf((Math.random() * 900000) + 100000);
+        smsUtil.sendOne(phone, verificationCode);
+
     }
 
-    @Transactional(readOnly = true)
-    public User signIn(SignInRequest signInRequest) {
-
-        String email = signInRequest.email();
-        String password = signInRequest.password();
-
-        Optional<User> findUser = userRepository.findByEmailAndPassword(email, password);
-
-        return findUser.orElseThrow(() ->
-                new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
-    }
-
-    @Transactional(readOnly = true)
-    public List<SearchCommunityResponse> getUserCommunities() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long loginId = Long.valueOf(authentication.getName());
-
-        User user = userRepository.findById(loginId)
-                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
-
-        List<UserCommunityInfo> userCommunities = userCommunityInfoRepository.findByUser(user);
-
-        if (userCommunities.isEmpty()) {
-            throw new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY);
-        }
-
-        List<SearchCommunityResponse> result = new ArrayList<>();
-        for (UserCommunityInfo userCommunityInfo : userCommunities) {
-            Community community = userCommunityInfo.getCommunity();
-
-            SearchCommunityResponse searchCommunityResponse = new SearchCommunityResponse(community.getId(),
-                    community.getName(),
-                    community.getThumbnailImage(),
-                    community.getFanCount(),
-                    BooleanType.TRUE);
-
-            result.add(searchCommunityResponse);
-        }
-
-        return result;
-    }
-
-    public void validateEmailFormat(String email) {
-        //이메일 형식 검사 -> throw
-        if (!Pattern.matches(REGEXP_EMAIL, email)) {
-            throw new InvalidEmailFormatException(ExceptionMessage.INVALID_EMAIL_FORMAT);
-        }
-    }
-
-    public void validateDuplicatedEmail(String email) {
-        // 기존 이메일과 중복 검사
-        if (userRepository.existsUserByEmail(email)) {
-            throw new DuplicatedEmailException(ExceptionMessage.DUPLICATED_EMAIL);
-        }
-    }
-
-    public void validateConfirmPassword(String password, String passwordConfirm) {
-        if (!password.equals(passwordConfirm)) {
-            throw new MisMatchPasswordException(ExceptionMessage.INVALID_EMAIL_FORMAT);
-        }
-    }
+//    @Transactional
+//    public User signUp(SignUpRequest signUpRequest) {
+//        User newMember = User.builder()
+//                .email(signUpRequest.email())
+//                .password(signUpRequest.password())
+//                .nickname(signUpRequest.nickName())
+//                .role(Role.ROLE_USER)
+//                .build();
+//
+//        return userRepository.save(newMember);
+//    }
+//
+//    @Transactional(readOnly = true)
+//    public User signIn(UserRequest userRequest) {
+//
+//        String email = userRequest.email();
+//        String password = userRequest.password();
+//
+//        Optional<User> findUser = userRepository.findByEmailAndPassword(email, password);
+//
+//        return findUser.orElseThrow(() ->
+//                new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
+//    }
+//
+//    @Transactional(readOnly = true)
+//    public List<SearchCommunityResponse> getUserCommunities() {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        Long loginId = Long.valueOf(authentication.getName());
+//
+//        User user = userRepository.findById(loginId)
+//                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
+//
+//        List<UserCommunityInfo> userCommunities = userCommunityInfoRepository.findByUser(user);
+//
+//        if (userCommunities.isEmpty()) {
+//            throw new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY);
+//        }
+//
+//        List<SearchCommunityResponse> result = new ArrayList<>();
+//        for (UserCommunityInfo userCommunityInfo : userCommunities) {
+//            Community community = userCommunityInfo.getCommunity();
+//
+//            SearchCommunityResponse searchCommunityResponse = new SearchCommunityResponse(community.getId(),
+//                    community.getName(),
+//                    community.getThumbnailImage(),
+//                    community.getFanCount(),
+//                    BooleanType.TRUE);
+//
+//            result.add(searchCommunityResponse);
+//        }
+//
+//        return result;
+//    }
+//
+//    public void validateEmailFormat(String email) {
+//        //이메일 형식 검사 -> throw
+//        if (!Pattern.matches(REGEXP_EMAIL, email)) {
+//            throw new InvalidEmailFormatException(ExceptionMessage.INVALID_EMAIL_FORMAT);
+//        }
+//    }
+//
+//    public void validateDuplicatedEmail(String email) {
+//        // 기존 이메일과 중복 검사
+//        if (userRepository.existsUserByEmail(email)) {
+//            throw new DuplicatedEmailException(ExceptionMessage.DUPLICATED_EMAIL);
+//        }
+//    }
+//
+//    public void validateConfirmPassword(String password, String passwordConfirm) {
+//        if (!password.equals(passwordConfirm)) {
+//            throw new MisMatchPasswordException(ExceptionMessage.INVALID_EMAIL_FORMAT);
+//        }
+//    }
 }

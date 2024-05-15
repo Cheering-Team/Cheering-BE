@@ -29,16 +29,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
+@Slf4j
 @RequestMapping("/api")
 @RequiredArgsConstructor
 @RestController
-@Slf4j
 public class UserController {
 
     private final UserService userService;
     private final JwtGenerator jwtGenerator;
     private final JwtProvider jwtTokenProvider;
     private final RedisRepository redisRepository;
+
+    @PostMapping("/phone/sms")
+    public ResponseEntity<?> sendSMS(@RequestBody UserRequest.SendSMSDTO requestDTO) {
+        userService.sendSMS(requestDTO);
+        return null;
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<ResponseBodyDto<?>> signUp(@RequestBody @Valid SignUpRequest signUpRequest) {
@@ -59,9 +65,9 @@ public class UserController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<ResponseBodyDto<?>> signIn(@RequestBody SignInRequest signInRequest) {
+    public ResponseEntity<ResponseBodyDto<?>> signIn(@RequestBody UserRequest userRequest) {
 
-        User loginUser = userService.signIn(signInRequest);
+        User loginUser = userService.signIn(userRequest);
         SignInResponse signInResponse = new SignInResponse(loginUser.getId());
         JWToken jwToken = jwtGenerator.generateToken(
                 String.valueOf(loginUser.getId()),

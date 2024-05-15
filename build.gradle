@@ -30,6 +30,9 @@ dependencies {
     //S3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
+    //휴대폰 인증
+    implementation 'net.nurigo:sdk:4.3.0'
+
     //websocket
     implementation 'org.springframework.boot:spring-boot-starter-reactor-netty'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
