@@ -42,7 +42,13 @@ public class UserController {
 
     @PostMapping("/phone/sms")
     public ResponseEntity<?> sendSMS(@RequestBody UserRequest.SendSMSDTO requestDTO) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, userService.sendSMS(requestDTO)));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "인증번호가 전송되었습니다.", userService.sendSMS(requestDTO)));
+    }
+
+    @PostMapping("/phone/code")
+    public ResponseEntity<?> checkCode(@RequestBody UserRequest.CheckCodeDTO requestDTO) {
+        userService.checkCode(requestDTO);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"인증번호가 일치합니다.", null ));
     }
 
 //    @PostMapping("/signup")
