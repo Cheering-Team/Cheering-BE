@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ExceptionCode {
     // User
-    CODE_NOT_EQUAL(HttpStatus.BAD_REQUEST, "인증코드가 일치하지 않습니다.");
+    CODE_NOT_EQUAL(HttpStatus.BAD_REQUEST, "g");
 
     private final HttpStatus httpStatus;
     private final String message;
