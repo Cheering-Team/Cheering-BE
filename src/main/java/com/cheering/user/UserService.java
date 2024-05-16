@@ -41,7 +41,7 @@ public class UserService {
         String verificationCode = String.valueOf((int) (Math.random() * 900000) + 100000);
 //        smsUtil.sendOne(phone, verificationCode);
 
-        redisUtils.setDataExpire(phone, verificationCode, 60 * 5L);
+        redisUtils.setDataExpire(phone, verificationCode, 30 * 1L);
 
         if(isUser) {
             return new UserResponse.UserDTO(user.get());
@@ -57,6 +57,10 @@ public class UserService {
         String code = requestDTO.code();
 
         String storedCode = redisUtils.getData(phone);
+
+        if(storedCode == null) {
+            throw new CustomException(ExceptionCode.CODE_EXPIRED);
+        }
 
         if(!storedCode.equals((code))){
             throw new CustomException(ExceptionCode.CODE_NOT_EQUAL);
