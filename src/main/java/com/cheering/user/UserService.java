@@ -1,5 +1,6 @@
 package com.cheering.user;
 
+import com.cheering._core.errors.*;
 import com.cheering._core.util.RedisUtils;
 import com.cheering._core.util.SmsUtil;
 import com.cheering.community.BooleanType;
@@ -7,12 +8,7 @@ import com.cheering.community.Community;
 import com.cheering.community.UserCommunityInfo;
 import com.cheering.community.SearchCommunityResponse;
 import com.cheering.community.UserCommunityInfoRepository;
-import com.cheering._core.errors.NotFoundCommunityException;
-import com.cheering._core.errors.ExceptionMessage;
-import com.cheering._core.errors.DuplicatedEmailException;
-import com.cheering._core.errors.InvalidEmailFormatException;
-import com.cheering._core.errors.MisMatchPasswordException;
-import com.cheering._core.errors.NotFoundUserException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,6 +48,21 @@ public class UserService {
         } else {
             return null;
         }
+    }
+
+    // 새로운 유저에 대한 인증코드 확인
+    @Transactional
+    public void checkCode(UserRequest.CheckCodeDTO requestDTO) {
+        String phone = requestDTO.phone();
+        String code = requestDTO.code();
+
+        String storedCode = redisUtils.getData(phone);
+
+        if(!storedCode.equals((code))){
+            throw new CustomException(ExceptionCode.CODE_NOT_EQUAL);
+        }
+
+        redisUtils.deleteData(phone);
     }
 
 //    @Transactional
