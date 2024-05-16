@@ -34,6 +34,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/**").hasRole("USER")
                         // 해당 요청은 아무나 접근 가능
                         .requestMatchers("/api/phone/sms").permitAll()
+                        .requestMatchers("/api/phone/code").permitAll()
                         .requestMatchers("/api/signup").permitAll()
                         .requestMatchers("/api/signin").permitAll()
                         .requestMatchers("/api/set-data").permitAll()
