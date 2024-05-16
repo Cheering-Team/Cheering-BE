@@ -35,13 +35,23 @@ public class UserService {
     private final RedisUtils redisUtils;
 
     @Transactional
-    public void sendSMS(UserRequest.SendSMSDTO requestDTO) {
+    public UserResponse.UserDTO sendSMS(UserRequest.SendSMSDTO requestDTO) {
         String phone = requestDTO.phone();
 
+        Optional<User> user = userRepository.findByPhone(phone);
+
+        boolean isUser = user.isPresent();
+
         String verificationCode = String.valueOf((int) (Math.random() * 900000) + 100000);
-        smsUtil.sendOne(phone, verificationCode);
+//        smsUtil.sendOne(phone, verificationCode);
 
         redisUtils.setDataExpire(phone, verificationCode, 60 * 5L);
+
+        if(isUser) {
+            return new UserResponse.UserDTO(user.get());
+        } else {
+            return null;
+        }
     }
 
 //    @Transactional
