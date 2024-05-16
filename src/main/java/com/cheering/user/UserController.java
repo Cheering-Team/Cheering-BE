@@ -42,8 +42,7 @@ public class UserController {
 
     @PostMapping("/phone/sms")
     public ResponseEntity<?> sendSMS(@RequestBody UserRequest.SendSMSDTO requestDTO) {
-        userService.sendSMS(requestDTO);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, null));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, userService.sendSMS(requestDTO)));
     }
 
 //    @PostMapping("/signup")
