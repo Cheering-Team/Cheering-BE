@@ -1,6 +1,5 @@
 package com.cheering._core.security;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,8 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @RequiredArgsConstructor
@@ -24,19 +21,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String accessToken = jwtTokenProvider.resolveAccessToken(request);
 
         // 2. validateToken으로 토큰 유효성 검사
-        try {
+//        try {
 //            if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
 //                // 토큰이 유효할 경우 토큰에서 Authentication 객체를 가지고 와서 SecurityContext에 저장
 //                Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
 //                SecurityContextHolder.getContext().setAuthentication(authentication);
 //                log.info("Authenticated User");
 //            }
-        } catch (ExpiredJwtException e) {
-            //엑세스 토큰이 만료된 경우
-            log.error("Expired JWT Token", e);
-            request.setAttribute("exception", "expired Access-Token");
-        } finally {
-            filterChain.doFilter(request, response);
-        }
+//        } catch (ExpiredJwtException e) {
+//            //엑세스 토큰이 만료된 경우
+//            log.error("Expired JWT Token", e);
+//            request.setAttribute("exception", "expired Access-Token");
+//        } finally {
+//            filterChain.doFilter(request, response);
+//        }
+        filterChain.doFilter(request, response);
     }
 }

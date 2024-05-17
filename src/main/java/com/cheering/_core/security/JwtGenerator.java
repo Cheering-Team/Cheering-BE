@@ -4,10 +4,6 @@ import static com.cheering._core.security.JwtConstant.ACCESS_TOKEN_EXPIRE_TIME;
 import static com.cheering._core.security.JwtConstant.GRANT_TYPE;
 import static com.cheering._core.security.JwtConstant.REFRESH_TOKEN_EXPIRE_TIME;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Collection;
 import java.util.Date;
