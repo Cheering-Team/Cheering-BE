@@ -1,21 +1,14 @@
 package com.cheering.user;
 
 import com.cheering._core.errors.*;
+import com.cheering._core.security.JwtProvider;
 import com.cheering._core.util.RedisUtils;
 import com.cheering._core.util.SmsUtil;
-import com.cheering.community.BooleanType;
-import com.cheering.community.Community;
-import com.cheering.community.UserCommunityInfo;
-import com.cheering.community.SearchCommunityResponse;
 import com.cheering.community.UserCommunityInfoRepository;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +22,7 @@ public class UserService {
     private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
+    private final JwtProvider jwtProvider;
 
     @Transactional
     public UserResponse.UserDTO sendSMS(UserRequest.SendSMSDTO requestDTO) {
@@ -67,6 +61,18 @@ public class UserService {
         }
 
         redisUtils.deleteData(phone);
+    }
+
+    @Transactional
+    public UserResponse.TokenDTO signUp(UserRequest.SignUpDTO requestDTO) {
+        User user = User.builder()
+                .phone(requestDTO.phone())
+                .nickname(requestDTO.nickname())
+                .role(Role.ROLE_USER)
+                .build();
+
+        userRepository.save(user);
+        return createToken(user);
     }
 
 //    @Transactional
@@ -142,4 +148,13 @@ public class UserService {
 //            throw new MisMatchPasswordException(ExceptionMessage.INVALID_EMAIL_FORMAT);
 //        }
 //    }
+
+    private UserResponse.TokenDTO createToken(User user) {
+        String newAccessToken = jwtProvider.createAccessToken(user);
+        String newRefreshToken = jwtProvider.createRefreshToken(user);
+        redisUtils.deleteData(user.getId().toString());
+        redisUtils.setDataExpire(user.getId().toString(), newRefreshToken, JwtProvider.REFRESH_EXP);
+
+        return new UserResponse.TokenDTO(newAccessToken, newRefreshToken);
+    }
 }

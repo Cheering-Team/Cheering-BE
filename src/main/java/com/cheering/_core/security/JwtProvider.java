@@ -1,41 +1,56 @@
 package com.cheering._core.security;
 
-import com.cheering._core.errors.ExpiredRefreshTokenException;
-import com.cheering._core.errors.ExceptionMessage;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.cheering.user.User;
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.Date;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import com.auth0.jwt.JWT;
 
 @Slf4j
 @Component
 public class JwtProvider {
-    private final Key key;
-    private final JwtGenerator jwtGenerator;
 
-    // application.yml에서 secret 값 가져와서 key에 저장
-    @Autowired
-    public JwtProvider(@Value("${jwt.secret}") String secretKey, JwtGenerator jwtGenerator) {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.jwtGenerator = jwtGenerator;
+    public static final Long ACCESS_EXP = 1000L * 60 * 60 * 24; // 하루
+    public static final Long REFRESH_EXP = 1000L * 60 * 60 * 24 * 365; // 1년
+
+    @Value("${jwt.secret}")
+    private String SECRET;
+
+    public String createAccessToken(User user) {
+        String jwt = createToken(user, ACCESS_EXP);
+        return jwt;
     }
+
+    public String createRefreshToken(User user) {
+        String jwt = createToken(user, REFRESH_EXP);
+        return jwt;
+    }
+
+    public String createToken(User user, Long exp) {
+        System.out.println(SECRET);
+        return JWT.create()
+                .withSubject(user.getPhone())
+                .withExpiresAt(new Date(System.currentTimeMillis() + exp))
+                .withClaim("id", user.getId())
+                .withClaim("role", user.getRole().ordinal())
+                .sign(Algorithm.HMAC512(SECRET));
+    }
+
+
+//    // application.yml에서 secret 값 가져와서 key에 저장
+//    @Autowired
+//    public JwtProvider(@Value("${jwt.secret}") String secretKey, JwtGenerator jwtGenerator) {
+//        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+//        this.key = Keys.hmacShaKeyFor(keyBytes);
+//        this.jwtGenerator = jwtGenerator;
+//    }
 
 //    // Jwt 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
 //    public Authentication getAuthentication(String accessToken) {
@@ -57,38 +72,38 @@ public class JwtProvider {
 //        return new CustomUserDetails(id, authorities);
 //    }
 
-    // 토큰 정보를 검증하는 메서드
-    public boolean validateToken(String token) throws ExpiredJwtException {
-        try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
-        } catch (SecurityException | MalformedJwtException e) {
-            log.info("Invalid JWT Token", e);
-        } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT Token", e);
-        } catch (IllegalArgumentException e) {
-            log.info("JWT claims string is empty.", e);
-        } catch (SignatureException e) {
-            log.info("SignatureException", e);
-        }
+//    // 토큰 정보를 검증하는 메서드
+//    public boolean validateToken(String token) throws ExpiredJwtException {
+//        try {
+//            Jwts.parserBuilder()
+//                    .setSigningKey(key)
+//                    .build()
+//                    .parseClaimsJws(token);
+//            return true;
+//        } catch (SecurityException | MalformedJwtException e) {
+//            log.info("Invalid JWT Token", e);
+//        } catch (UnsupportedJwtException e) {
+//            log.info("Unsupported JWT Token", e);
+//        } catch (IllegalArgumentException e) {
+//            log.info("JWT claims string is empty.", e);
+//        } catch (SignatureException e) {
+//            log.info("SignatureException", e);
+//        }
+//
+//        return false;
+//    }
 
-        return false;
-    }
-
-    private Claims parseClaims(String token) {
-        try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-        } catch (ExpiredJwtException e) {
-            return e.getClaims();
-        }
-    }
+//    private Claims parseClaims(String token) {
+//        try {
+//            return Jwts.parserBuilder()
+//                    .setSigningKey(key)
+//                    .build()
+//                    .parseClaimsJws(token)
+//                    .getBody();
+//        } catch (ExpiredJwtException e) {
+//            return e.getClaims();
+//        }
+//    }
 
 //    public String getAccessToken(String refreshToken) {
 //        try {

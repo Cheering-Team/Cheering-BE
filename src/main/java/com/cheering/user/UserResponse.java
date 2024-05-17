@@ -6,4 +6,7 @@ public class UserResponse {
             this(user.getId(), user.getPhone(), user.getNickname());
         }
     }
+
+    public record TokenDTO(String accessToken, String refreshToken) { }
+    public record AccessTokenDTO(String accessToken) { }
 }

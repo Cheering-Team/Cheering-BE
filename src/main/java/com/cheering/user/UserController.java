@@ -1,29 +1,14 @@
 package com.cheering.user;
 
-import static com.cheering._core.errors.SuccessMessage.SIGN_IN_SUCCESS;
-import static com.cheering._core.errors.SuccessMessage.SIGN_UP_SUCCESS;
-import static com.cheering._core.errors.SuccessMessage.VALIDATE_EMAIL_SUCCESS;
-
-import com.cheering._core.security.JWToken;
-import com.cheering._core.security.JwtConstant;
 import com.cheering._core.security.JwtGenerator;
 import com.cheering._core.security.JwtProvider;
 import com.cheering._core.util.ApiUtils;
-import com.cheering.community.SearchCommunityResponse;
-import com.cheering._core.errors.SuccessMessage;
-import com.cheering._core.errors.ResponseBodyDto;
-import com.cheering._core.errors.ResponseGenerator;
-import com.cheering._core.errors.ExceptionMessage;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,6 +34,25 @@ public class UserController {
     public ResponseEntity<?> checkCode(@RequestBody UserRequest.CheckCodeDTO requestDTO) {
         userService.checkCode(requestDTO);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"인증번호가 일치합니다.", null ));
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> signUp (@RequestBody UserRequest.SignUpDTO requestDTO) {
+        UserResponse.TokenDTO responseDTO = userService.signUp(requestDTO);
+        ResponseCookie responseCookie = setRefreshTokenCookie(responseDTO.refreshToken());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+                .body(ApiUtils.success(HttpStatus.OK, "회원가입에 성공하였습니다.", new UserResponse.AccessTokenDTO(responseDTO.accessToken())));
+    }
+
+    public ResponseCookie setRefreshTokenCookie(String refreshToken) {
+        return ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .maxAge(JwtProvider.REFRESH_EXP)
+                .build();
     }
 
 //    @PostMapping("/signup")
