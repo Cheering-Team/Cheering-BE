@@ -22,8 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
-    private final JwtGenerator jwtGenerator;
-    private final JwtProvider jwtTokenProvider;
 
     @PostMapping("/phone/sms")
     public ResponseEntity<?> sendSMS(@RequestBody UserRequest.SendSMSDTO requestDTO) {
@@ -38,22 +36,10 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signUp (@RequestBody UserRequest.SignUpDTO requestDTO) {
-        UserResponse.TokenDTO responseDTO = userService.signUp(requestDTO);
-        ResponseCookie responseCookie = setRefreshTokenCookie(responseDTO.refreshToken());
-
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
-                .body(ApiUtils.success(HttpStatus.OK, "회원가입에 성공하였습니다.", new UserResponse.AccessTokenDTO(responseDTO.accessToken())));
+                .body(ApiUtils.success(HttpStatus.CREATED, "회원가입에 성공하였습니다.", userService.signUp(requestDTO)));
     }
 
-    public ResponseCookie setRefreshTokenCookie(String refreshToken) {
-        return ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
-                .maxAge(JwtProvider.REFRESH_EXP)
-                .build();
-    }
 
 //    @PostMapping("/signup")
 //    public ResponseEntity<ResponseBodyDto<?>> signUp(@RequestBody @Valid SignUpRequest signUpRequest) {
