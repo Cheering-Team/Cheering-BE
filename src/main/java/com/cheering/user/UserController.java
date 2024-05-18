@@ -34,12 +34,17 @@ public class UserController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"인증번호가 일치합니다.", null ));
     }
 
+    @PostMapping("/signin")
+    public ResponseEntity<?> singIn(@RequestBody UserRequest.CheckCodeDTO requestDTO) {
+        return ResponseEntity.ok()
+                .body(ApiUtils.success(HttpStatus.OK, "로그인에 성공하였습니다.", userService.signIn(requestDTO)));
+    }
+
     @PostMapping("/signup")
     public ResponseEntity<?> signUp (@RequestBody UserRequest.SignUpDTO requestDTO) {
         return ResponseEntity.ok()
                 .body(ApiUtils.success(HttpStatus.CREATED, "회원가입에 성공하였습니다.", userService.signUp(requestDTO)));
     }
-
 
 //    @PostMapping("/signup")
 //    public ResponseEntity<ResponseBodyDto<?>> signUp(@RequestBody @Valid SignUpRequest signUpRequest) {

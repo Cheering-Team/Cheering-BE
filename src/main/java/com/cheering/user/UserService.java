@@ -64,6 +64,28 @@ public class UserService {
     }
 
     @Transactional
+    public UserResponse.TokenDTO signIn(UserRequest.CheckCodeDTO requestDTO) {
+        String phone = requestDTO.phone();
+        String code = requestDTO.code();
+
+        String storedCode = redisUtils.getData(phone);
+
+        if(storedCode == null) {
+            throw new CustomException(ExceptionCode.CODE_EXPIRED);
+        }
+
+        if(!storedCode.equals((code))){
+            throw new CustomException(ExceptionCode.CODE_NOT_EQUAL);
+        }
+
+        redisUtils.deleteData(phone);
+
+        Optional<User> user = userRepository.findByPhone(phone);
+
+        return createToken(user.get());
+    }
+
+    @Transactional
     public UserResponse.TokenDTO signUp(UserRequest.SignUpDTO requestDTO) {
         User user = User.builder()
                 .phone(requestDTO.phone())
