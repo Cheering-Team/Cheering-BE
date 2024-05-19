@@ -36,4 +36,9 @@ public class HealthCheckController {
     public ResponseEntity<?> getEnv() {
         return ResponseEntity.ok(env);
     }
+
+    @GetMapping("/api/token")
+    public ResponseEntity<?> testToken() {
+        return ResponseEntity.ok("good");
+    }
 }

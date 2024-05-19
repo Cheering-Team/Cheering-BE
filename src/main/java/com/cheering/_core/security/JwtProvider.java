@@ -1,6 +1,9 @@
 package com.cheering._core.security;
 
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.SignatureVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.cheering.user.User;
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.Key;
@@ -17,8 +20,10 @@ import com.auth0.jwt.JWT;
 @Component
 public class JwtProvider {
 
-    public static final Long ACCESS_EXP = 1000L * 60 * 60 * 24; // 하루
+    public static final Long ACCESS_EXP = 1000L * 60; // 1분
     public static final Long REFRESH_EXP = 1000L * 60 * 60 * 24 * 365; // 1년
+    public static final String HEADER = "Authorization";
+    public static final String TOKEN_PREFIX = "Bearer ";
 
     @Value("${jwt.secret}")
     private String SECRET;
@@ -41,6 +46,11 @@ public class JwtProvider {
                 .withClaim("id", user.getId())
                 .withClaim("role", user.getRole().ordinal())
                 .sign(Algorithm.HMAC512(SECRET));
+    }
+
+    public DecodedJWT verify(String jwt) throws SignatureVerificationException, TokenExpiredException {
+        jwt = jwt.replace(JwtProvider.TOKEN_PREFIX, "");
+        return JWT.require(Algorithm.HMAC512(SECRET)).build().verify(jwt);
     }
 
 
