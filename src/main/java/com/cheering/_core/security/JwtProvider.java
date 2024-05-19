@@ -20,8 +20,8 @@ import com.auth0.jwt.JWT;
 @Component
 public class JwtProvider {
 
-    public static final Long ACCESS_EXP = 1000L * 60; // 1분
-    public static final Long REFRESH_EXP = 1000L * 60 * 60 * 24 * 365; // 1년
+    public static final Long ACCESS_EXP = 1000L * 30; // 30초
+    public static final Long REFRESH_EXP = 1000L * 120; // 2분
     public static final String HEADER = "Authorization";
     public static final String TOKEN_PREFIX = "Bearer ";
 
