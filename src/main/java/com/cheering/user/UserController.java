@@ -9,10 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @Slf4j
@@ -44,6 +41,12 @@ public class UserController {
     public ResponseEntity<?> signUp (@RequestBody UserRequest.SignUpDTO requestDTO) {
         return ResponseEntity.ok()
                 .body(ApiUtils.success(HttpStatus.CREATED, "회원가입에 성공하였습니다.", userService.signUp(requestDTO)));
+    }
+
+    @GetMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok()
+                .body(ApiUtils.success(HttpStatus.CREATED, "토큰이 재발급 되었습니다.", userService.refresh(token)));
     }
 
 //    @PostMapping("/signup")

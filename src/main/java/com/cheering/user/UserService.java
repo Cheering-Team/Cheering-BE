@@ -1,5 +1,6 @@
 package com.cheering.user;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.cheering._core.errors.*;
 import com.cheering._core.security.JwtProvider;
 import com.cheering._core.util.RedisUtils;
@@ -9,6 +10,7 @@ import com.cheering.community.UserCommunityInfoRepository;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,6 +96,19 @@ public class UserService {
                 .build();
 
         userRepository.save(user);
+        return createToken(user);
+    }
+
+    @Transactional
+    public UserResponse.TokenDTO refresh(String refreshToken) {
+        DecodedJWT decodedJWT = jwtProvider.verify(refreshToken);
+        Long userId = decodedJWT.getClaim("id").asLong();
+
+        if(!redisUtils.existData(userId.toString()))
+            throw new CustomException(ExceptionCode.REFRESH_TOKEN_EXPIRED);
+
+        User user = userRepository.findById(userId).orElseThrow(()-> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
         return createToken(user);
     }
 
