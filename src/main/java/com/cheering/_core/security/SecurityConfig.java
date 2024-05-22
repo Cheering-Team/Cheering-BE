@@ -8,58 +8,81 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@RequiredArgsConstructor
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final AuthenticationConfiguration authenticationConfiguration;
+    private final CustomAuthenticationProvider customAuthenticationProvider;
+    private final JWTUtil jwtUtil;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
-                .sessionManagement(sessionManagementConfigurer -> sessionManagementConfigurer
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize
-                        // 해당 경로의 요청은 명시된 권한 필요
-//                        .requestMatchers("/api/communities/**").hasRole("USER")
-//                        .requestMatchers("/api/users/**").hasRole("USER")
-                        // 해당 요청은 아무나 접근 가능
-                        .requestMatchers("/api/phone/sms").permitAll()
-                        .requestMatchers("/api/phone/code").permitAll()
-                        .requestMatchers("/api/signup").permitAll()
-                        .requestMatchers("/api/signin").permitAll()
-                        .requestMatchers("/api/set-data").permitAll()
-                        .requestMatchers("/api/refresh").permitAll()
-                        .requestMatchers("/hc").permitAll()
-                        .requestMatchers("/env").permitAll()
-                        .anyRequest().authenticated())
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(((request, response, authException) -> {
-                    FilterResponseUtils.unAuthorized(response, new CustomException(ExceptionCode.USER_UNAUTHORIZED));
-                })))
-                .exceptionHandling(exception -> exception.accessDeniedHandler(((request, response, authException) -> {
-                    FilterResponseUtils.forbidden(response, new CustomException(ExceptionCode.USER_FORBIDDEN));
-                })))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-
-                .build();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        // BCrypt Encoder 사용
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil);
+        loginFilter.setFilterProcessesUrl("/api/signin");
+
+        http
+                .csrf(AbstractHttpConfigurer::disable);
+
+        http
+                .formLogin(AbstractHttpConfigurer::disable);
+
+        http
+                .httpBasic(AbstractHttpConfigurer::disable);
+
+        http
+                .authorizeHttpRequests((auth)->auth
+                        .requestMatchers("/api/phone/sms", "api/pohne/code", "api/signup", "api/refresh", "/hc", "env").permitAll()
+//                        .requestMatchers("").hasRole("ADMIN")
+                        .anyRequest().authenticated());
+
+        http
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(new CustomAuthenticationEntryPoint()));
+
+        http
+                .exceptionHandling(exception -> exception.accessDeniedHandler(((request, response, authException) -> {
+                    FilterResponseUtils.forbidden(response, new CustomException(ExceptionCode.USER_FORBIDDEN));
+                })));
+
+        http
+                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+
+        http
+                .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
+
+        http
+                .authenticationProvider(customAuthenticationProvider);
+
+        http
+                .sessionManagement((session) -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        return http.build();
+//        return http
+//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+
     }
 }
 
