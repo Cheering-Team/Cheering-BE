@@ -1,8 +1,7 @@
 package com.cheering.user;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.cheering._core.errors.*;
-import com.cheering._core.security.JwtProvider;
+import com.cheering._core.security.JWTUtil;
 import com.cheering._core.util.RedisUtils;
 import com.cheering._core.util.SmsUtil;
 import com.cheering.community.UserCommunityInfoRepository;
@@ -10,7 +9,6 @@ import com.cheering.community.UserCommunityInfoRepository;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +22,7 @@ public class UserService {
     private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
-    private final JwtProvider jwtProvider;
+    private final JWTUtil jwtUtil;
 
     @Transactional
     public UserResponse.UserDTO sendSMS(UserRequest.SendSMSDTO requestDTO) {
@@ -66,28 +64,6 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse.TokenDTO signIn(UserRequest.CheckCodeDTO requestDTO) {
-        String phone = requestDTO.phone();
-        String code = requestDTO.code();
-
-        String storedCode = redisUtils.getData(phone);
-
-        if(storedCode == null) {
-            throw new CustomException(ExceptionCode.CODE_EXPIRED);
-        }
-
-        if(!storedCode.equals((code))){
-            throw new CustomException(ExceptionCode.CODE_NOT_EQUAL);
-        }
-
-        redisUtils.deleteData(phone);
-
-        Optional<User> user = userRepository.findByPhone(phone);
-
-        return createToken(user.get());
-    }
-
-    @Transactional
     public UserResponse.TokenDTO signUp(UserRequest.SignUpDTO requestDTO) {
         User user = User.builder()
                 .phone(requestDTO.phone())
@@ -96,20 +72,28 @@ public class UserService {
                 .build();
 
         userRepository.save(user);
-        return createToken(user);
+
+        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().toString(), 1000 * 60L);
+        String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().toString(), 1000 * 60 * 60 * 24 * 365L);
+
+        redisUtils.deleteData(user.getId().toString());
+        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 365L);
+
+        return new UserResponse.TokenDTO(accessToken, refreshToken);
     }
 
     @Transactional
     public UserResponse.TokenDTO refresh(String refreshToken) {
-        DecodedJWT decodedJWT = jwtProvider.verify(refreshToken);
-        Long userId = decodedJWT.getClaim("id").asLong();
-
-        if(!redisUtils.existData(userId.toString()))
-            throw new CustomException(ExceptionCode.REFRESH_TOKEN_EXPIRED);
-
-        User user = userRepository.findById(userId).orElseThrow(()-> new CustomException(ExceptionCode.USER_NOT_FOUND));
-
-        return createToken(user);
+//        DecodedJWT decodedJWT = jwtProvider.verify(refreshToken);
+//        Long userId = decodedJWT.getClaim("id").asLong();
+//
+//        if(!redisUtils.existData(userId.toString()))
+//            throw new CustomException(ExceptionCode.REFRESH_TOKEN_EXPIRED);
+//
+//        User user = userRepository.findById(userId).orElseThrow(()-> new CustomException(ExceptionCode.USER_NOT_FOUND));
+//
+//        return createToken(user);
+        return null;
     }
 
 //    @Transactional
@@ -185,13 +169,4 @@ public class UserService {
 //            throw new MisMatchPasswordException(ExceptionMessage.INVALID_EMAIL_FORMAT);
 //        }
 //    }
-
-    private UserResponse.TokenDTO createToken(User user) {
-        String newAccessToken = jwtProvider.createAccessToken(user);
-        String newRefreshToken = jwtProvider.createRefreshToken(user);
-        redisUtils.deleteData(user.getId().toString());
-        redisUtils.setDataExpire(user.getId().toString(), newRefreshToken, JwtProvider.REFRESH_EXP);
-
-        return new UserResponse.TokenDTO(newAccessToken, newRefreshToken);
-    }
 }

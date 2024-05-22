@@ -1,13 +1,9 @@
 package com.cheering.user;
 
-import com.cheering._core.security.JwtGenerator;
-import com.cheering._core.security.JwtProvider;
 import com.cheering._core.util.ApiUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,12 +25,6 @@ public class UserController {
     public ResponseEntity<?> checkCode(@RequestBody UserRequest.CheckCodeDTO requestDTO) {
         userService.checkCode(requestDTO);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"인증번호가 일치합니다.", null ));
-    }
-
-    @PostMapping("/signin")
-    public ResponseEntity<?> singIn(@RequestBody UserRequest.CheckCodeDTO requestDTO) {
-        return ResponseEntity.ok()
-                .body(ApiUtils.success(HttpStatus.OK, "로그인에 성공하였습니다.", userService.signIn(requestDTO)));
     }
 
     @PostMapping("/signup")

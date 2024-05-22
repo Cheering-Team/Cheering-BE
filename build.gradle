@@ -47,8 +47,13 @@ dependencies {
     //model-mapper
     implementation 'org.modelmapper:modelmapper:2.4.2'
 
-    //JWT
+    //java-jwt
     implementation 'com.auth0:java-jwt:4.4.0'
+
+    //jjwt
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
