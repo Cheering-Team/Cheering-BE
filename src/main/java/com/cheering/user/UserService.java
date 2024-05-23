@@ -1,6 +1,7 @@
 package com.cheering.user;
 
 import com.cheering._core.errors.*;
+import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.security.JWTUtil;
 import com.cheering._core.util.RedisUtils;
 import com.cheering._core.util.SmsUtil;
@@ -9,6 +10,9 @@ import com.cheering.community.UserCommunityInfoRepository;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +39,7 @@ public class UserService {
         String verificationCode = String.valueOf((int) (Math.random() * 900000) + 100000);
 //        smsUtil.sendOne(phone, verificationCode);
 
-        redisUtils.setDataExpire(phone, verificationCode, 30 * 1L);
+        redisUtils.setDataExpire(phone, verificationCode, 60 * 5L);
 
         if(isUser) {
             return new UserResponse.UserDTO(user.get());
@@ -73,7 +77,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().toString(), 1000 * 60L);
+        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().toString(), 1000 * 60 * 60 * 24L);
         String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().toString(), 1000 * 60 * 60 * 24 * 365L);
 
         redisUtils.deleteData(user.getId().toString());
@@ -84,16 +88,30 @@ public class UserService {
 
     @Transactional
     public UserResponse.TokenDTO refresh(String refreshToken) {
-//        DecodedJWT decodedJWT = jwtProvider.verify(refreshToken);
-//        Long userId = decodedJWT.getClaim("id").asLong();
-//
-//        if(!redisUtils.existData(userId.toString()))
-//            throw new CustomException(ExceptionCode.REFRESH_TOKEN_EXPIRED);
-//
-//        User user = userRepository.findById(userId).orElseThrow(()-> new CustomException(ExceptionCode.USER_NOT_FOUND));
-//
-//        return createToken(user);
-        return null;
+        String token = refreshToken.split(" ")[1];
+
+        String phone = jwtUtil.getUsername(token);
+        String role = jwtUtil.getRole(token);
+
+        System.out.println("3");
+
+        User user = userRepository.findByPhone(phone).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+        String storedToken = redisUtils.getData(user.getId().toString());
+
+        if(!storedToken.equals(token)) {
+            System.out.println("4");
+            throw new CustomException(ExceptionCode.INVALID_TOKEN);
+        }
+        System.out.println("5");
+
+        String accessToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24L);
+        refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24 * 365L);
+
+        redisUtils.deleteData(user.getId().toString());
+        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 365L);
+
+        return new UserResponse.TokenDTO(accessToken, refreshToken);
     }
 
 //    @Transactional
