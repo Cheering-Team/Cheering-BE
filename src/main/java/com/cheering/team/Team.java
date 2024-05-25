@@ -1,6 +1,8 @@
 package com.cheering.team;
 
+import com.cheering.team.league.League;
 import com.cheering.team.relation.TeamPlayer;
+import com.cheering.team.sport.Sport;
 import com.cheering.user.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -20,22 +22,16 @@ public class Team {
     @Column(length = 30, nullable = false)
     private String name;
 
-    @Column
-    @Enumerated(value = EnumType.STRING)
-    private Category category;
-
-    @Column
-    @Enumerated(value = EnumType.STRING)
+    @ManyToOne
+    @JoinColumn(name = "league_id")
     private League league;
 
     @OneToMany(mappedBy = "team")
     private List<TeamPlayer> teamPlayers;
 
     @Builder
-    public Team(Long teamId, String name, Category category, League league) {
+    public Team(Long teamId, String name) {
         this.id = teamId;
         this.name = name;
-        this.category = category;
-        this.league = league;
     }
 }
