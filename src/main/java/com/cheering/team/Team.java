@@ -1,10 +1,13 @@
 package com.cheering.team;
 
+import com.cheering.team.relation.TeamPlayer;
 import com.cheering.user.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Table(name="team_tb")
@@ -24,6 +27,9 @@ public class Team {
     @Column
     @Enumerated(value = EnumType.STRING)
     private League league;
+
+    @OneToMany(mappedBy = "team")
+    private List<TeamPlayer> teamPlayers;
 
     @Builder
     public Team(Long teamId, String name, Category category, League league) {
