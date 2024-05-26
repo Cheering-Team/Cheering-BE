@@ -2,11 +2,13 @@ package com.cheering.team.sport;
 
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name="sport_tb")
 @NoArgsConstructor
+@Getter
 public class Sport {
     @Id
     @GeneratedValue
