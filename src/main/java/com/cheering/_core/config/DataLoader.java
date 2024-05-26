@@ -1,5 +1,7 @@
 package com.cheering._core.config;
 
+import com.cheering.team.Team;
+import com.cheering.team.TeamRepository;
 import com.cheering.team.league.League;
 import com.cheering.team.league.LeagueRepository;
 import com.cheering.team.sport.Sport;
@@ -18,6 +20,7 @@ public class DataLoader implements ApplicationRunner {
     private final UserRepository userRepository;
     private final SportRepository sportRepository;
     private final LeagueRepository leagueRepository;
+    private final TeamRepository teamRepository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -48,6 +51,25 @@ public class DataLoader implements ApplicationRunner {
         leagueRepository.save(kbo);
         leagueRepository.save(mlb);
 
+        Team lotte = Team.builder()
+                .league(kbo)
+                .name("롯데 자이언츠")
+                .build();
+
+        Team hanhwa = Team.builder()
+                .league(kbo)
+                .name("한화 이글스")
+                .build();
+
+        Team samsung = Team.builder()
+                .league(kbo)
+                .name("삼성 라이온즈")
+                .build();
+
+        teamRepository.save(lotte);
+        teamRepository.save(hanhwa);
+        teamRepository.save(samsung);
+
         Sport soccer = Sport.builder()
                 .name("축구")
                 .build();
@@ -56,12 +78,12 @@ public class DataLoader implements ApplicationRunner {
 
         League kleague = League.builder()
                 .name("K리그")
-                .sport(baseball)
+                .sport(soccer)
                 .build();
 
         League epl = League.builder()
                 .name("EPL")
-                .sport(baseball)
+                .sport(soccer)
                 .build();
 
         leagueRepository.save(kleague);
