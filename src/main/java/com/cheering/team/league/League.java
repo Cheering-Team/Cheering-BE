@@ -2,6 +2,7 @@ package com.cheering.team.league;
 
 import com.cheering.team.sport.Sport;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -18,4 +19,11 @@ public class League {
     @ManyToOne
     @JoinColumn(name = "sport_id")
     private Sport sport;
+
+    @Builder
+    public League(Long leagueId, String name, Sport sport) {
+        this.id = leagueId;
+        this.name = name;
+        this.sport = sport;
+    }
 }

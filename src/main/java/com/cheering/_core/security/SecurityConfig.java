@@ -79,7 +79,7 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth)->auth
-                        .requestMatchers("/api/phone/sms", "/api/phone/code", "/api/signup", "/api/refresh", "/hc", "/env").permitAll()
+                        .requestMatchers("/api/phone/sms", "/api/phone/code", "/api/signin", "/api/signup", "/api/refresh", "/hc", "/env").permitAll()
 //                        .requestMatchers("").hasRole("ADMIN")
                         .anyRequest().authenticated());
 

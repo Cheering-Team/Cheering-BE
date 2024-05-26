@@ -5,7 +5,6 @@ import static jakarta.persistence.FetchType.LAZY;
 import com.cheering.BaseTimeEntity;
 import com.cheering.comment.Comment;
 import com.cheering.community.UserCommunityInfo;
-import com.cheering.user.Team;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -38,9 +37,9 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name = "user_community_info_id")
     private UserCommunityInfo writerInfo;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "team_id")
-    private Team team;
+//    @ManyToOne(fetch = LAZY)
+//    @JoinColumn(name = "team_id")
+//    private Team team;
 
     @OneToMany(mappedBy = "post")
     private List<ImageFile> files;

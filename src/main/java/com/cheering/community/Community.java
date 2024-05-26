@@ -3,8 +3,6 @@ package com.cheering.community;
 import static jakarta.persistence.FetchType.LAZY;
 
 import com.cheering.BaseTimeEntity;
-import com.cheering.user.Team;
-import com.cheering.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -50,7 +48,7 @@ public class Community extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private CommunityType cType;
 
-    @OneToOne(fetch = LAZY, mappedBy = "teamCommunity")
-    private Team team;
+//    @OneToOne(fetch = LAZY, mappedBy = "teamCommunity")
+//    private Team team;
 
 }

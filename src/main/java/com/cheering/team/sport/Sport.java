@@ -1,6 +1,7 @@
 package com.cheering.team.sport;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -13,4 +14,10 @@ public class Sport {
 
     @Column(length = 20, nullable = false, unique = true)
     private String name;
+
+    @Builder
+    public Sport(Long sportId, String name) {
+        this.id = sportId;
+        this.name = name;
+    }
 }
