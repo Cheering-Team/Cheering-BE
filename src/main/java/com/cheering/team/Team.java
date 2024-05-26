@@ -7,6 +7,7 @@ import com.cheering.user.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 @Entity
 @Table(name="team_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class Team {
     @Id
     @GeneratedValue
@@ -30,8 +32,9 @@ public class Team {
     private List<TeamPlayer> teamPlayers;
 
     @Builder
-    public Team(Long teamId, String name) {
+    public Team(Long teamId, String name, League league) {
         this.id = teamId;
         this.name = name;
+        this.league = league;
     }
 }
