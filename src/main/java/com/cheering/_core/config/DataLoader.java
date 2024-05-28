@@ -54,20 +54,23 @@ public class DataLoader implements ApplicationRunner {
         Team lotte = Team.builder()
                 .league(kbo)
                 .name("롯데 자이언츠")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/lotte.png")
                 .build();
 
-        Team hanhwa = Team.builder()
+        Team hanwha = Team.builder()
                 .league(kbo)
                 .name("한화 이글스")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/hanwha.jpeg")
                 .build();
 
         Team samsung = Team.builder()
                 .league(kbo)
                 .name("삼성 라이온즈")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/samsung.jpeg")
                 .build();
 
         teamRepository.save(lotte);
-        teamRepository.save(hanhwa);
+        teamRepository.save(hanwha);
         teamRepository.save(samsung);
 
         Sport soccer = Sport.builder()

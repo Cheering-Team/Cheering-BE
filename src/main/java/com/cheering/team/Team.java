@@ -28,13 +28,17 @@ public class Team {
     @JoinColumn(name = "league_id")
     private League league;
 
+    @Column
+    private String image;
+
     @OneToMany(mappedBy = "team")
     private List<TeamPlayer> teamPlayers;
 
     @Builder
-    public Team(Long teamId, String name, League league) {
+    public Team(Long teamId, String name, League league, String image) {
         this.id = teamId;
         this.name = name;
         this.league = league;
+        this.image = image;
     }
 }
