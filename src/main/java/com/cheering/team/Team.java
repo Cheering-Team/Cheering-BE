@@ -31,14 +31,18 @@ public class Team {
     @Column
     private String image;
 
+    @Column
+    private Long fanCount;
+
     @OneToMany(mappedBy = "team")
     private List<TeamPlayer> teamPlayers;
 
     @Builder
-    public Team(Long teamId, String name, League league, String image) {
+    public Team(Long teamId, String name, League league, String image, Long fanCount) {
         this.id = teamId;
         this.name = name;
         this.league = league;
         this.image = image;
+        this.fanCount = fanCount;
     }
 }
