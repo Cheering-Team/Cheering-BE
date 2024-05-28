@@ -9,7 +9,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TeamService {
     private final TeamRepository teamRepository;
-    public Object getTeams(Long leagueId) {
+    public List<TeamResponse.TeamDTO> getTeams(Long leagueId) {
         List<Team> teams = teamRepository.findByLeagueId(leagueId);
 
         return teams.stream().map(TeamResponse.TeamDTO::new).toList();

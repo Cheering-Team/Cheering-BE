@@ -3,9 +3,12 @@ package com.cheering.team.relation;
 import com.cheering.player.Player;
 import com.cheering.team.Team;
 import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
 
 @Entity
 @Table(name = "team_player_tb")
+@RequiredArgsConstructor
 public class TeamPlayer {
 
     @Id
@@ -19,4 +22,10 @@ public class TeamPlayer {
     @ManyToOne
     @JoinColumn(name = "player_id")
     private Player player;
+
+    @Builder
+    public TeamPlayer(Team team, Player player) {
+        this.team = team;
+        this.player = player;
+    }
 }

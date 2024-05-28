@@ -1,9 +1,13 @@
 package com.cheering._core.config;
 
+import com.cheering.player.Player;
+import com.cheering.player.PlayerRepository;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.team.league.League;
 import com.cheering.team.league.LeagueRepository;
+import com.cheering.team.relation.TeamPlayer;
+import com.cheering.team.relation.TeamPlayerRepository;
 import com.cheering.team.sport.Sport;
 import com.cheering.team.sport.SportRepository;
 import com.cheering.user.Role;
@@ -21,6 +25,8 @@ public class DataLoader implements ApplicationRunner {
     private final SportRepository sportRepository;
     private final LeagueRepository leagueRepository;
     private final TeamRepository teamRepository;
+    private final PlayerRepository playerRepository;
+    private final TeamPlayerRepository teamPlayerRepository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -97,5 +103,33 @@ public class DataLoader implements ApplicationRunner {
                 .build();
 
         sportRepository.save(basketball);
+
+        Player player1 = Player.builder()
+                .name("전준우")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8C%E1%85%A5%E1%86%AB%E1%84%8C%E1%85%AE%E1%86%AB%E1%84%8B%E1%85%AE.jpeg")
+                .fanCount(13222L)
+                .build();
+
+        Player player2 = Player.builder()
+                .name("유강남")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8B%E1%85%B2%E1%84%80%E1%85%A1%E1%86%BC%E1%84%82%E1%85%A1%E1%86%B7.jpeg")
+                .fanCount(5234L)
+                .build();
+
+        playerRepository.save(player1);
+        playerRepository.save(player2);
+
+        TeamPlayer teamPlayer1 = TeamPlayer.builder()
+                .team(lotte)
+                .player(player1)
+                .build();
+
+        TeamPlayer teamPlayer2 = TeamPlayer.builder()
+                .team(lotte)
+                .player(player2)
+                .build();
+
+        teamPlayerRepository.save(teamPlayer1);
+        teamPlayerRepository.save(teamPlayer2);
     }
 }
