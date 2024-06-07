@@ -14,14 +14,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class PlayerService {
     private final TeamPlayerRepository teamPlayerRepository;
     private final TeamRepository teamRepository;
+    private final PlayerRepository playerRepository;
 
-    public PlayerResponse.PlayersByTeamDTO getPlayersByTeam(Long teamId) {
+    public PlayerResponse.PlayersOfTeamDTO getPlayersByTeam(Long teamId) {
         List<Player> players = teamPlayerRepository.findByTeamId(teamId);
 
 
@@ -32,6 +34,16 @@ public class PlayerService {
         List<PlayerResponse.PlayerDTO> playerDTOS = players.stream().map(PlayerResponse.PlayerDTO::new).toList();
         TeamResponse.TeamDTO teamDTO = new TeamResponse.TeamDTO(team);
 
-        return new PlayerResponse.PlayersByTeamDTO(sport, league, teamDTO, playerDTOS);
+        return new PlayerResponse.PlayersOfTeamDTO(sport, league, teamDTO, playerDTOS);
+    }
+
+    public PlayerResponse.PlayerAndTeamsDTO getPlayerInfo(Long playerId) {
+        Player player = playerRepository.findById(playerId).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+
+        List<Team> teams = teamPlayerRepository.findByPlayerId(playerId);
+
+        List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map(TeamResponse.TeamDTO::new).toList();
+
+        return new PlayerResponse.PlayerAndTeamsDTO(player, teamDTOS);
     }
 }

@@ -18,6 +18,9 @@ public enum ExceptionCode {
     // TEAM
     TEAM_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 팀을 찾을 수 없습니다."),
 
+    // PLAYER
+    PLAYER_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 선수를 찾을 수 없습니다."),
+
     // S3
     EMPTY_FILE(HttpStatus.BAD_REQUEST, "유효하지 않는 파일입니다."),
     INVALID_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "확장자가 유효하지 않습니다."),

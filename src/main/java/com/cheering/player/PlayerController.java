@@ -19,4 +19,9 @@ public class PlayerController {
     public ResponseEntity<?> getPlayersByTeam(@PathVariable("teamId") Long teamId) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "선수들을 불러왔습니다.", playerService.getPlayersByTeam(teamId)));
     }
+
+    @GetMapping("/players/{playerId}")
+    public ResponseEntity<?> getPlayerInfo(@PathVariable("playerId") Long playerId) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "선수의 정보를 불러왔습니다.", playerService.getPlayerInfo(playerId)));
+    }
 }
