@@ -18,9 +18,6 @@ public class Player {
     @GeneratedValue
     private Long id;
 
-    @OneToMany(mappedBy = "player")
-    private List<TeamPlayer> teamPlayers;
-
     @Column(length = 20, nullable = false)
     private String koreanName;
 
