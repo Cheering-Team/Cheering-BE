@@ -27,14 +27,20 @@ public class PlayerService {
     private final PlayerRepository playerRepository;
     private final PlayerUserRepository playerUserRepository;
 
-    public PlayerResponse.PlayersOfTeamDTO getPlayersByTeam(Long teamId) {
+    public PlayerResponse.PlayersOfTeamDTO getPlayersByTeam(Long teamId, User user) {
         List<Player> players = teamPlayerRepository.findByTeamId(teamId);
 
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
         League league = team.getLeague();
         Sport sport = league.getSport();
 
-        List<PlayerResponse.PlayerDTO> playerDTOS = players.stream().map(PlayerResponse.PlayerDTO::new).toList();
+
+
+        List<PlayerResponse.PlayerDTO> playerDTOS = players.stream().map((player)-> {
+            Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId());
+
+            return new PlayerResponse.PlayerDTO(player, playerUser.isPresent());
+        }).toList();
         TeamResponse.TeamDTO teamDTO = new TeamResponse.TeamDTO(team);
 
         return new PlayerResponse.PlayersOfTeamDTO(sport, league, teamDTO, playerDTOS);
