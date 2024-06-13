@@ -93,17 +93,13 @@ public class UserService {
         String phone = jwtUtil.getUsername(token);
         String role = jwtUtil.getRole(token);
 
-        System.out.println("3");
-
         User user = userRepository.findByPhone(phone).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         String storedToken = redisUtils.getData(user.getId().toString());
 
         if(!storedToken.equals(token)) {
-            System.out.println("4");
             throw new CustomException(ExceptionCode.INVALID_TOKEN);
         }
-        System.out.println("5");
 
         String accessToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24L);
         refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24 * 365L);

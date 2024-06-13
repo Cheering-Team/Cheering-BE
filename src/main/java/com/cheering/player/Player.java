@@ -18,23 +18,28 @@ public class Player {
     @GeneratedValue
     private Long id;
 
-    @OneToMany(mappedBy = "player")
-    private List<TeamPlayer> teamPlayers;
+    @Column(length = 20, nullable = false)
+    private String koreanName;
 
     @Column(length = 20, nullable = false)
-    private String name;
+    private String englishName;
 
     @Column
     private String image;
 
     @Column
+    private String backgroundImage;
+
+    @Column
     private Long fanCount;
 
     @Builder
-    public Player(Long playerId, String name, String image, Long fanCount) {
+    public Player(Long playerId, String koreanName, String englishName, String image, String backgroundImage, Long fanCount) {
         this.id = playerId;
-        this.name = name;
+        this.koreanName = koreanName;
+        this.englishName = englishName;
         this.image = image;
+        this.backgroundImage = backgroundImage;
         this.fanCount = fanCount;
     }
 }
