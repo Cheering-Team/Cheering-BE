@@ -20,9 +20,9 @@ public class PlayerResponse {
         }
     }
 
-    public record PlayerAndTeamsDTO(Long id, String koreanName, String englishName, String backgroundImage, Long fanCount, Boolean isJoin,List<TeamResponse.TeamDTO> teams) {
+    public record PlayerAndTeamsDTO(Long id, String koreanName, String englishName, String image, String backgroundImage, Long fanCount, Boolean isJoin,List<TeamResponse.TeamDTO> teams) {
         public PlayerAndTeamsDTO(Player player, Boolean isJoin,List<TeamResponse.TeamDTO> teams) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getBackgroundImage(), player.getFanCount(), isJoin,teams);
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), player.getFanCount(), isJoin,teams);
         }
     }
 }
