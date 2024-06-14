@@ -23,6 +23,12 @@ public class PlayerUser {
     @JoinColumn(name = "uesr_id")
     private User user;
 
+    @Column(length = 20, nullable = false, unique = true)
+    private String nickname;
+
+    @Column
+    private String image;
+
     @Builder
     public PlayerUser(Player player, User user) {
         this.player = player;

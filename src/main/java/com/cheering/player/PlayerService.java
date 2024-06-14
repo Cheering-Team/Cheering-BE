@@ -58,4 +58,12 @@ public class PlayerService {
 
         return new PlayerResponse.PlayerAndTeamsDTO(player, playerUser.isPresent(), teamDTOS);
     }
+
+    public void checkNickname(Long playerId, PlayerRequest.NicknameDTO requestDTO) {
+        Optional<PlayerUser> playerUser = playerUserRepository.findByNickname(requestDTO.nickname());
+
+        if(playerUser.isPresent()){
+            throw new CustomException(ExceptionCode.DUPLICATE_NICKNAME);
+        }
+    }
 }
