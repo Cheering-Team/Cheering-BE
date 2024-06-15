@@ -12,5 +12,6 @@ public interface PlayerUserRepository extends JpaRepository<PlayerUser, Long> {
     @Query("select pu from PlayerUser pu where pu.player.id=:playerId and pu.user.id=:userId")
     Optional<PlayerUser> findByPlayerIdAndUserId (@Param("playerId") Long playerId, @Param("userId") Long userId );
 
-    Optional<PlayerUser> findByNickname(String nickname);
+    @Query("select pu from PlayerUser pu where pu.player.id=:playerId and pu.nickname=:nickname")
+    Optional<PlayerUser> findByPlayerIdAndNickname (@Param("playerId") Long playerId, @Param("nickname") String nickname );
 }

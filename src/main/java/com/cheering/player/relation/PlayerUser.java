@@ -30,8 +30,10 @@ public class PlayerUser {
     private String image;
 
     @Builder
-    public PlayerUser(Player player, User user) {
+    public PlayerUser(Player player, User user, String nickname, String image) {
         this.player = player;
         this.user = user;
+        this.nickname = nickname;
+        this.image = image;
     }
 }

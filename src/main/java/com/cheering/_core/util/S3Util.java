@@ -1,6 +1,7 @@
 package com.cheering._core.util;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
 import com.cheering._core.errors.CustomException;
@@ -17,6 +18,8 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import javax.imageio.ImageIO;
+
+import com.rabbitmq.tools.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +46,7 @@ public class S3Util {
 
     private String uploadImage(MultipartFile image) {
         this.validateImageFileExtension(image.getOriginalFilename());
+
         try {
             return this.uploadImageToS3(image);
         } catch (IOException e) {
@@ -82,6 +86,7 @@ public class S3Util {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, s3FileName, byteArrayInputStream, metadata).withCannedAcl(CannedAccessControlList.PublicRead);
             amazonS3.putObject(putObjectRequest);
         } catch (Exception e) {
+            System.err.println(e);
             throw new CustomException(ExceptionCode.IMAGE_UPLOAD_FAILED);
         } finally {
             byteArrayInputStream.close();
