@@ -61,7 +61,7 @@ public class S3Util {
         }
 
         String extension = filename.substring(lastDotIndex + 1).toLowerCase();
-        List<String> allowedExtensionList = Arrays.asList("jpg", "jpeg", "png", "gif");
+        List<String> allowedExtensionList = Arrays.asList("jpg", "jpeg", "png", "gif", "heic");
 
         if(!allowedExtensionList.contains(extension)) {
             throw new CustomException(ExceptionCode.INVALID_FILE_EXTENSION);
