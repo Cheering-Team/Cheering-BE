@@ -32,7 +32,7 @@ public class PlayerController {
     }
 
     @PostMapping("/players/{playerId}/users")
-    public ResponseEntity<?> joinCommunity(@PathVariable Long playerId, @RequestPart("nickname") String nickname, @RequestPart("image") MultipartFile image, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<?> joinCommunity(@PathVariable Long playerId, @RequestPart("nickname") String nickname, @RequestPart(value = "image", required = false) MultipartFile image, @AuthenticationPrincipal CustomUserDetails userDetails) {
         playerService.joinCommunity(playerId, nickname, image, userDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "가입이 완료되었습니다.", null));
     }

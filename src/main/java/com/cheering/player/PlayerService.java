@@ -78,7 +78,13 @@ public class PlayerService {
     public void joinCommunity(Long playerId, String nickname, MultipartFile image, User user) {
         Player player = playerRepository.findById(playerId).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
-        String imageUrl = s3Util.upload(image);
+        String imageUrl = "";
+        if(image == null) {
+            imageUrl = "https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8B%E1%85%B2%E1%84%90%E1%85%B2%E1%84%87%E1%85%B3_%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%E1%84%91%E1%85%B3%E1%84%85%E1%85%A9%E1%84%91%E1%85%B5%E1%86%AF_%E1%84%82%E1%85%A9%E1%86%A8%E1%84%89%E1%85%A2%E1%86%A8.jpg";
+        } else {
+            imageUrl = s3Util.upload(image);
+        }
+
 
         PlayerUser playerUser = PlayerUser.builder()
                 .player(player)
