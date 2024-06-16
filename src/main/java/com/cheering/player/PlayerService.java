@@ -14,8 +14,10 @@ import com.cheering.team.relation.TeamPlayerRepository;
 import com.cheering.team.sport.Sport;
 import com.cheering.team.sport.SportRepository;
 import com.cheering.user.User;
+import com.cheering.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -28,16 +30,16 @@ public class PlayerService {
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
     private final PlayerUserRepository playerUserRepository;
+    private final UserRepository userRepository;
     private final S3Util s3Util;
 
+    @Transactional
     public PlayerResponse.PlayersOfTeamDTO getPlayersByTeam(Long teamId, User user) {
         List<Player> players = teamPlayerRepository.findByTeamId(teamId);
 
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
         League league = team.getLeague();
         Sport sport = league.getSport();
-
-
 
         List<PlayerResponse.PlayerDTO> playerDTOS = players.stream().map((player)-> {
             Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId());
@@ -50,6 +52,7 @@ public class PlayerService {
     }
 
     // 해당 선수 커뮤니티 정보 및 가입 여부 불러오기
+    @Transactional
     public PlayerResponse.PlayerAndTeamsDTO getPlayerInfo(Long playerId, User user) {
         Player player = playerRepository.findById(playerId).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
@@ -62,6 +65,7 @@ public class PlayerService {
         return new PlayerResponse.PlayerAndTeamsDTO(player, playerUser.isPresent(), teamDTOS);
     }
 
+    @Transactional
     public void checkNickname(Long playerId, String nickname) {
         Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndNickname(playerId, nickname);
 
@@ -70,6 +74,7 @@ public class PlayerService {
         }
     }
 
+    @Transactional
     public void joinCommunity(Long playerId, String nickname, MultipartFile image, User user) {
         Player player = playerRepository.findById(playerId).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 

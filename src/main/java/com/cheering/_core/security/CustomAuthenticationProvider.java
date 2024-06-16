@@ -23,7 +23,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String phone = authentication.getName();
         String code = (String) authentication.getCredentials();
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(phone);
+        CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(phone);
 
         String storedCode = redisUtils.getData(phone);
 
@@ -34,6 +34,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         if(!storedCode.equals((code))){
             throw new BadCredentialsException("인증코드가 일치하지 않습니다.");
         }
+
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 

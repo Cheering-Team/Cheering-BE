@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -22,7 +23,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -41,14 +42,7 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         String phone = jwtUtil.getUsername(token);
-        String role = jwtUtil.getRole(token);
-
-        User user = User.builder()
-                .phone(phone)
-                .role(Role.valueOf(role))
-                .build();
-
-        CustomUserDetails customUserDetails = new CustomUserDetails(user);
+        CustomUserDetails customUserDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(phone);
 
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
 

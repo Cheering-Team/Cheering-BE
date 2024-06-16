@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +31,7 @@ import java.util.Collections;
 public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final CustomAuthenticationProvider customAuthenticationProvider;
+    private final UserDetailsService userDetailsService;
     private final JWTUtil jwtUtil;
 
     @Bean
@@ -92,7 +94,7 @@ public class SecurityConfig {
                 })));
 
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+                .addFilterBefore(new JWTFilter(jwtUtil, userDetailsService), LoginFilter.class);
 
         http
                 .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
@@ -105,9 +107,6 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
-//        return http
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-
     }
 }
 
