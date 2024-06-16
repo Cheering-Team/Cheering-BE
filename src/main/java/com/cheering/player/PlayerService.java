@@ -30,7 +30,6 @@ public class PlayerService {
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
     private final PlayerUserRepository playerUserRepository;
-    private final UserRepository userRepository;
     private final S3Util s3Util;
 
     @Transactional
@@ -43,8 +42,13 @@ public class PlayerService {
 
         List<PlayerResponse.PlayerDTO> playerDTOS = players.stream().map((player)-> {
             Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId());
+            if(playerUser.isPresent()) {
+                PlayerResponse.PlayerUserDTO playerUserDTO = new PlayerResponse.PlayerUserDTO(playerUser.get());
+                return new PlayerResponse.PlayerDTO(player, playerUserDTO);
+            } else {
+                return new PlayerResponse.PlayerDTO(player, null);
+            }
 
-            return new PlayerResponse.PlayerDTO(player, playerUser.isPresent());
         }).toList();
         TeamResponse.TeamDTO teamDTO = new TeamResponse.TeamDTO(team);
 
@@ -62,7 +66,12 @@ public class PlayerService {
 
         Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId());
 
-        return new PlayerResponse.PlayerAndTeamsDTO(player, playerUser.isPresent(), teamDTOS);
+        if(playerUser.isPresent()) {
+            PlayerResponse.PlayerUserDTO playerUserDTO = new PlayerResponse.PlayerUserDTO(playerUser.get());
+            return new PlayerResponse.PlayerAndTeamsDTO(player, playerUserDTO, teamDTOS);
+        } else {
+            return new PlayerResponse.PlayerAndTeamsDTO(player, teamDTOS);
+        }
     }
 
     @Transactional
@@ -80,7 +89,7 @@ public class PlayerService {
 
         String imageUrl = "";
         if(image == null) {
-            imageUrl = "https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8B%E1%85%B2%E1%84%90%E1%85%B2%E1%84%87%E1%85%B3_%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%E1%84%91%E1%85%B3%E1%84%85%E1%85%A9%E1%84%91%E1%85%B5%E1%86%AF_%E1%84%82%E1%85%A9%E1%86%A8%E1%84%89%E1%85%A2%E1%86%A8.jpg";
+            imageUrl = "https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-profile.jpg";
         } else {
             imageUrl = s3Util.upload(image);
         }

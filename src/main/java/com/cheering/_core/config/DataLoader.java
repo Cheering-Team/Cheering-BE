@@ -2,6 +2,7 @@ package com.cheering._core.config;
 
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
+import com.cheering.player.relation.PlayerUser;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.team.league.League;
@@ -138,5 +139,12 @@ public class DataLoader implements ApplicationRunner {
 
         teamPlayerRepository.save(teamPlayer1);
         teamPlayerRepository.save(teamPlayer2);
+
+        PlayerUser playerUser = PlayerUser.builder()
+                .player(player1)
+                .user(user1)
+                .nickname("전준우짱")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/fc45d81e-cIMG_8827.PNG")
+                .build();
     }
 }
