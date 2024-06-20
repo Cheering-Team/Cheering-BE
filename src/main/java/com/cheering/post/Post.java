@@ -1,26 +1,16 @@
 package com.cheering.post;
 
-import static jakarta.persistence.FetchType.LAZY;
-
 import com.cheering.BaseTimeEntity;
-import com.cheering.comment.Comment;
-import com.cheering.community.UserCommunityInfo;
-import com.cheering.player.Player;
 import com.cheering.player.relation.PlayerUser;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.*;
+
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -38,6 +28,12 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name = "player_user_id")
     private PlayerUser playerUser;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "post_tag", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "tag")
+    @Enumerated(EnumType.STRING)
+    private Set<Tag> tags = new HashSet<>();
+
 //    @OneToMany(mappedBy = "post")
 //    private List<ImageFile> files;
 //
@@ -48,9 +44,10 @@ public class Post extends BaseTimeEntity {
 //    private List<Interesting> likes = new ArrayList<>();
 
     @Builder
-    public Post(Long postId, String content, PlayerUser playerUser){
+    public Post(Long postId, String content, PlayerUser playerUser, Set<Tag> tags){
         this.id = postId;
         this.content = content;
         this.playerUser = playerUser;
+        this.tags = tags;
     }
 }
