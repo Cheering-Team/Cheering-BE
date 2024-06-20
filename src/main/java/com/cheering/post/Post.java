@@ -5,6 +5,8 @@ import static jakarta.persistence.FetchType.LAZY;
 import com.cheering.BaseTimeEntity;
 import com.cheering.comment.Comment;
 import com.cheering.community.UserCommunityInfo;
+import com.cheering.player.Player;
+import com.cheering.player.relation.PlayerUser;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -21,9 +23,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class Post extends BaseTimeEntity {
     @Id
@@ -31,22 +31,26 @@ public class Post extends BaseTimeEntity {
     @Column(name = "post_id")
     private Long id;
 
+    @Column
     private String content;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "user_community_info_id")
-    private UserCommunityInfo writerInfo;
+    @ManyToOne
+    @JoinColumn(name = "player_user_id")
+    private PlayerUser playerUser;
 
-//    @ManyToOne(fetch = LAZY)
-//    @JoinColumn(name = "team_id")
-//    private Team team;
+//    @OneToMany(mappedBy = "post")
+//    private List<ImageFile> files;
+//
+//    @OneToMany(mappedBy = "post")
+//    private List<Comment> comments = new ArrayList<>();
+//
+//    @OneToMany(mappedBy = "post")
+//    private List<Interesting> likes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post")
-    private List<ImageFile> files;
-
-    @OneToMany(mappedBy = "post")
-    private List<Comment> comments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "post")
-    private List<Interesting> likes = new ArrayList<>();
+    @Builder
+    public Post(Long postId, String content, PlayerUser playerUser){
+        this.id = postId;
+        this.content = content;
+        this.playerUser = playerUser;
+    }
 }
