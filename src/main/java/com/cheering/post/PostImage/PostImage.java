@@ -1,7 +1,5 @@
 package com.cheering.post.PostImage;
 
-import static jakarta.persistence.FetchType.LAZY;
-
 import com.cheering.post.Post;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,7 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity
+@Entity(name = "post_image_tb")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostImage {
@@ -25,16 +23,16 @@ public class PostImage {
 
     private String path;
 
-    private Long width;
+    private int width;
     
-    private Long height;
+    private int height;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
 
     @Builder
-    public PostImage(Long postImageId, String path, Long width, Long height, Post post) {
+    public PostImage(Long postImageId, String path, int width, int height, Post post) {
         this.id = postImageId;
         this.path = path;
         this.width = width;

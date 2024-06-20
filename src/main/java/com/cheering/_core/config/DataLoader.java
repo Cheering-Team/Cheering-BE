@@ -3,6 +3,9 @@ package com.cheering._core.config;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.player.relation.PlayerUser;
+import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.post.Tag.Tag;
+import com.cheering.post.Tag.TagRepository;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.team.league.League;
@@ -28,6 +31,8 @@ public class DataLoader implements ApplicationRunner {
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
     private final TeamPlayerRepository teamPlayerRepository;
+    private final PlayerUserRepository playerUserRepository;
+    private final TagRepository tagRepository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -146,5 +151,23 @@ public class DataLoader implements ApplicationRunner {
                 .nickname("전준우짱")
                 .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/fc45d81e-cIMG_8827.PNG")
                 .build();
+
+        playerUserRepository.save(playerUser);
+
+        Tag tag1 = Tag.builder()
+                .name("photo")
+                .build();
+
+        Tag tag2 = Tag.builder()
+                .name("information")
+                .build();
+
+        Tag tag3 = Tag.builder()
+                .name("viewing")
+                .build();
+
+        tagRepository.save(tag1);
+        tagRepository.save(tag2);
+        tagRepository.save(tag3);
     }
 }

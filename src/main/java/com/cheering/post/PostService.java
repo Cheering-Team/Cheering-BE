@@ -1,36 +1,90 @@
-//package com.cheering.post;
-//
-//import com.cheering.community.BooleanType;
-//import com.cheering.community.Community;
-//import com.cheering.community.UserCommunityInfo;
-//import com.cheering.community.CommunityRepository;
-//import com.cheering.community.UserCommunityInfoRepository;
-//import com.cheering.user.Team;
-//import com.cheering.user.User;
-//import com.cheering.user.WriterResponse;
-//import com.cheering.user.UserRepository;
-//import com.cheering._core.errors.NotFoundCommunityException;
-//import com.cheering._core.errors.NotFoundUserCommunityInfoException;
-//import com.cheering._core.errors.ExceptionMessage;
-//import com.cheering._core.errors.NotFoundPostException;
-//import com.cheering._core.errors.NotFoundUserException;
-//import com.cheering._core.util.AwsS3Util;
-//import java.io.IOException;
-//import java.util.ArrayList;
-//import java.util.Comparator;
-//import java.util.List;
-//import java.util.Optional;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.security.core.Authentication;
-//import org.springframework.security.core.context.SecurityContextHolder;
-//import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
-//import org.springframework.web.multipart.MultipartFile;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class PostService {
-//
+package com.cheering.post;
+
+import com.cheering._core.errors.CustomException;
+import com.cheering._core.errors.ExceptionCode;
+import com.cheering._core.util.S3Util;
+import com.cheering.player.relation.PlayerUser;
+import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.post.PostImage.PostImage;
+import com.cheering.post.PostImage.PostImageRepository;
+import com.cheering.post.Tag.Tag;
+import com.cheering.post.Tag.TagRepository;
+import com.cheering.post.relation.PostTag;
+import com.cheering.post.relation.PostTagRepository;
+import com.cheering.user.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class PostService {
+
+    private final PostRepository postRepository;
+    private final PlayerUserRepository playerUserRepository;
+    private final PostImageRepository postImageRepository;
+    private final TagRepository tagRepository;
+    private final PostTagRepository postTagRepository;
+    private final S3Util s3Util;
+
+    @Transactional
+    public PostResponse.PostIdDTO writePost(Long playerId, String content, List<MultipartFile> images, List<String> tags, User user) {
+        PlayerUser playerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+        Post post = Post.builder()
+                .content(content)
+                .playerUser(playerUser)
+                .build();
+
+        postRepository.save(post);
+
+        if(tags != null) {
+            tags.forEach((tagName) -> {
+                Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> new CustomException(ExceptionCode.TAG_NOT_FOUND));
+
+                PostTag postTag = PostTag.builder()
+                        .post(post)
+                        .tag(tag)
+                        .build();
+
+                postTagRepository.save(postTag);
+            });
+        }
+
+        if(images != null ){
+            images.forEach((image)->{
+                try {
+                    String imageUrl = s3Util.upload(image);
+                    BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
+
+                    int width = bufferedImage.getWidth();
+                    int height = bufferedImage.getHeight();
+
+                    PostImage postImage = PostImage.builder()
+                            .path(imageUrl)
+                            .width(width)
+                            .height(height)
+                            .post(post)
+                            .build();
+
+                    postImageRepository.save(postImage);
+                } catch (IOException e) {
+                    throw new CustomException(ExceptionCode.IMAGE_UPLOAD_FAILED);
+                }
+            });
+        }
+        return new PostResponse.PostIdDTO(post.getId());
+    }
+
 //    private final PostRepository postRepository;
 //    private final CommunityRepository communityRepository;
 //    private final UserRepository userRepository;
@@ -38,6 +92,8 @@
 //    private final ImageFileRepository imageFileRepository;
 //    private final AwsS3Util awsS3Util;
 //    private final InterestingRepository interestingRepository;
+
+}
 //
 //    @Transactional(readOnly = true)
 //    public List<PostResponse> getPlayerPosts(Long communityId) {

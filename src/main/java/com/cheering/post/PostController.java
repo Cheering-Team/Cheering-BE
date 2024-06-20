@@ -1,29 +1,34 @@
-//package com.cheering.post;
-//
-//import com.cheering.community.BooleanType;
-//import com.cheering._core.errors.SuccessMessage;
-//import com.cheering._core.errors.ResponseBodyDto;
-//import com.cheering._core.errors.ResponseGenerator;
-//import com.cheering._core.errors.ExceptionMessage;
-//import java.util.List;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.GetMapping;
-//import org.springframework.web.bind.annotation.PathVariable;
-//import org.springframework.web.bind.annotation.PostMapping;
-//import org.springframework.web.bind.annotation.RequestMapping;
-//import org.springframework.web.bind.annotation.RequestParam;
-//import org.springframework.web.bind.annotation.RequestPart;
-//import org.springframework.web.bind.annotation.RestController;
-//import org.springframework.web.multipart.MultipartFile;
-//
-//@RestController
-//@RequiredArgsConstructor
-//@RequestMapping("/api")
-//public class PostController {
-//
-//    private final PostService postService;
-//
+package com.cheering.post;
+
+
+import com.cheering._core.security.CustomUserDetails;
+import com.cheering._core.util.ApiUtils;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api")
+public class PostController {
+
+    private final PostService postService;
+
+    @PostMapping("/players/{playerId}/posts")
+    public ResponseEntity<?> writePost(@PathVariable("playerId") Long playerId,
+                                       @RequestPart("content") String content,
+                                       @RequestParam(value = "images", required = false) List<MultipartFile> images,
+                                       @RequestParam(value = "tags", required = false) List<String> tags,
+                                       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "포스트가 작성되었습니다.", postService.writePost(playerId, content, images, tags, customUserDetails.getUser())));
+    }
+}
+
 //    @PostMapping("/communities/{communityId}/posts")
 //    public ResponseEntity<ResponseBodyDto<?>> createPost(@PathVariable("communityId") Long communityId,
 //                                                         @RequestParam("content") String content,

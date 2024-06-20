@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity
+@Entity(name = "post_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Post extends BaseTimeEntity {
@@ -28,12 +28,6 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name = "player_user_id")
     private PlayerUser playerUser;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "post_tag", joinColumns = @JoinColumn(name = "post_id"))
-    @Column(name = "tag")
-    @Enumerated(EnumType.STRING)
-    private Set<Tag> tags = new HashSet<>();
-
 //    @OneToMany(mappedBy = "post")
 //    private List<ImageFile> files;
 //
@@ -44,10 +38,9 @@ public class Post extends BaseTimeEntity {
 //    private List<Interesting> likes = new ArrayList<>();
 
     @Builder
-    public Post(Long postId, String content, PlayerUser playerUser, Set<Tag> tags){
+    public Post(Long postId, String content, PlayerUser playerUser){
         this.id = postId;
         this.content = content;
         this.playerUser = playerUser;
-        this.tags = tags;
     }
 }
