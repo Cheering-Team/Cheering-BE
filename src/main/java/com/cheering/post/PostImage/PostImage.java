@@ -1,38 +1,44 @@
-package com.cheering.post;
+package com.cheering.post.PostImage;
 
 import static jakarta.persistence.FetchType.LAZY;
 
+import com.cheering.post.Post;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.net.URL;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ImageFile {
+public class PostImage {
     @Id
     @GeneratedValue
-    @Column(name = "imagefile_id")
+    @Column(name = "postimage_id")
     private Long id;
 
-    private URL path;
+    private String path;
 
-    private int width;
+    private Long width;
     
-    private int height;
+    private Long height;
 
-    @ManyToOne(fetch = LAZY)
+    @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
+
+    @Builder
+    public PostImage(Long postImageId, String path, Long width, Long height, Post post) {
+        this.id = postImageId;
+        this.path = path;
+        this.width = width;
+        this.height = height;
+        this.post = post;
+    }
 }
