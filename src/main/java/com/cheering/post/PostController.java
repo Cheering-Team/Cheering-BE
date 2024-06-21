@@ -27,6 +27,11 @@ public class PostController {
                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "포스트가 작성되었습니다.", postService.writePost(playerId, content, images, tags, customUserDetails.getUser())));
     }
+
+    @GetMapping("/posts/{postId}")
+    public ResponseEntity<?> getPostById(@PathVariable("postId") Long postId,  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "포스트를 불러왔습니다.", postService.getPostById(postId, customUserDetails.getUser())));
+    }
 }
 
 //    @PostMapping("/communities/{communityId}/posts")

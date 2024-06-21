@@ -9,6 +9,12 @@ import com.cheering.team.sport.Sport;
 import java.util.List;
 
 public class PlayerResponse {
+
+    public record PlayerNameDTO(String koreanName, String englishName) {
+        public PlayerNameDTO(Player player) {
+            this(player.getKoreanName(), player.getEnglishName());
+        }
+    }
     public record PlayerDTO(Long id, String koreanName, String englishName, String image, String backgroundImage, Long fanCount, PlayerUserDTO user) {
         public PlayerDTO(Player player) {
             this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), player.getFanCount(), null);
