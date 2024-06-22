@@ -29,15 +29,6 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name = "player_user_id")
     private PlayerUser playerUser;
 
-//    @OneToMany(mappedBy = "post")
-//    private List<ImageFile> files;
-//
-//    @OneToMany(mappedBy = "post")
-//    private List<Comment> comments = new ArrayList<>();
-//
-//    @OneToMany(mappedBy = "post")
-//    private List<Interesting> likes = new ArrayList<>();
-
     @Builder
     public Post(Long postId, String content, PlayerUser playerUser){
         this.id = postId;
