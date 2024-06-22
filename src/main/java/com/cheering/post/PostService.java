@@ -3,10 +3,13 @@ package com.cheering.post;
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.S3Util;
+import com.cheering.player.Player;
+import com.cheering.player.PlayerResponse;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.PostImage.PostImageRepository;
+import com.cheering.post.PostImage.PostImageResponse;
 import com.cheering.post.Tag.Tag;
 import com.cheering.post.Tag.TagRepository;
 import com.cheering.post.relation.PostTag;
@@ -83,6 +86,35 @@ public class PostService {
             });
         }
         return new PostResponse.PostIdDTO(post.getId());
+    }
+
+    public PostResponse.PostByIdDTO getPostById(Long postId, User user) {
+        Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
+
+        PlayerUser playerUser = post.getPlayerUser();
+
+        User writer = playerUser.getUser();
+
+        Player player = playerUser.getPlayer();
+
+        List<PostTag> postTags = postTagRepository.findByPostId(postId);
+
+        List<String> tags = postTags.stream().map((postTag) -> {
+            Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
+
+            return tag.getName();
+        }).toList();
+
+        List<PostImage> postImages = postImageRepository.findByPostId(postId);
+
+        List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
+
+        PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
+
+        PostResponse.PostInfoDTO postInfoDTO = new PostResponse.PostInfoDTO(user.getId().equals(writer.getId()), post.getContent(), post.getCreatedAt(), tags, imageDTOS, writerDTO);
+        PlayerResponse.PlayerNameDTO playerNameDTO = new PlayerResponse.PlayerNameDTO(player);
+
+        return new PostResponse.PostByIdDTO(postInfoDTO, playerNameDTO);
     }
 
 //    private final PostRepository postRepository;

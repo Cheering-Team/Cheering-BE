@@ -5,11 +5,13 @@ import com.cheering.post.Tag.Tag;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Table
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity(name = "post_tag_tb")
+@Getter
 public class PostTag {
     @Id
     @GeneratedValue

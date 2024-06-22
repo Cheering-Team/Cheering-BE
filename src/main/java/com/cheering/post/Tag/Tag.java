@@ -3,11 +3,13 @@ package com.cheering.post.Tag;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Table
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity(name="tag_tb")
+@Getter
 public class Tag {
 
     @Id

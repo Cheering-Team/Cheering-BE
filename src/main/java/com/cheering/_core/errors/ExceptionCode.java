@@ -24,6 +24,9 @@ public enum ExceptionCode {
     PLAYER_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 선수를 찾을 수 없습니다."),
     PLAYER_USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 커뮤니티에 가입되지 않은 유저입니다."),
 
+    // POST
+    POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 포스트를 찾을 수 없습니다."),
+
     // TAG
     TAG_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 태그를 찾을 수 없습니다."),
 

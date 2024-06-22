@@ -21,11 +21,16 @@ public class PostController {
 
     @PostMapping("/players/{playerId}/posts")
     public ResponseEntity<?> writePost(@PathVariable("playerId") Long playerId,
-                                       @RequestPart("content") String content,
+                                       @RequestParam(value = "content", required = false) String content,
                                        @RequestParam(value = "images", required = false) List<MultipartFile> images,
                                        @RequestParam(value = "tags", required = false) List<String> tags,
                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "포스트가 작성되었습니다.", postService.writePost(playerId, content, images, tags, customUserDetails.getUser())));
+    }
+
+    @GetMapping("/posts/{postId}")
+    public ResponseEntity<?> getPostById(@PathVariable("postId") Long postId,  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "포스트를 불러왔습니다.", postService.getPostById(postId, customUserDetails.getUser())));
     }
 }
 
