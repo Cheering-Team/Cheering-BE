@@ -10,7 +10,8 @@ import java.util.List;
 public class PostResponse {
     public record PostIdDTO (Long id) { }
 
-    public record PostInfoDTO(Boolean isWriter, String content, LocalDateTime createdAt, List<String> tags, List<PostImageResponse.ImageDTO> images, WriterDTO writer) { }
+    public record PostInfoDTO(boolean isWriter, String content, LocalDateTime createdAt, List<String> tags,
+                              boolean isLike, int likeCount, List<PostImageResponse.ImageDTO> images, WriterDTO writer) { }
 
     public record PostByIdDTO (PostInfoDTO post, PlayerResponse.PlayerNameDTO player) { }
 

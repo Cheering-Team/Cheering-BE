@@ -101,6 +101,11 @@ public class PostService {
 
         Player player = playerUser.getPlayer();
 
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+        Optional<Like> like = likeRepository.findByPostIdAndPlayerUserId(postId, curPlayerUser.getId());
+        int likeCount = (int) likeRepository.countByPostId(postId);
+
         List<PostTag> postTags = postTagRepository.findByPostId(postId);
 
         List<String> tags = postTags.stream().map((postTag) -> {
@@ -115,7 +120,7 @@ public class PostService {
 
         PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
 
-        PostResponse.PostInfoDTO postInfoDTO = new PostResponse.PostInfoDTO(user.getId().equals(writer.getId()), post.getContent(), post.getCreatedAt(), tags, imageDTOS, writerDTO);
+        PostResponse.PostInfoDTO postInfoDTO = new PostResponse.PostInfoDTO(user.getId().equals(writer.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, imageDTOS, writerDTO);
         PlayerResponse.PlayerNameDTO playerNameDTO = new PlayerResponse.PlayerNameDTO(player);
 
         return new PostResponse.PostByIdDTO(postInfoDTO, playerNameDTO);
