@@ -25,12 +25,19 @@ public class PostController {
                                        @RequestParam(value = "images", required = false) List<MultipartFile> images,
                                        @RequestParam(value = "tags", required = false) List<String> tags,
                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "포스트가 작성되었습니다.", postService.writePost(playerId, content, images, tags, customUserDetails.getUser())));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글이 작성되었습니다.", postService.writePost(playerId, content, images, tags, customUserDetails.getUser())));
     }
 
     @GetMapping("/posts/{postId}")
-    public ResponseEntity<?> getPostById(@PathVariable("postId") Long postId,  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "포스트를 불러왔습니다.", postService.getPostById(postId, customUserDetails.getUser())));
+    public ResponseEntity<?> getPostById(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글을 불러왔습니다.", postService.getPostById(postId, customUserDetails.getUser())));
+    }
+
+    @PostMapping("/posts/{postId}/likes")
+    public ResponseEntity<?> toggleLike(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        boolean isLike = postService.toggleLike(postId, customUserDetails.getUser());
+
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, isLike ? "게시글에 좋아요를 눌렀습니다." : "게시글에 좋아요를 취소했습니다.", null));
     }
 }
 

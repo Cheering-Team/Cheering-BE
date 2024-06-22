@@ -19,9 +19,6 @@ public class Like {
     @Column(name = "like_id")
     private Long id;
 
-    @Column
-    private boolean isLike;
-
     @ManyToOne
     @JoinColumn(name = "player_user_id")
     private PlayerUser playerUser;
@@ -31,9 +28,8 @@ public class Like {
     private Post post;
 
     @Builder
-    public Like(Long likeId, boolean isLike, PlayerUser playerUser, Post post) {
+    public Like(Long likeId, PlayerUser playerUser, Post post) {
         this.id = likeId;
-        this.isLike = isLike;
         this.playerUser = playerUser;
         this.post = post;
     }
