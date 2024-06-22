@@ -21,7 +21,7 @@ public class PostController {
 
     @PostMapping("/players/{playerId}/posts")
     public ResponseEntity<?> writePost(@PathVariable("playerId") Long playerId,
-                                       @RequestPart("content") String content,
+                                       @RequestParam(value = "content", required = false) String content,
                                        @RequestParam(value = "images", required = false) List<MultipartFile> images,
                                        @RequestParam(value = "tags", required = false) List<String> tags,
                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
