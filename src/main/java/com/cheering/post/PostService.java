@@ -7,6 +7,8 @@ import com.cheering.player.Player;
 import com.cheering.player.PlayerResponse;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.post.Like.Like;
+import com.cheering.post.Like.LikeRepository;
 import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.PostImage.PostImageRepository;
 import com.cheering.post.PostImage.PostImageResponse;
@@ -25,6 +27,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,6 +40,7 @@ public class PostService {
     private final PostImageRepository postImageRepository;
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
+    private final LikeRepository likeRepository;
     private final S3Util s3Util;
 
     @Transactional
@@ -97,6 +101,11 @@ public class PostService {
 
         Player player = playerUser.getPlayer();
 
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+        Optional<Like> like = likeRepository.findByPostIdAndPlayerUserId(postId, curPlayerUser.getId());
+        int likeCount = (int) likeRepository.countByPostId(postId);
+
         List<PostTag> postTags = postTagRepository.findByPostId(postId);
 
         List<String> tags = postTags.stream().map((postTag) -> {
@@ -111,10 +120,35 @@ public class PostService {
 
         PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
 
-        PostResponse.PostInfoDTO postInfoDTO = new PostResponse.PostInfoDTO(user.getId().equals(writer.getId()), post.getContent(), post.getCreatedAt(), tags, imageDTOS, writerDTO);
+        PostResponse.PostInfoDTO postInfoDTO = new PostResponse.PostInfoDTO(user.getId().equals(writer.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, imageDTOS, writerDTO);
         PlayerResponse.PlayerNameDTO playerNameDTO = new PlayerResponse.PlayerNameDTO(player);
 
         return new PostResponse.PostByIdDTO(postInfoDTO, playerNameDTO);
+    }
+
+    public boolean toggleLike(Long postId, User user) {
+        Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
+
+        Player player = post.getPlayerUser().getPlayer();
+
+        PlayerUser playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+        Optional<Like> like = likeRepository.findByPostIdAndPlayerUserId(postId, playerUser.getId());
+
+        if(like.isEmpty()) {
+            Like newLike = Like.builder()
+                    .post(post)
+                    .playerUser(playerUser)
+                    .build();
+
+            likeRepository.save(newLike);
+
+            return true;
+        } else {
+            likeRepository.deleteById(like.get().getId());
+
+            return false;
+        }
     }
 
 //    private final PostRepository postRepository;

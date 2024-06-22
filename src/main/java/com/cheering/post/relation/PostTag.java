@@ -8,9 +8,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Table
+@Table(name = "post_tag_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity(name = "post_tag_tb")
+@Entity
 @Getter
 public class PostTag {
     @Id
