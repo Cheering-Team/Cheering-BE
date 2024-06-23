@@ -67,6 +67,7 @@ public class PostService {
         if(images != null ){
             images.forEach((image)->{
                 try {
+                    System.out.println(image.getSize());
                     String imageUrl = s3Util.upload(image);
                     BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
 
@@ -93,7 +94,7 @@ public class PostService {
     public PostResponse.PostListDTO getPosts(Long playerId, String tagName, User user) {
         List<Post> postList;
 
-        if(tagName == null) {
+        if(tagName.isEmpty()) {
             postList = postRepository.findByPlayerId(playerId);
         } else if(tagName.equals("hot")) {
             postList = postRepository.findHotPosts(playerId);
