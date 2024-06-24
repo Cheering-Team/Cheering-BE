@@ -18,6 +18,8 @@ import com.cheering.post.relation.PostTag;
 import com.cheering.post.relation.PostTagRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,7 +69,6 @@ public class PostService {
         if(images != null ){
             images.forEach((image)->{
                 try {
-                    System.out.println(image.getSize());
                     String imageUrl = s3Util.upload(image);
                     BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
 
@@ -91,18 +92,18 @@ public class PostService {
     }
 
 
-    public PostResponse.PostListDTO getPosts(Long playerId, String tagName, User user) {
-        List<Post> postList;
+    public PostResponse.PostListDTO getPosts(Long playerId, String tagName, Pageable pageable, User user) {
+        Page<Post> postList;
 
         if(tagName.isEmpty()) {
-            postList = postRepository.findByPlayerId(playerId);
+            postList = postRepository.findByPlayerId(playerId, pageable);
         } else if(tagName.equals("hot")) {
-            postList = postRepository.findHotPosts(playerId);
+            postList = postRepository.findHotPosts(playerId, pageable);
         } else {
-            postList = postRepository.findByPlayerIdAndTagName(playerId, tagName);
+            postList = postRepository.findByPlayerIdAndTagName(playerId, tagName, pageable);
         }
 
-        List<PostResponse.PostInfoDTO> postInfoDTOS = postList.stream().map((post -> {
+        List<PostResponse.PostInfoDTO> postInfoDTOS = postList.getContent().stream().map((post -> {
             PlayerUser playerUser = post.getPlayerUser();
 
             List<PostTag> postTags = postTagRepository.findByPostId(post.getId());
@@ -127,7 +128,7 @@ public class PostService {
             return new PostResponse.PostInfoDTO(post.getId(), playerUser.getUser().getId().equals(user.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, imageDTOS, writerDTO);
         })).toList();
 
-        return new PostResponse.PostListDTO(postInfoDTOS);
+        return new PostResponse.PostListDTO(postList, postInfoDTOS);
     }
 
     public PostResponse.PostByIdDTO getPostById(Long postId, User user) {

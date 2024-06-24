@@ -4,6 +4,8 @@ package com.cheering.post;
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,8 +31,9 @@ public class PostController {
     }
 
     @GetMapping("/players/{playerId}/posts")
-    public ResponseEntity<?> getPosts(@PathVariable("playerId") Long playerId, @RequestParam(required = false) String tag, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 목록을 불러왔습니다.", postService.getPosts(playerId, tag, customUserDetails.getUser())));
+    public ResponseEntity<?> getPosts(@PathVariable("playerId") Long playerId, @RequestParam(required = false) String tag, @RequestParam int page, @RequestParam int size, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 목록을 불러왔습니다.", postService.getPosts(playerId, tag, pageable, customUserDetails.getUser())));
     }
 
     @GetMapping("/posts/{postId}")
