@@ -4,15 +4,10 @@ import static jakarta.persistence.FetchType.LAZY;
 
 import com.cheering.BaseTimeEntity;
 import com.cheering.community.UserCommunityInfo;
+import com.cheering.player.relation.PlayerUser;
 import com.cheering.post.Post;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -22,26 +17,31 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Builder
+@Table(name = "comment_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class Comment extends BaseTimeEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "comment_id")
     private Long id;
 
+    @Column
     private String content;
 
-    @ManyToOne(fetch = LAZY)
+    @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "user_community_info_id")
-    private UserCommunityInfo writerInfo;
+    @ManyToOne
+    @JoinColumn(name = "player_user_id")
+    private PlayerUser playerUser;
 
-    @OneToMany(mappedBy = "comment")
-    private List<ReComment> reComments = new ArrayList<>();
+    @Builder
+    public Comment(Long commentId, String content, Post post, PlayerUser playerUser) {
+        this.id = commentId;
+        this.content = content;
+        this.post = post;
+        this.playerUser = playerUser;
+    }
 }
