@@ -32,6 +32,7 @@ public class PlayerService {
     private final PlayerUserRepository playerUserRepository;
     private final S3Util s3Util;
 
+    // 특정 팀 소속 선수 목록
     @Transactional
     public PlayerResponse.PlayersOfTeamDTO getPlayersByTeam(Long teamId, User user) {
         List<Player> players = teamPlayerRepository.findByTeamId(teamId);
@@ -41,12 +42,13 @@ public class PlayerService {
         Sport sport = league.getSport();
 
         List<PlayerResponse.PlayerDTO> playerDTOS = players.stream().map((player)-> {
+            long fanCount = playerUserRepository.countByPlayerId(player.getId());
             Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId());
             if(playerUser.isPresent()) {
                 PlayerResponse.PlayerUserDTO playerUserDTO = new PlayerResponse.PlayerUserDTO(playerUser.get());
-                return new PlayerResponse.PlayerDTO(player, playerUserDTO);
+                return new PlayerResponse.PlayerDTO(player, fanCount, playerUserDTO);
             } else {
-                return new PlayerResponse.PlayerDTO(player, null);
+                return new PlayerResponse.PlayerDTO(player, fanCount, null);
             }
 
         }).toList();
@@ -60,6 +62,8 @@ public class PlayerService {
     public PlayerResponse.PlayerAndTeamsDTO getPlayerInfo(Long playerId, User user) {
         Player player = playerRepository.findById(playerId).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
+        long fanCount = playerUserRepository.countByPlayerId(player.getId());
+
         List<Team> teams = teamPlayerRepository.findByPlayerId(playerId);
 
         List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map(TeamResponse.TeamDTO::new).toList();
@@ -68,9 +72,9 @@ public class PlayerService {
 
         if(playerUser.isPresent()) {
             PlayerResponse.PlayerUserDTO playerUserDTO = new PlayerResponse.PlayerUserDTO(playerUser.get());
-            return new PlayerResponse.PlayerAndTeamsDTO(player, playerUserDTO, teamDTOS);
+            return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, teamDTOS);
         } else {
-            return new PlayerResponse.PlayerAndTeamsDTO(player, teamDTOS);
+            return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, teamDTOS);
         }
     }
 

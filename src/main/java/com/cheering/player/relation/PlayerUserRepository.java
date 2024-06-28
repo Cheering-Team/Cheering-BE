@@ -14,4 +14,7 @@ public interface PlayerUserRepository extends JpaRepository<PlayerUser, Long> {
 
     @Query("select pu from PlayerUser pu where pu.player.id=:playerId and pu.nickname=:nickname")
     Optional<PlayerUser> findByPlayerIdAndNickname (@Param("playerId") Long playerId, @Param("nickname") String nickname );
+
+    @Query("SELECT COUNT(pu) FROM PlayerUser pu WHERE pu.player.id=:playerId")
+    long countByPlayerId(@Param("playerId") Long playerId);
 }
