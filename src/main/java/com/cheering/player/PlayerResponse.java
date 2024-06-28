@@ -16,11 +16,11 @@ public class PlayerResponse {
         }
     }
     public record PlayerDTO(Long id, String koreanName, String englishName, String image, String backgroundImage, Long fanCount, PlayerUserDTO user) {
-        public PlayerDTO(Player player) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), player.getFanCount(), null);
+        public PlayerDTO(Player player, Long fanCount) {
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), fanCount, null);
         }
-        public PlayerDTO(Player player, PlayerUserDTO playerUserDTO) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), player.getFanCount(), playerUserDTO);
+        public PlayerDTO(Player player, Long fanCount, PlayerUserDTO playerUserDTO) {
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), fanCount, playerUserDTO);
         }
     }
 
@@ -38,11 +38,11 @@ public class PlayerResponse {
 
     public record PlayerAndTeamsDTO(Long id, String koreanName, String englishName, String image, String backgroundImage, Long fanCount, PlayerUserDTO user, List<TeamResponse.TeamDTO> teams) {
 
-        public PlayerAndTeamsDTO(Player player, List<TeamResponse.TeamDTO> teams) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), player.getFanCount(), null, teams);
+        public PlayerAndTeamsDTO(Player player, Long fanCount, List<TeamResponse.TeamDTO> teams) {
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, null, teams);
         }
-        public PlayerAndTeamsDTO(Player player, PlayerUserDTO playerUserDTO, List<TeamResponse.TeamDTO> teams) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), player.getFanCount(), playerUserDTO, teams);
+        public PlayerAndTeamsDTO(Player player, Long fanCount, PlayerUserDTO playerUserDTO, List<TeamResponse.TeamDTO> teams) {
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, playerUserDTO, teams);
         }
     }
 }

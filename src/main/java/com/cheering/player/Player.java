@@ -30,16 +30,12 @@ public class Player {
     @Column
     private String backgroundImage;
 
-    @Column
-    private Long fanCount;
-
     @Builder
-    public Player(Long playerId, String koreanName, String englishName, String image, String backgroundImage, Long fanCount) {
+    public Player(Long playerId, String koreanName, String englishName, String image, String backgroundImage) {
         this.id = playerId;
         this.koreanName = koreanName;
         this.englishName = englishName;
         this.image = image;
         this.backgroundImage = backgroundImage;
-        this.fanCount = fanCount;
     }
 }
