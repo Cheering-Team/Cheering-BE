@@ -4,6 +4,8 @@ import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.post.Post;
+import com.cheering.post.PostRepository;
 import com.cheering.post.Tag.Tag;
 import com.cheering.post.Tag.TagRepository;
 import com.cheering.team.Team;
@@ -33,6 +35,7 @@ public class DataLoader implements ApplicationRunner {
     private final TeamPlayerRepository teamPlayerRepository;
     private final PlayerUserRepository playerUserRepository;
     private final TagRepository tagRepository;
+    private final PostRepository postRepository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -169,5 +172,66 @@ public class DataLoader implements ApplicationRunner {
         tagRepository.save(tag1);
         tagRepository.save(tag2);
         tagRepository.save(tag3);
+
+        Post post1 = Post.builder()
+                .playerUser(playerUser)
+                .content("1번 글")
+                .build();
+
+        Post post2 = Post.builder()
+                .playerUser(playerUser)
+                .content("2번 글")
+                .build();
+
+        Post post3 = Post.builder()
+                .playerUser(playerUser)
+                .content("3번 글")
+                .build();
+
+        Post post4 = Post.builder()
+                .playerUser(playerUser)
+                .content("4번 글")
+                .build();
+
+        Post post5 = Post.builder()
+                .playerUser(playerUser)
+                .content("5번 글")
+                .build();
+
+        Post post6 = Post.builder()
+                .playerUser(playerUser)
+                .content("6번 글")
+                .build();
+
+        Post post7 = Post.builder()
+                .playerUser(playerUser)
+                .content("7번 글")
+                .build();
+
+        Post post8 = Post.builder()
+                .playerUser(playerUser)
+                .content("8번 글")
+                .build();
+
+        Post post9 = Post.builder()
+                .playerUser(playerUser)
+                .content("9번 글")
+                .build();
+
+        Post post10 = Post.builder()
+                .playerUser(playerUser)
+                .content("10번 글")
+                .build();
+
+        postRepository.save(post1);
+        postRepository.save(post2);
+        postRepository.save(post3);
+        postRepository.save(post4);
+        postRepository.save(post5);
+        postRepository.save(post6);
+        postRepository.save(post7);
+        postRepository.save(post8);
+        postRepository.save(post9);
+        postRepository.save(post10);
     }
 }

@@ -18,6 +18,8 @@ import com.cheering.post.relation.PostTag;
 import com.cheering.post.relation.PostTagRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,10 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -92,6 +91,46 @@ public class PostService {
         return new PostResponse.PostIdDTO(post.getId());
     }
 
+
+    public PostResponse.PostListDTO getPosts(Long playerId, String tagName, Pageable pageable, User user) {
+        Page<Post> postList;
+
+        if(tagName.isEmpty()) {
+            postList = postRepository.findByPlayerId(playerId, pageable);
+        } else if(tagName.equals("hot")) {
+            postList = postRepository.findHotPosts(playerId, pageable);
+        } else {
+            postList = postRepository.findByPlayerIdAndTagName(playerId, tagName, pageable);
+        }
+
+        List<PostResponse.PostInfoDTO> postInfoDTOS = postList.getContent().stream().map((post -> {
+            PlayerUser playerUser = post.getPlayerUser();
+
+            List<PostTag> postTags = postTagRepository.findByPostId(post.getId());
+
+            List<String> tags = postTags.stream().map((postTag) -> {
+                Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
+
+                return tag.getName();
+            }).toList();
+
+            PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerUser.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+            Optional<Like> like = likeRepository.findByPostIdAndPlayerUserId(post.getId(), curPlayerUser.getId());
+            int likeCount = (int) likeRepository.countByPostId(post.getId());
+
+            List<PostImage> postImages = postImageRepository.findByPostId(post.getId());
+
+            List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
+
+            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
+
+            return new PostResponse.PostInfoDTO(post.getId(), playerUser.getUser().getId().equals(user.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, imageDTOS, writerDTO);
+        })).toList();
+
+        return new PostResponse.PostListDTO(postList, postInfoDTOS);
+    }
+
     public PostResponse.PostByIdDTO getPostById(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
@@ -120,7 +159,7 @@ public class PostService {
 
         PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
 
-        PostResponse.PostInfoDTO postInfoDTO = new PostResponse.PostInfoDTO(user.getId().equals(writer.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, imageDTOS, writerDTO);
+        PostResponse.PostInfoDTO postInfoDTO = new PostResponse.PostInfoDTO(post.getId(), user.getId().equals(writer.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, imageDTOS, writerDTO);
         PlayerResponse.PlayerNameDTO playerNameDTO = new PlayerResponse.PlayerNameDTO(player);
 
         return new PostResponse.PostByIdDTO(postInfoDTO, playerNameDTO);
@@ -150,6 +189,7 @@ public class PostService {
             return false;
         }
     }
+
 
 //    private final PostRepository postRepository;
 //    private final CommunityRepository communityRepository;
