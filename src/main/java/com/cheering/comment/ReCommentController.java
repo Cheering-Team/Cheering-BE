@@ -20,17 +20,17 @@ public class ReCommentController {
 
     private final ReCommentService reCommentService;
 
-    @PostMapping("/communities/{communityId}/posts/{postId}/comments/{commentId}/recomments")
-    public ResponseEntity<ResponseBodyDto<?>> createReComment(@PathVariable("communityId") Long communityId,
-                                                              @PathVariable("postId") Long postId,
-                                                              @PathVariable("commentId") Long commentId,
-                                                              @RequestBody CommentRequest commentRequest) {
-
-        Long newReCommentId = reCommentService.createReComment(communityId, postId, commentId,
-                commentRequest.content());
-
-        return ResponseGenerator.success(SuccessMessage.CREATE_RE_COMMENT_SUCCESS, newReCommentId);
-    }
+//    @PostMapping("/communities/{communityId}/posts/{postId}/comments/{commentId}/recomments")
+//    public ResponseEntity<ResponseBodyDto<?>> createReComment(@PathVariable("communityId") Long communityId,
+//                                                              @PathVariable("postId") Long postId,
+//                                                              @PathVariable("commentId") Long commentId,
+//                                                              @RequestBody CommentRequest commentRequest) {
+//
+//        Long newReCommentId = reCommentService.createReComment(communityId, postId, commentId,
+//                commentRequest.content());
+//
+//        return ResponseGenerator.success(SuccessMessage.CREATE_RE_COMMENT_SUCCESS, newReCommentId);
+//    }
 
     @GetMapping("/communities/{communityId}/posts/{postId}/comments/{commentId}/recomments")
     public ResponseEntity<ResponseBodyDto<?>> getReComments(@PathVariable("communityId") Long communityId,

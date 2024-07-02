@@ -1,18 +1,17 @@
 package com.cheering.comment;
 
+import com.cheering._core.errors.*;
 import com.cheering.community.Community;
 import com.cheering.community.UserCommunityInfo;
 import com.cheering.community.CommunityRepository;
 import com.cheering.community.UserCommunityInfoRepository;
+import com.cheering.player.relation.PlayerUser;
+import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.post.Post;
 import com.cheering.post.PostRepository;
 import com.cheering.user.User;
 import com.cheering.user.UserRepository;
-import com.cheering._core.errors.NotFoundCommunityException;
-import com.cheering._core.errors.NotFoundUserCommunityInfoException;
-import com.cheering._core.errors.ExceptionMessage;
-import com.cheering._core.errors.NotFoundPostException;
-import com.cheering._core.errors.NotFoundUserException;
+
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -23,50 +22,66 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class CommentService {
-    private final CommentRepository commentRepository;
-    private final UserCommunityInfoRepository userCommunityInfoRepository;
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
-    private final CommunityRepository communityRepository;
+    private final PlayerUserRepository playerUserRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
-    public Long createComment(Long communityId, Long postId, String content) {
-        User loginUser = getLoginUser();
+    public CommentResponse.CommentIdDTO writeComment(Long postId, CommentRequest.WriteCommentDTO requestDTO, User user) {
+        String content = requestDTO.content();
 
-        Community findCommunity = communityRepository.findById(communityId)
-                .orElseThrow(() -> new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
+        Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        UserCommunityInfo findUserCommunityInfo = userCommunityInfoRepository.findByUserAndCommunity(loginUser,
-                        findCommunity)
-                .orElseThrow(() -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO));
+        PlayerUser playerUser = playerUserRepository.findByPlayerIdAndUserId(post.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
-        Post findPost = postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
-
-        Comment newComment = Comment.builder()
+        Comment comment = Comment.builder()
                 .content(content)
-                .post(findPost)
-                .content(content)
-                .writerInfo(findUserCommunityInfo)
+                .playerUser(playerUser)
+                .post(post)
                 .build();
 
-        commentRepository.save(newComment);
+        commentRepository.save(comment);
 
-        return newComment.getId();
+        return new CommentResponse.CommentIdDTO(comment.getId());
     }
-
-    public List<CommentResponse> getComments(Long communityId, Long postId) {
-        Post findPost = postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
-        List<Comment> findComments = commentRepository.findCommentsByPost(findPost);
-        
-        return CommentResponse.ofList(findComments);
-    }
-
-    private User getLoginUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String loginId = authentication.getName();
-        return userRepository.findById(Long.valueOf(loginId))
-                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
-    }
+//    @Transactional
+//    public Long createComment(Long communityId, Long postId, String content) {
+//        User loginUser = getLoginUser();
+//
+//        Community findCommunity = communityRepository.findById(communityId)
+//                .orElseThrow(() -> new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
+//
+//        UserCommunityInfo findUserCommunityInfo = userCommunityInfoRepository.findByUserAndCommunity(loginUser,
+//                        findCommunity)
+//                .orElseThrow(() -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO));
+//
+//        Post findPost = postRepository.findById(postId)
+//                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
+//
+//        Comment newComment = Comment.builder()
+//                .content(content)
+//                .post(findPost)
+//                .content(content)
+//                .writerInfo(findUserCommunityInfo)
+//                .build();
+//
+//        commentRepository.save(newComment);
+//
+//        return newComment.getId();
+//    }
+//
+//    public List<CommentResponse> getComments(Long communityId, Long postId) {
+//        Post findPost = postRepository.findById(postId)
+//                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
+//        List<Comment> findComments = commentRepository.findCommentsByPost(findPost);
+//
+//        return CommentResponse.ofList(findComments);
+//    }
+//
+//    private User getLoginUser() {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        String loginId = authentication.getName();
+//        return userRepository.findById(Long.valueOf(loginId))
+//                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
+//    }
 }
