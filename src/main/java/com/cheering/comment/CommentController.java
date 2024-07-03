@@ -30,6 +30,11 @@ public class CommentController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "댓글이 작성되었습니다.", commentService.writeComment(postId, requestDTO, customUserDetails.getUser())));
     }
 
+    @GetMapping("/posts/{postId}/comments")
+    public ResponseEntity<?> getComments(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "댓글들을 불러왔습니다.", commentService.getComments(postId, customUserDetails.getUser())));
+    }
+
 //    @GetMapping("communities/{communityId}/posts/{postId}/comments")
 //    public ResponseEntity<ResponseBodyDto<?>> getComments(@PathVariable("communityId") Long communityId,
 //                                                          @PathVariable("postId") Long postId) {

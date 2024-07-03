@@ -9,6 +9,7 @@ import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.post.Post;
 import com.cheering.post.PostRepository;
+import com.cheering.post.PostResponse;
 import com.cheering.user.User;
 import com.cheering.user.UserRepository;
 
@@ -43,6 +44,18 @@ public class CommentService {
         commentRepository.save(comment);
 
         return new CommentResponse.CommentIdDTO(comment.getId());
+    }
+
+    public CommentResponse.CommentListDTO getComments(Long postId, User user) {
+        List<Comment> commentList = commentRepository.findByPostId(postId);
+
+        List<CommentResponse.CommentDTO> commentDTOS = commentList.stream().map((comment -> {
+            PlayerUser writer = comment.getPlayerUser();
+            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(writer);
+            return new CommentResponse.CommentDTO(comment,writerDTO);
+        })).toList();
+
+        return new CommentResponse.CommentListDTO(commentDTOS);
     }
 //    @Transactional
 //    public Long createComment(Long communityId, Long postId, String content) {
