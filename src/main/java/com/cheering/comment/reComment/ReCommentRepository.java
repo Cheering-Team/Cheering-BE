@@ -1,7 +1,7 @@
-package com.cheering.comment;
+package com.cheering.comment.reComment;
 
 import com.cheering.comment.Comment;
-import com.cheering.comment.ReComment;
+import com.cheering.comment.reComment.ReComment;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 

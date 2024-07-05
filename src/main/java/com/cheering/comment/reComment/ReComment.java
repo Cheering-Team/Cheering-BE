@@ -1,0 +1,49 @@
+package com.cheering.comment.reComment;
+
+import static jakarta.persistence.FetchType.LAZY;
+
+import com.cheering.BaseTimeEntity;
+import com.cheering.comment.Comment;
+import com.cheering.community.UserCommunityInfo;
+import com.cheering.player.relation.PlayerUser;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "re_comment_tb")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+public class ReComment extends BaseTimeEntity {
+    @Id
+    @GeneratedValue
+    @Column(name = "re_comment_id")
+    private Long id;
+
+    @Column
+    private String content;
+
+    @ManyToOne
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
+
+    @ManyToOne
+    @JoinColumn(name = "player_user_id")
+    private PlayerUser playerUser;
+
+    @ManyToOne
+    @JoinColumn(name = "to_player_user_id")
+    private PlayerUser toPlayerUser;
+
+    @Builder
+    public ReComment(Long reCommentId, String content, Comment comment, PlayerUser playerUser, PlayerUser toPlayerUser) {
+        this.id = reCommentId;
+        this.content = content;
+        this.comment = comment;
+        this.playerUser = playerUser;
+        this.toPlayerUser = toPlayerUser;
+    }
+}
