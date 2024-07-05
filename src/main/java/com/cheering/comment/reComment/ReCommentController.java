@@ -30,6 +30,11 @@ public class ReCommentController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "답글이 작성되었습니다.", reCommentService.writeReComment(commentId, requestDTO, customUserDetails.getUser())));
     }
 
+    @GetMapping("/comments/{commentId}/re")
+    public ResponseEntity<?> getReComments(@PathVariable("commentId") Long commentId){
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "답글들을 불러왔습니다.", reCommentService.getComments(commentId)));
+    }
+
 //    @PostMapping("/communities/{communityId}/posts/{postId}/comments/{commentId}/recomments")
 //    public ResponseEntity<ResponseBodyDto<?>> createReComment(@PathVariable("communityId") Long communityId,
 //                                                              @PathVariable("postId") Long postId,

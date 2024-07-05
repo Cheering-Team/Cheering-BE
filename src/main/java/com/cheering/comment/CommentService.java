@@ -48,7 +48,7 @@ public class CommentService {
         return new CommentResponse.CommentIdDTO(comment.getId());
     }
 
-    public CommentResponse.CommentListDTO getComments(Long postId, User user) {
+    public CommentResponse.CommentListDTO getComments(Long postId) {
         List<Comment> commentList = commentRepository.findByPostId(postId);
 
         List<CommentResponse.CommentDTO> commentDTOS = commentList.stream().map((comment -> {

@@ -5,11 +5,14 @@ import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.post.PostResponse;
 import com.cheering.user.User;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,11 +34,8 @@ public class ReCommentService {
 
         PlayerUser playerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
-        PlayerUser toPlayerUser = null;
+        PlayerUser toPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, toId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
-        if(toId != null) {
-            toPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, toId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
-        }
 
         ReComment reComment = ReComment.builder()
                 .content(content)
@@ -47,6 +47,21 @@ public class ReCommentService {
         reCommentRepository.save(reComment);
 
         return new ReCommentResponse.ReCommentIdDTO(reComment.getId());
+    }
+
+    public Object getComments(Long commentId) {
+        List<ReComment> reCommentList = reCommentRepository.findByCommentId(commentId);
+
+        List<ReCommentResponse.ReCommentDTO> reCommentDTOS = reCommentList.stream().map((reComment -> {
+            PlayerUser writer = reComment.getPlayerUser();
+            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(writer);
+
+            PostResponse.WriterDTO toDTO = new PostResponse.WriterDTO(reComment.getToPlayerUser());
+
+            return new ReCommentResponse.ReCommentDTO(reComment, toDTO, writerDTO);
+        })).toList();
+
+        return new ReCommentResponse.ReCommentListDTO(reCommentDTOS);
     }
 
 //    @Transactional

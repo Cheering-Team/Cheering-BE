@@ -31,8 +31,8 @@ public class CommentController {
     }
 
     @GetMapping("/posts/{postId}/comments")
-    public ResponseEntity<?> getComments(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "댓글들을 불러왔습니다.", commentService.getComments(postId, customUserDetails.getUser())));
+    public ResponseEntity<?> getComments(@PathVariable("postId") Long postId){
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "댓글들을 불러왔습니다.", commentService.getComments(postId)));
     }
 
 //    @GetMapping("communities/{communityId}/posts/{postId}/comments")

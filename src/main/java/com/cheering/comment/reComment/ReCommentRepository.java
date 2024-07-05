@@ -8,7 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ReCommentRepository extends JpaRepository<ReComment, Long> {
-    List<ReComment> findByComment(Comment comment);
+    @Query("SELECT r FROM ReComment r WHERE r.comment.id = :commentId ORDER BY r.createdAt ASC")
+    List<ReComment> findByCommentId(@Param("commentId") Long commentId);
 
     @Query("SELECT COUNT(re) FROM ReComment re WHERE re.comment.id=:commentId")
     Long countByCommentId(@Param("commentId") Long id);
