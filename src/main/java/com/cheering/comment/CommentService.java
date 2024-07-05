@@ -1,6 +1,7 @@
 package com.cheering.comment;
 
 import com.cheering._core.errors.*;
+import com.cheering.comment.reComment.ReCommentRepository;
 import com.cheering.community.Community;
 import com.cheering.community.UserCommunityInfo;
 import com.cheering.community.CommunityRepository;
@@ -26,6 +27,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final PlayerUserRepository playerUserRepository;
     private final CommentRepository commentRepository;
+    private final ReCommentRepository reCommentRepository;
 
     @Transactional
     public CommentResponse.CommentIdDTO writeComment(Long postId, CommentRequest.WriteCommentDTO requestDTO, User user) {
@@ -51,8 +53,9 @@ public class CommentService {
 
         List<CommentResponse.CommentDTO> commentDTOS = commentList.stream().map((comment -> {
             PlayerUser writer = comment.getPlayerUser();
+            Long reCount = reCommentRepository.countByCommentId(comment.getId());
             PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(writer);
-            return new CommentResponse.CommentDTO(comment,writerDTO);
+            return new CommentResponse.CommentDTO(comment, reCount, writerDTO);
         })).toList();
 
         return new CommentResponse.CommentListDTO(commentDTOS);

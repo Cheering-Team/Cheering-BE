@@ -13,9 +13,9 @@ public class CommentResponse {
 
     public record CommentListDTO (List<CommentDTO> comments) { }
 
-    public record CommentDTO (Long id, String content, LocalDateTime createdAt, PostResponse.WriterDTO writer) {
-        public CommentDTO(Comment comment, PostResponse.WriterDTO writer) {
-            this(comment.getId(), comment.getContent(), comment.getCreatedAt(), writer);
+    public record CommentDTO (Long id, String content, LocalDateTime createdAt, Long reCount, PostResponse.WriterDTO writer) {
+        public CommentDTO(Comment comment, Long reCount, PostResponse.WriterDTO writer) {
+            this(comment.getId(), comment.getContent(), comment.getCreatedAt(), reCount, writer);
         }
     }
 }
