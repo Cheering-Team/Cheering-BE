@@ -12,7 +12,7 @@ public class PostResponse {
     public record PostIdDTO (Long id) { }
 
     public record PostInfoDTO(Long id, boolean isWriter, String content, LocalDateTime createdAt, List<String> tags,
-                              boolean isLike, int likeCount, List<PostImageResponse.ImageDTO> images, WriterDTO writer) { }
+                              boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, WriterDTO writer) { }
 
     public record PostByIdDTO (PostInfoDTO post, PlayerResponse.PlayerNameDTO player) { }
 

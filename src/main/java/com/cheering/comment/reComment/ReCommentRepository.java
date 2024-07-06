@@ -13,4 +13,7 @@ public interface ReCommentRepository extends JpaRepository<ReComment, Long> {
 
     @Query("SELECT COUNT(re) FROM ReComment re WHERE re.comment.id=:commentId")
     Long countByCommentId(@Param("commentId") Long id);
+
+    @Query("SELECT COUNT(re) FROM ReComment re WHERE re.comment.post.id = :postId")
+    Long countByPostId(@Param("postId") Long postId);
 }

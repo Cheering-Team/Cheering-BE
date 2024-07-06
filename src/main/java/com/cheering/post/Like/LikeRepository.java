@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface LikeRepository extends JpaRepository<Like, Long> {
-    long countByPostId(Long postId);
+    Long countByPostId(Long postId);
     @Query("select like from Like like where like.post.id=:postId and like.playerUser.id=:playerUserId")
     Optional<Like> findByPostIdAndPlayerUserId (@Param("postId") Long postId, @Param("playerUserId") Long playerUserId );
 }
