@@ -1,4 +1,7 @@
 package com.cheering.comment;
 
-public record CommentRequest(String content) {
+public class CommentRequest {
+    public record WriteCommentDTO(
+            String content
+    ) { }
 }

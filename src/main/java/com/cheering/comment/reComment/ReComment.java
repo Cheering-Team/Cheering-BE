@@ -1,15 +1,12 @@
-package com.cheering.comment;
+package com.cheering.comment.reComment;
 
 import static jakarta.persistence.FetchType.LAZY;
 
 import com.cheering.BaseTimeEntity;
+import com.cheering.comment.Comment;
 import com.cheering.community.UserCommunityInfo;
 import com.cheering.player.relation.PlayerUser;
-import com.cheering.post.Post;
 import jakarta.persistence.*;
-
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,31 +14,36 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "comment_tb")
+@Table(name = "re_comment_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Comment extends BaseTimeEntity {
+public class ReComment extends BaseTimeEntity {
     @Id
     @GeneratedValue
-    @Column(name = "comment_id")
+    @Column(name = "re_comment_id")
     private Long id;
 
     @Column
     private String content;
 
     @ManyToOne
-    @JoinColumn(name = "post_id")
-    private Post post;
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
 
     @ManyToOne
     @JoinColumn(name = "player_user_id")
     private PlayerUser playerUser;
 
+    @ManyToOne
+    @JoinColumn(name = "to_player_user_id")
+    private PlayerUser toPlayerUser;
+
     @Builder
-    public Comment(Long commentId, String content, Post post, PlayerUser playerUser) {
-        this.id = commentId;
+    public ReComment(Long reCommentId, String content, Comment comment, PlayerUser playerUser, PlayerUser toPlayerUser) {
+        this.id = reCommentId;
         this.content = content;
-        this.post = post;
+        this.comment = comment;
         this.playerUser = playerUser;
+        this.toPlayerUser = toPlayerUser;
     }
 }

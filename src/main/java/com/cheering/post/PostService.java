@@ -3,6 +3,8 @@ package com.cheering.post;
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.S3Util;
+import com.cheering.comment.CommentRepository;
+import com.cheering.comment.reComment.ReCommentRepository;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerResponse;
 import com.cheering.player.relation.PlayerUser;
@@ -40,6 +42,8 @@ public class PostService {
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
     private final LikeRepository likeRepository;
+    private final CommentRepository commentRepository;
+    private final ReCommentRepository reCommentRepository;
     private final S3Util s3Util;
 
     @Transactional
@@ -117,7 +121,9 @@ public class PostService {
             PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerUser.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
             Optional<Like> like = likeRepository.findByPostIdAndPlayerUserId(post.getId(), curPlayerUser.getId());
-            int likeCount = (int) likeRepository.countByPostId(post.getId());
+            Long likeCount = likeRepository.countByPostId(post.getId());
+
+            Long commentCount = commentRepository.countByPostId(post.getId()) + reCommentRepository.countByPostId(post.getId());
 
             List<PostImage> postImages = postImageRepository.findByPostId(post.getId());
 
@@ -125,7 +131,7 @@ public class PostService {
 
             PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
 
-            return new PostResponse.PostInfoDTO(post.getId(), playerUser.getUser().getId().equals(user.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, imageDTOS, writerDTO);
+            return new PostResponse.PostInfoDTO(post.getId(), playerUser.getUser().getId().equals(user.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         })).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);
@@ -143,7 +149,9 @@ public class PostService {
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
         Optional<Like> like = likeRepository.findByPostIdAndPlayerUserId(postId, curPlayerUser.getId());
-        int likeCount = (int) likeRepository.countByPostId(postId);
+        Long likeCount = likeRepository.countByPostId(postId);
+
+        Long commentCount = commentRepository.countByPostId(postId) + reCommentRepository.countByPostId(postId);
 
         List<PostTag> postTags = postTagRepository.findByPostId(postId);
 
@@ -159,7 +167,7 @@ public class PostService {
 
         PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
 
-        PostResponse.PostInfoDTO postInfoDTO = new PostResponse.PostInfoDTO(post.getId(), user.getId().equals(writer.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, imageDTOS, writerDTO);
+        PostResponse.PostInfoDTO postInfoDTO = new PostResponse.PostInfoDTO(post.getId(), user.getId().equals(writer.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         PlayerResponse.PlayerNameDTO playerNameDTO = new PlayerResponse.PlayerNameDTO(player);
 
         return new PostResponse.PostByIdDTO(postInfoDTO, playerNameDTO);

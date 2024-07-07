@@ -30,6 +30,9 @@ public enum ExceptionCode {
     // TAG
     TAG_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 태그를 찾을 수 없습니다."),
 
+    // COMMENT
+    COMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 댓글을 찾을 수 없습니다."),
+
 
     // S3
     EMPTY_FILE(HttpStatus.BAD_REQUEST, "유효하지 않는 파일입니다."),
