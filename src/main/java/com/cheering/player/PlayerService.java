@@ -108,4 +108,8 @@ public class PlayerService {
 
         playerUserRepository.save(playerUser);
     }
+
+    public List<PlayerResponse.PlayerDTO> getMyPlayers(User user) {
+        return playerUserRepository.findByUserId(user.getId()).stream().map((playerUser -> new PlayerResponse.PlayerDTO(playerUser.getPlayer(), new PlayerResponse.PlayerUserDTO(playerUser)))).toList();
+    }
 }

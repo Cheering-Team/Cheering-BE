@@ -36,4 +36,9 @@ public class PlayerController {
         playerService.joinCommunity(playerId, nickname, image, userDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "가입이 완료되었습니다.", null));
     }
+
+    @GetMapping("/my/players")
+    public ResponseEntity<?> getMyPlayers(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "내 선수 목록을 불러왔습니다.", playerService.getMyPlayers(userDetails.getUser())));
+    }
 }
