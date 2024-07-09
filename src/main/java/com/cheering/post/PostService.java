@@ -108,10 +108,12 @@ public class PostService {
         }
 
         List<PostResponse.PostInfoDTO> postInfoDTOS = postList.getContent().stream().map((post -> {
+            // 작성자
             PlayerUser playerUser = post.getPlayerUser();
+            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
 
+            // 태그
             List<PostTag> postTags = postTagRepository.findByPostId(post.getId());
-
             List<String> tags = postTags.stream().map((postTag) -> {
                 Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
 
@@ -126,15 +128,57 @@ public class PostService {
             Long commentCount = commentRepository.countByPostId(post.getId()) + reCommentRepository.countByPostId(post.getId());
 
             List<PostImage> postImages = postImageRepository.findByPostId(post.getId());
-
             List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
-
-            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
 
             return new PostResponse.PostInfoDTO(post.getId(), playerUser.getUser().getId().equals(user.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         })).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);
+    }
+
+    public PostResponse.PostWithPlayerListDTO getPlayersPosts(Pageable pageable, User user) {
+        Page<Post> postList;
+
+        List<PlayerUser> playerUsers = playerUserRepository.findByUserId(user.getId());
+
+        List<Long> playerIds = playerUsers.stream().map((playerUser -> playerUser.getPlayer().getId())).toList();
+
+        postList = postRepository.findByPlayerIds(playerIds, pageable);
+
+        List<PostResponse.PostInfoWithPlayerDTO> postInfoWithPlayerDTOS = postList.getContent().stream().map((post -> {
+            // 작성자
+            PlayerUser playerUser = post.getPlayerUser();
+            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
+
+            // 현 접속자
+            PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerUser.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+            // 태그
+            List<PostTag> postTags = postTagRepository.findByPostId(post.getId());
+            List<String> tags = postTags.stream().map((postTag) -> {
+                Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
+
+                return tag.getName();
+            }).toList();
+
+            // 좋아요
+            Optional<Like> like = likeRepository.findByPostIdAndPlayerUserId(post.getId(), curPlayerUser.getId());
+            Long likeCount = likeRepository.countByPostId(post.getId());
+
+            // 댓글
+            Long commentCount = commentRepository.countByPostId(post.getId()) + reCommentRepository.countByPostId(post.getId());
+
+            // 이미지
+            List<PostImage> postImages = postImageRepository.findByPostId(post.getId());
+            List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
+
+            // 선수
+            PlayerResponse.PlayerDTO playerDTO = new PlayerResponse.PlayerDTO(playerUser.getPlayer());
+
+            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), playerUser.getUser().getId().equals(user.getId()), playerDTO, post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+        })).toList();
+
+        return new PostResponse.PostWithPlayerListDTO(postList, postInfoWithPlayerDTOS);
     }
 
     public PostResponse.PostByIdDTO getPostById(Long postId, User user) {
@@ -197,231 +241,4 @@ public class PostService {
             return false;
         }
     }
-
-
-//    private final PostRepository postRepository;
-//    private final CommunityRepository communityRepository;
-//    private final UserRepository userRepository;
-//    private final UserCommunityInfoRepository userCommunityInfoRepository;
-//    private final ImageFileRepository imageFileRepository;
-//    private final AwsS3Util awsS3Util;
-//    private final InterestingRepository interestingRepository;
-
 }
-//
-//    @Transactional(readOnly = true)
-//    public List<PostResponse> getPlayerPosts(Long communityId) {
-//        Community findCommunity = communityRepository.findById(communityId).orElseThrow(() ->
-//                new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
-//
-//        User findPlayer = findCommunity.getUser();
-//
-//        UserCommunityInfo findWriterInfo = userCommunityInfoRepository.findByUserAndCommunity(findPlayer, findCommunity)
-//                .orElseThrow(() -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO));
-//
-//        List<Post> findPosts = postRepository.findByWriterInfoCommunityAndWriterInfoUser(findCommunity, findPlayer);
-//
-//        User loginUser = getLoginUser();
-//
-//        List<Interesting> interestings = getInterestingByPostAndUser(findPosts, loginUser);
-//
-//        WriterResponse writerResponse = WriterResponse.of(findPlayer.getId(), findWriterInfo.getNickname(),
-//                findWriterInfo.getProfileImage());
-//
-//        return PostResponse.ofList(findPosts, interestings, writerResponse);
-//    }
-//
-//    @Transactional(readOnly = true)
-//    public List<PostResponse> getUserPosts(Long communityId) {
-//        Community findCommunity = communityRepository.findById(communityId).orElseThrow(() ->
-//                new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
-//
-//        List<Post> findAllUserPosts = postRepository.findByWriterInfoCommunityAndWriterInfoUserIsNotNull(findCommunity);
-//
-//        List<Post> findFanPosts = findAllUserPosts.stream()
-//                .filter(post -> !post.getWriterInfo().getUser().equals(findCommunity.getUser())).toList();
-//
-//        User loginUser = getLoginUser();
-//        List<Interesting> interestings = getInterestingByPostAndUser(findFanPosts, loginUser);
-//
-//        List<PostResponse> result = new ArrayList<>();
-//
-//        for (Post fanPost : findFanPosts) {
-//            WriterResponse writerResponse = WriterResponse.of(fanPost.getWriterInfo().getUser().getId(),
-//                    fanPost.getWriterInfo().getNickname(), fanPost.getWriterInfo().getProfileImage());
-//
-//            List<ImageFile> imageFiles = fanPost.getFiles();
-//            List<ImageFileInfo> imageFileInfos = ImageFileInfo.ofList(imageFiles);
-//            Interesting likeStatus = interestings.stream()
-//                    .filter(interesting -> interesting.getPost().equals(fanPost))
-//                    .findFirst().orElseThrow(RuntimeException::new);
-//
-//            PostResponse postResponse = PostResponse.of(fanPost, likeStatus.getStatus(), writerResponse,
-//                    imageFileInfos);
-//
-//            result.add(postResponse);
-//        }
-//
-//        return result;
-//    }
-//
-//    @Transactional(readOnly = true)
-//    public List<PostResponse> getTeamPosts(Long communityId) {
-//        Community findCommunity = communityRepository.findById(communityId).orElseThrow(() ->
-//                new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
-//
-//        if (findCommunity.getTeam() == null) {
-//            return new ArrayList<>();
-//        }
-//
-//        Team findTeam = findCommunity.getTeam();
-//        List<Post> result = postRepository.findByWriterInfoCommunityAndTeam(findCommunity, findTeam);
-//
-//        WriterResponse writerResponse = WriterResponse.builder()
-//                .id(findTeam.getId())
-//                .name(findTeam.getTeamCommunity().getName())
-//                .profileImage(findCommunity.getThumbnailImage())
-//                .build();
-//
-//        return PostResponse.ofList(result, null, writerResponse);
-//    }
-//
-//    private List<Interesting> getInterestingByPostAndUser(List<Post> findPosts, User loginUser) {
-//        List<Interesting> result = new ArrayList<>();
-//
-//        for (Post post : findPosts) {
-//            Interesting findInteresting = interestingRepository.findByUserAndPost(loginUser, post).orElseGet(() ->
-//                    Interesting.builder()
-//                            .user(loginUser)
-//                            .post(post)
-//                            .status(BooleanType.FALSE)
-//                            .build());
-//
-//            result.add(findInteresting);
-//        }
-//
-//        return result;
-//    }
-//
-//    @Transactional
-//    public Long createPost(Long communityId, String content, List<MultipartFile> files) {
-//        User loginUser = getLoginUser();
-//
-//        //todo: Community 찾기
-//        Community findCommunity = communityRepository.findById(communityId)
-//                .orElseThrow(() -> new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
-//
-//        //todo: userCommunityInfo 에서 커뮤니티 id로 유저의 닉네임과 프로필 이미지 가져오기
-//        UserCommunityInfo findUserCommunityInfo = userCommunityInfoRepository.findByUserAndCommunity(loginUser,
-//                findCommunity).orElseThrow(
-//                () -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO)
-//        );
-//
-//        //todo: Post 객체 생성
-//        String category = "post";
-//        try {
-//            List<ImageFileInfo> imageInfos = awsS3Util.uploadFiles(files, category);
-//
-//            Post newPost = Post.builder()
-//                    .writerInfo(findUserCommunityInfo)
-//                    .content(content)
-//                    .build();
-//
-//            List<ImageFile> imageFiles = imageInfos.stream()
-//                    .map(imageInfo -> ImageFile.builder()
-//                            .post(newPost)
-//                            .path(imageInfo.url())
-//                            .width(imageInfo.width())
-//                            .height(imageInfo.height())
-//                            .build())
-//                    .toList();
-//
-//            imageFileRepository.saveAll(imageFiles);
-//
-//            //todo: 객체 저장 및 생성된 id 반환
-//            postRepository.save(newPost);
-//            return newPost.getId();
-//        } catch (IOException e) {
-//            Post newPost = Post.builder()
-//                    .writerInfo(findUserCommunityInfo)
-//                    .content(content)
-//                    .build();
-//
-//            //todo: 객체 저장 및 생성된 id 반환
-//            postRepository.save(newPost);
-//            return newPost.getId();
-//        }
-//    }
-//
-//    private User getLoginUser() {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        String loginId = authentication.getName();
-//        return userRepository.findById(Long.valueOf(loginId))
-//                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
-//    }
-//
-//    public PostResponse detailPost(Long communityId, Long postId) {
-//        Post findPost = postRepository.findById(postId)
-//                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
-//
-//        WriterResponse writerResponse = WriterResponse.of(findPost.getWriterInfo().getUser().getId(),
-//                findPost.getWriterInfo().getNickname(), findPost.getWriterInfo().getProfileImage());
-//
-//        User loginUser = getLoginUser();
-//
-//        Interesting interesting = interestingRepository.findByUserAndPost(loginUser, findPost)
-//                .orElseGet(() -> Interesting.builder()
-//                        .post(findPost)
-//                        .user(loginUser)
-//                        .status(BooleanType.FALSE)
-//                        .build());
-//
-//        List<ImageFile> imageFiles = findPost.getFiles();
-//        List<ImageFileInfo> imageFileInfos = ImageFileInfo.ofList(imageFiles);
-//
-//        return PostResponse.of(findPost, interesting.getStatus(), writerResponse, imageFileInfos);
-//    }
-//
-//    @Transactional
-//    public BooleanType toggleInteresting(Long communityId, Long postId) {
-//        User loginUser = getLoginUser();
-//
-//        Post findPost = postRepository.findById(postId)
-//                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
-//
-//        Optional<Interesting> findInteresting = interestingRepository.findByUserAndPost(loginUser, findPost);
-//        if (findInteresting.isEmpty()) {
-//            Interesting newInteresting = Interesting.builder()
-//                    .post(findPost)
-//                    .user(loginUser)
-//                    .status(BooleanType.TRUE)
-//                    .build();
-//
-//            interestingRepository.save(newInteresting);
-//            return BooleanType.TRUE;
-//        }
-//
-//        return findInteresting.get().changeStatus();
-//    }
-//
-//    @Transactional(readOnly = true)
-//    public List<PostResponse> getUserCommunityPosts() {
-//        User loginUser = getLoginUser();
-//        List<UserCommunityInfo> userCommunityInfos = userCommunityInfoRepository.findByUser(loginUser);
-//
-//        List<PostResponse> result = new ArrayList<>();
-//
-//        for (UserCommunityInfo userCommunityInfo : userCommunityInfos) {
-//            Long communityId = userCommunityInfo.getCommunity().getId();
-//
-//            List<PostResponse> playerPosts = getPlayerPosts(communityId);
-//            List<PostResponse> teamPosts = getTeamPosts(communityId);
-//
-//            result.addAll(playerPosts);
-//            result.addAll(teamPosts);
-//        }
-//
-//        return result.stream().sorted(Comparator.comparing(PostResponse::createdAt))
-//                .toList();
-//    }
-//}
