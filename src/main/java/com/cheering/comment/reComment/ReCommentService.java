@@ -34,7 +34,8 @@ public class ReCommentService {
 
         PlayerUser playerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
-        PlayerUser toPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, toId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+        PlayerUser toPlayerUser = playerUserRepository.findById(toId).orElseThrow(()->new CustomException(ExceptionCode.COMMENT_WRITER_NOT_FOUND));
+
 
 
         ReComment reComment = ReComment.builder()
