@@ -22,6 +22,14 @@ public class PlayerResponse {
         public PlayerDTO(Player player, Long fanCount, PlayerUserDTO playerUserDTO) {
             this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), fanCount, playerUserDTO);
         }
+
+        public PlayerDTO(Player player, PlayerUserDTO playerUserDTO) {
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), null, playerUserDTO);
+        }
+
+        public PlayerDTO(Player player) {
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), null, null);
+        }
     }
 
     public record PlayersOfTeamDTO(String sportName, String leagueName, TeamResponse.TeamDTO team, List<PlayerDTO> players) {

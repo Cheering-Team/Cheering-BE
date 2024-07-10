@@ -10,11 +10,14 @@ import java.util.Optional;
 
 public interface PlayerUserRepository extends JpaRepository<PlayerUser, Long> {
     @Query("select pu from PlayerUser pu where pu.player.id=:playerId and pu.user.id=:userId")
-    Optional<PlayerUser> findByPlayerIdAndUserId (@Param("playerId") Long playerId, @Param("userId") Long userId );
+    Optional<PlayerUser> findByPlayerIdAndUserId (@Param("playerId") Long playerId, @Param("userId") Long userId);
 
     @Query("select pu from PlayerUser pu where pu.player.id=:playerId and pu.nickname=:nickname")
-    Optional<PlayerUser> findByPlayerIdAndNickname (@Param("playerId") Long playerId, @Param("nickname") String nickname );
+    Optional<PlayerUser> findByPlayerIdAndNickname (@Param("playerId") Long playerId, @Param("nickname") String nickname);
 
     @Query("SELECT COUNT(pu) FROM PlayerUser pu WHERE pu.player.id=:playerId")
     long countByPlayerId(@Param("playerId") Long playerId);
+
+    @Query("SELECT pu FROM PlayerUser pu WHERE pu.user.id=:userId")
+    List<PlayerUser> findByUserId(@Param("userId") Long userId);
 }
