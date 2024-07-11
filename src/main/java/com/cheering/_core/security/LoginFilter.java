@@ -1,5 +1,6 @@
 package com.cheering._core.security;
 
+import com.cheering._core.util.RedisUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,6 +27,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final RedisUtils redisUtils;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -60,7 +62,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         String accessToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24L);
-        String refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24 * 365L);
+        String refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24 * 30L);
+
+        redisUtils.setDataExpire(customUserDetails.getUser().getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
 
         Map<String, Object> responseData = new HashMap<>();
         Map<String, Object> responseResult = new HashMap<>();
