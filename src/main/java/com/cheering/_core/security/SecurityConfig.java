@@ -3,6 +3,7 @@ package com.cheering._core.security;
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.FilterResponseUtils;
+import com.cheering._core.util.RedisUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,7 @@ public class SecurityConfig {
     private final CustomAuthenticationProvider customAuthenticationProvider;
     private final UserDetailsService userDetailsService;
     private final JWTUtil jwtUtil;
+    private final RedisUtils redisUtils;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -47,7 +49,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil);
+        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisUtils);
         loginFilter.setFilterProcessesUrl("/api/signin");
 
         http
@@ -82,7 +84,6 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth)->auth
                         .requestMatchers("/api/phone/sms", "/api/phone/code", "/api/signin", "/api/signup", "/api/refresh", "/hc", "/env").permitAll()
-//                        .requestMatchers("").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         http
