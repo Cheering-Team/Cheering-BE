@@ -10,4 +10,7 @@ import java.util.List;
 @Repository
 public interface PlayerRepository extends JpaRepository<Player, Long> {
 
+    @Query("SELECT DISTINCT p FROM Player p LEFT JOIN TeamPlayer tp ON p.id = tp.player.id LEFT JOIN Team t ON tp.team.id = t.id WHERE p.koreanName LIKE %:name% OR p.englishName LIKE %:name% OR REPLACE(t.name, ' ', '') LIKE %:name%")
+    List<Player> findByNameOrTeamName(@Param("name") String name);
+
 }
