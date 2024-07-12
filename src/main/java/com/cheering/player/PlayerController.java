@@ -15,28 +15,39 @@ import org.springframework.web.multipart.MultipartFile;
 public class PlayerController {
     private final PlayerService playerService;
 
+    // 선수 검색
+    @GetMapping("/players")
+    public ResponseEntity<?> getPlayers(@RequestParam("name") String name, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "선수들을 검색했습니다.", playerService.getPlayers(name, userDetails.getUser())));
+    }
+
+    // 특정 팀 선수목록 불러오기
     @GetMapping("/teams/{teamId}/players")
     public ResponseEntity<?> getPlayersByTeam(@PathVariable("teamId") Long teamId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "선수들을 불러왔습니다.", playerService.getPlayersByTeam(teamId, userDetails.getUser())));
     }
 
+    // 특정 선수 정보 불러오기
     @GetMapping("/players/{playerId}")
     public ResponseEntity<?> getPlayerInfo(@PathVariable("playerId") Long playerId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "선수의 정보를 불러왔습니다.", playerService.getPlayerInfo(playerId, userDetails.getUser())));
     }
 
+    // 커뮤니티 가입 닉네임 중복확인
     @GetMapping("/players/{playerId}/nickname")
     public ResponseEntity<?> checkNickname(@PathVariable("playerId") Long playerId, @RequestParam("nickname") String nickname) {
         playerService.checkNickname(playerId, nickname);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "사용 가능한 닉네임 입니다.", null));
     }
 
+    // 커뮤니티 가입
     @PostMapping("/players/{playerId}/users")
     public ResponseEntity<?> joinCommunity(@PathVariable Long playerId, @RequestPart("nickname") String nickname, @RequestPart(value = "image", required = false) MultipartFile image, @AuthenticationPrincipal CustomUserDetails userDetails) {
         playerService.joinCommunity(playerId, nickname, image, userDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "가입이 완료되었습니다.", null));
     }
 
+    // 내가 가입한 선수 목록 불러오기
     @GetMapping("/my/players")
     public ResponseEntity<?> getMyPlayers(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "내 선수 목록을 불러왔습니다.", playerService.getMyPlayers(userDetails.getUser())));

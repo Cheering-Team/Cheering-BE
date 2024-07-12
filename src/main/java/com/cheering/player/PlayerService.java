@@ -32,6 +32,27 @@ public class PlayerService {
     private final PlayerUserRepository playerUserRepository;
     private final S3Util s3Util;
 
+    public List<PlayerResponse.PlayerAndTeamsDTO> getPlayers(String name, User user) {
+        List<Player> players = playerRepository.findByNameOrTeamName(name);
+
+        return players.stream().map((player -> {
+            long fanCount = playerUserRepository.countByPlayerId(player.getId());
+
+            List<Team> teams = teamPlayerRepository.findByPlayerId(player.getId());
+
+            List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map(TeamResponse.TeamDTO::new).toList();
+
+            Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId());
+
+            if(playerUser.isPresent()) {
+                PlayerResponse.PlayerUserDTO playerUserDTO = new PlayerResponse.PlayerUserDTO(playerUser.get());
+                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, teamDTOS);
+            } else {
+                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, teamDTOS);
+            }
+        })).toList();
+    }
+
     // 특정 팀 소속 선수 목록
     @Transactional
     public PlayerResponse.PlayersOfTeamDTO getPlayersByTeam(Long teamId, User user) {
