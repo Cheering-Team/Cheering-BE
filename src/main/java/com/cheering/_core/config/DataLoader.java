@@ -130,8 +130,16 @@ public class DataLoader implements ApplicationRunner {
                 .backgroundImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8B%E1%85%B2%E1%84%80%E1%85%A1%E1%86%BC%E1%84%82%E1%85%A1%E1%86%B7+%E1%84%87%E1%85%A2%E1%84%80%E1%85%A7%E1%86%BC.jpeg")
                 .build();
 
+        Player player3 = Player.builder()
+                .koreanName("이민우")
+                .englishName("LEE MIN-WOO")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%86%AB%E1%84%8B%E1%85%AE.jpeg")
+                .backgroundImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%86%AB%E1%84%8B%E1%85%AE%E1%84%87%E1%85%A2%E1%84%80%E1%85%A7%E1%86%BC.jpg")
+                .build();
+
         playerRepository.save(player1);
         playerRepository.save(player2);
+        playerRepository.save(player3);
 
         TeamPlayer teamPlayer1 = TeamPlayer.builder()
                 .team(lotte)
@@ -143,8 +151,14 @@ public class DataLoader implements ApplicationRunner {
                 .player(player2)
                 .build();
 
+        TeamPlayer teamPlayer3 = TeamPlayer.builder()
+                .team(hanwha)
+                .player(player3)
+                .build();
+
         teamPlayerRepository.save(teamPlayer1);
         teamPlayerRepository.save(teamPlayer2);
+        teamPlayerRepository.save(teamPlayer3);
 
         PlayerUser playerUser = PlayerUser.builder()
                 .player(player1)
