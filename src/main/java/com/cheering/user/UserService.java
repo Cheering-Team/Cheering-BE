@@ -109,4 +109,8 @@ public class UserService {
 
         return new UserResponse.TokenDTO(accessToken, refreshToken);
     }
+
+    public UserResponse.UserDTO getUserInfo(User user) {
+        return new UserResponse.UserDTO(user);
+    }
 }

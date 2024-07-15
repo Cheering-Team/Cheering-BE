@@ -34,24 +34,4 @@ public class CommentController {
     public ResponseEntity<?> getComments(@PathVariable("postId") Long postId){
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "댓글들을 불러왔습니다.", commentService.getComments(postId)));
     }
-
-//    @GetMapping("communities/{communityId}/posts/{postId}/comments")
-//    public ResponseEntity<ResponseBodyDto<?>> getComments(@PathVariable("communityId") Long communityId,
-//                                                          @PathVariable("postId") Long postId) {
-//
-//        List<CommentResponse> findComments = commentService.getComments(communityId, postId);
-//        return ResponseGenerator.success(SuccessMessage.GET_COMMENT_SUCCESS, findComments);
-//    }
-//
-//    @PostMapping("communities/{communityId}/posts/{postId}/comments")
-//    public ResponseEntity<ResponseBodyDto<?>> createComment(@PathVariable("communityId") Long communityId,
-//                                                            @PathVariable("postId") Long postId,
-//                                                            @RequestBody CommentRequest commentRequest,
-//                                                            @AuthenticationPrincipal Authentication user
-//    ) {
-//        System.out.println("loginUser" + user);
-//        Long newCommentId = commentService.createComment(communityId, postId, commentRequest.content());
-//
-//        return ResponseGenerator.success(SuccessMessage.CREATE_COMMENT_SUCCESS, newCommentId);
-//    }
 }
