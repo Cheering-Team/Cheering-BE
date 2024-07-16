@@ -14,4 +14,8 @@ public class UserRequest {
             String phone,
             String nickname
     ) { }
+
+    public record NicknameDTO (
+            String nickname
+    ) { }
 }

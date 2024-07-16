@@ -1,7 +1,6 @@
 package com.cheering.user;
 
 import com.cheering._core.errors.*;
-import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.security.JWTUtil;
 import com.cheering._core.util.RedisUtils;
 import com.cheering._core.util.SmsUtil;
@@ -10,9 +9,6 @@ import com.cheering.community.UserCommunityInfoRepository;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -112,5 +108,11 @@ public class UserService {
 
     public UserResponse.UserDTO getUserInfo(User user) {
         return new UserResponse.UserDTO(user);
+    }
+
+    @Transactional
+    public void updateUserNickname(UserRequest.NicknameDTO requestDTO, User user) {
+        user.setNickname(requestDTO.nickname());
+        userRepository.save(user);
     }
 }

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -45,5 +46,12 @@ public class UserController {
     public ResponseEntity<?> getUserInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok()
                 .body(ApiUtils.success(HttpStatus.OK, "유저 정보를 불러왔습니다.", userService.getUserInfo(customUserDetails.getUser())));
+    }
+
+    @PutMapping("/users/nickname")
+    public ResponseEntity<?> updateUserNickname(@RequestBody UserRequest.NicknameDTO requestDTO, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        userService.updateUserNickname(requestDTO, customUserDetails.getUser());
+        return ResponseEntity.ok()
+                .body(ApiUtils.success(HttpStatus.OK, "닉네임을 변경하였습니다.", null));
     }
 }
