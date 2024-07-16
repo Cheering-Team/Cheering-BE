@@ -4,13 +4,11 @@ import static jakarta.persistence.FetchType.LAZY;
 
 import com.cheering.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name="user_tb")
 public class User extends BaseTimeEntity {

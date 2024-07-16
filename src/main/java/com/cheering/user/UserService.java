@@ -1,29 +1,25 @@
 package com.cheering.user;
 
 import com.cheering._core.errors.*;
-import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.security.JWTUtil;
 import com.cheering._core.util.RedisUtils;
 import com.cheering._core.util.SmsUtil;
 import com.cheering.community.UserCommunityInfoRepository;
 
+import java.util.List;
 import java.util.Optional;
 
+import com.cheering.player.relation.PlayerUser;
+import com.cheering.player.relation.PlayerUserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
-    private final static String REGEXP_EMAIL = "^[A-Za-z0-9_.\\-]+@[A-Za-z0-9\\-]+\\.[A-Za-z0-9\\-]*\\.*[A-Za-z0-9\\-]+$";
-
     private final UserRepository userRepository;
-    private final UserCommunityInfoRepository userCommunityInfoRepository;
+    private final PlayerUserRepository playerUserRepository;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
     private final JWTUtil jwtUtil;
@@ -108,5 +104,21 @@ public class UserService {
         redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
 
         return new UserResponse.TokenDTO(accessToken, refreshToken);
+    }
+
+    public UserResponse.UserDTO getUserInfo(User user) {
+        return new UserResponse.UserDTO(user);
+    }
+
+    @Transactional
+    public void updateUserNickname(UserRequest.NicknameDTO requestDTO, User user) {
+        user.setNickname(requestDTO.nickname());
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser(User user) {
+        playerUserRepository.deleteByUserId(user.getId());
+        userRepository.delete(user);
     }
 }
