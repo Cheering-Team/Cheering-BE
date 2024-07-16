@@ -20,4 +20,6 @@ public interface PlayerUserRepository extends JpaRepository<PlayerUser, Long> {
 
     @Query("SELECT pu FROM PlayerUser pu WHERE pu.user.id=:userId")
     List<PlayerUser> findByUserId(@Param("userId") Long userId);
+
+    void deleteByUserId(Long userId);
 }

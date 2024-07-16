@@ -54,4 +54,11 @@ public class UserController {
         return ResponseEntity.ok()
                 .body(ApiUtils.success(HttpStatus.OK, "닉네임을 변경하였습니다.", null));
     }
+
+    @DeleteMapping("/users")
+    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        userService.deleteUser(customUserDetails.getUser());
+        return ResponseEntity.ok()
+                .body(ApiUtils.success(HttpStatus.OK, "회원탈퇴되었습니다.", null));
+    }
 }
