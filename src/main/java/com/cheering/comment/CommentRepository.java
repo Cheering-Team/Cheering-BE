@@ -1,5 +1,6 @@
 package com.cheering.comment;
 
+import com.cheering.player.relation.PlayerUser;
 import com.cheering.post.Post;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +14,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId")
     Long countByPostId(@Param("postId") Long postId);
+
+    void deleteByPlayerUserIn(List<PlayerUser> playerUsers);
 }
