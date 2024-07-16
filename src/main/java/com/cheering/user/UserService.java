@@ -4,13 +4,21 @@ import com.cheering._core.errors.*;
 import com.cheering._core.security.JWTUtil;
 import com.cheering._core.util.RedisUtils;
 import com.cheering._core.util.SmsUtil;
+import com.cheering.comment.CommentRepository;
+import com.cheering.comment.reComment.ReCommentRepository;
 import com.cheering.community.UserCommunityInfoRepository;
 
 import java.util.List;
 import java.util.Optional;
 
+import com.cheering.player.Player;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.post.Like.LikeRepository;
+import com.cheering.post.Post;
+import com.cheering.post.PostImage.PostImageRepository;
+import com.cheering.post.PostRepository;
+import com.cheering.post.relation.PostTagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +28,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
     private final UserRepository userRepository;
     private final PlayerUserRepository playerUserRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final ReCommentRepository reCommentRepository;
+    private final LikeRepository likeRepository;
+    private final PostTagRepository postTagRepository;
+    private final PostImageRepository postImageRepository;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
     private final JWTUtil jwtUtil;
@@ -118,7 +132,29 @@ public class UserService {
 
     @Transactional
     public void deleteUser(User user) {
+        // 1. PlayerUser
+        List<PlayerUser> playerUsers = playerUserRepository.findByUserId(user.getId());
         playerUserRepository.deleteByUserId(user.getId());
+
+        // 2. Post
+        List<Post> posts = postRepository.findByPlayerUserIn(playerUsers);
+
+        // 3. PostTag
+        postTagRepository.deleteByPostIn(posts);
+        postImageRepository.deleteByPostIn(posts);
+
+        postRepository.deleteByPlayerUserIn(playerUsers);
+
+        // 3. Comment
+        commentRepository.deleteByPlayerUserIn(playerUsers);
+
+        // 4. ReComment
+        reCommentRepository.deleteByPlayerUserIn(playerUsers);
+
+        // 5. Like
+        likeRepository.deleteByPlayerUserIn(playerUsers);
+
+        // 5. User
         userRepository.delete(user);
     }
 }
