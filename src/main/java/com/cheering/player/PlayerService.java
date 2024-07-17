@@ -33,6 +33,7 @@ public class PlayerService {
     private final S3Util s3Util;
 
     public List<PlayerResponse.PlayerAndTeamsDTO> getPlayers(String name, User user) {
+        name = name.replace(" ", "");
         List<Player> players = playerRepository.findByNameOrTeamName(name);
 
         return players.stream().map((player -> {
