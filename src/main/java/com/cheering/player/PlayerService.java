@@ -5,6 +5,7 @@ import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.S3Util;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.player.relation.PlayerUserResponse;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.team.TeamResponse;
@@ -46,7 +47,7 @@ public class PlayerService {
             Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId());
 
             if(playerUser.isPresent()) {
-                PlayerResponse.PlayerUserDTO playerUserDTO = new PlayerResponse.PlayerUserDTO(playerUser.get());
+                PlayerUserResponse.PlayerUserDTO playerUserDTO = new PlayerUserResponse.PlayerUserDTO(playerUser.get());
                 return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, teamDTOS);
             } else {
                 return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, teamDTOS);
@@ -67,7 +68,7 @@ public class PlayerService {
             long fanCount = playerUserRepository.countByPlayerId(player.getId());
             Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId());
             if(playerUser.isPresent()) {
-                PlayerResponse.PlayerUserDTO playerUserDTO = new PlayerResponse.PlayerUserDTO(playerUser.get());
+                PlayerUserResponse.PlayerUserDTO playerUserDTO = new PlayerUserResponse.PlayerUserDTO(playerUser.get());
                 return new PlayerResponse.PlayerDTO(player, fanCount, playerUserDTO);
             } else {
                 return new PlayerResponse.PlayerDTO(player, fanCount, null);
@@ -93,7 +94,7 @@ public class PlayerService {
         Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId());
 
         if(playerUser.isPresent()) {
-            PlayerResponse.PlayerUserDTO playerUserDTO = new PlayerResponse.PlayerUserDTO(playerUser.get());
+            PlayerUserResponse.PlayerUserDTO playerUserDTO = new PlayerUserResponse.PlayerUserDTO(playerUser.get());
             return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, teamDTOS);
         } else {
             return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, teamDTOS);
@@ -132,6 +133,6 @@ public class PlayerService {
     }
 
     public List<PlayerResponse.PlayerDTO> getMyPlayers(User user) {
-        return playerUserRepository.findByUserId(user.getId()).stream().map((playerUser -> new PlayerResponse.PlayerDTO(playerUser.getPlayer(), new PlayerResponse.PlayerUserDTO(playerUser)))).toList();
+        return playerUserRepository.findByUserId(user.getId()).stream().map((playerUser -> new PlayerResponse.PlayerDTO(playerUser.getPlayer(), new PlayerUserResponse.PlayerUserDTO(playerUser)))).toList();
     }
 }
