@@ -2,8 +2,10 @@ package com.cheering.player.relation;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
+import com.cheering._core.util.S3Util;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
+import com.cheering.player.PlayerResponse;
 import com.cheering.post.Like.Like;
 import com.cheering.post.Like.LikeRepository;
 import com.cheering.post.Post;
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +39,7 @@ public class PlayerUserService {
     private final CommentRepository commentRepository;
     private final ReCommentRepository reCommentRepository;
     private final PostImageRepository postImageRepository;
+    private final S3Util s3Util;
 
     public PlayerUserResponse.ProfileDTO getPlayerUserInfo(Long playerUserId, User user) {
         // 유저
@@ -46,7 +50,9 @@ public class PlayerUserService {
 
         PlayerUserResponse.PlayerUserDTO playerUserDTO = new PlayerUserResponse.PlayerUserDTO(playerUser);
 
-        return new PlayerUserResponse.ProfileDTO(playerUserDTO, playerUser.equals(curPlayerUser), playerUser.getPlayer().getId());
+        PlayerResponse.PlayerDTO playerDTO = new PlayerResponse.PlayerDTO(playerUser.getPlayer());
+
+        return new PlayerUserResponse.ProfileDTO(playerUserDTO, playerUser.equals(curPlayerUser), playerDTO);
     }
 
     public PostResponse.PostListDTO getPlayerUserPosts(Long playerUserId, Pageable pageable, User user) {
@@ -81,9 +87,23 @@ public class PlayerUserService {
             List<PostImage> postImages = postImageRepository.findByPostId(post.getId());
             List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-            return new PostResponse.PostInfoDTO(post.getId(), playerUser.getUser().getId().equals(user.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+            return new PostResponse.PostInfoDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         })).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);
+    }
+
+    public void updatePlayerUserImage(Long playerUserId, MultipartFile image) {
+        PlayerUser playerUser = playerUserRepository.findById(playerUserId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+        String imageUrl = "";
+        if(image == null) {
+            imageUrl = "https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-profile.jpg";
+        } else {
+            imageUrl = s3Util.upload(image);
+        }
+
+        playerUser.setImage(imageUrl);
+        playerUserRepository.save(playerUser);
     }
 }

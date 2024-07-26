@@ -1,5 +1,6 @@
 package com.cheering.player.relation;
 
+import com.cheering.player.PlayerResponse;
 import com.cheering.post.PostResponse;
 
 import java.util.List;
@@ -11,5 +12,5 @@ public class PlayerUserResponse {
         }
     }
 
-    public record ProfileDTO(PlayerUserDTO user, Boolean isUser, Long playerId) { }
+    public record ProfileDTO(PlayerUserDTO user, Boolean isUser, PlayerResponse.PlayerDTO player) { }
 }

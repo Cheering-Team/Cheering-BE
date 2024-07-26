@@ -6,11 +6,13 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "player_user_tb")
 @RequiredArgsConstructor
 @Getter
+@Setter
 public class PlayerUser {
 
     @Id
