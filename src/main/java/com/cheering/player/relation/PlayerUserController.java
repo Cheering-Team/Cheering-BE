@@ -2,6 +2,7 @@ package com.cheering.player.relation;
 
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
+import com.cheering.user.UserRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,10 +32,17 @@ public class PlayerUserController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 목록을 불러왔습니다.", playerUserService.getPlayerUserPosts(playerUserId, pageable, customUserDetails.getUser())));
     }
 
-    // 프로필 이미지 변경
+    // 커뮤니티 프로필 이미지 변경
     @PutMapping("/playerusers/{playerUserId}/image")
     public ResponseEntity<?> updatePlayerUserImage(@PathVariable("playerUserId") Long playerUserId, @RequestPart(value = "image", required = false) MultipartFile image) {
         playerUserService.updatePlayerUserImage(playerUserId, image);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "프로필 이미지를 수정했습니다.", null));
+    }
+
+    // 커뮤니티 닉네임 변경
+    @PutMapping("/playerusers/{playerUserId}/nickname")
+    public ResponseEntity<?> updatePlayerUserNickname(@PathVariable("playerUserId") Long playerUserId, @RequestBody UserRequest.NicknameDTO requestDTO) {
+        playerUserService.updatePlayerUserNickname(playerUserId, requestDTO);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "닉네임을 변경하였습니다.", null));
     }
 }

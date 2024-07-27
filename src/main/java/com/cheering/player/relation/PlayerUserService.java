@@ -19,6 +19,7 @@ import com.cheering.post.Tag.TagRepository;
 import com.cheering.post.relation.PostTag;
 import com.cheering.post.relation.PostTagRepository;
 import com.cheering.user.User;
+import com.cheering.user.UserRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -104,6 +105,21 @@ public class PlayerUserService {
         }
 
         playerUser.setImage(imageUrl);
+        playerUserRepository.save(playerUser);
+    }
+
+    public void updatePlayerUserNickname(Long playerUserId, UserRequest.NicknameDTO requestDTO) {
+        String nickname = requestDTO.nickname();
+
+        PlayerUser playerUser = playerUserRepository.findById(playerUserId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+        Optional<PlayerUser> duplicatePlayerUser = playerUserRepository.findByPlayerIdAndNickname(playerUser.getPlayer().getId(), nickname);
+
+        if(duplicatePlayerUser.isPresent()) {
+            throw new CustomException(ExceptionCode.DUPLICATE_NICKNAME);
+        }
+
+        playerUser.setNickname(requestDTO.nickname());
         playerUserRepository.save(playerUser);
     }
 }
