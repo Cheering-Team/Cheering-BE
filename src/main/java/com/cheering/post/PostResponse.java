@@ -2,6 +2,7 @@ package com.cheering.post;
 
 import com.cheering.player.PlayerResponse;
 import com.cheering.player.relation.PlayerUser;
+import com.cheering.player.relation.PlayerUserResponse;
 import com.cheering.post.PostImage.PostImageResponse;
 import org.springframework.data.domain.Page;
 
@@ -9,12 +10,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class PostResponse {
-    public record PostIdDTO (Long id) { }
+    public record PostIdDTO (Long id, PlayerUserResponse.PlayerUserDTO playerUser) { }
 
-    public record PostInfoDTO(Long id, boolean isWriter, String content, LocalDateTime createdAt, List<String> tags,
+    public record PostInfoDTO(Long id, PlayerUserResponse.PlayerUserDTO playerUser, String content, LocalDateTime createdAt, List<String> tags,
                               boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, WriterDTO writer) { }
 
-    public record PostInfoWithPlayerDTO(Long id, boolean isWriter, PlayerResponse.PlayerDTO player, String content, LocalDateTime createdAt, List<String> tags,
+    public record PostInfoWithPlayerDTO(Long id, PlayerUserResponse.PlayerUserDTO playerUser, PlayerResponse.PlayerDTO player, String content, LocalDateTime createdAt, List<String> tags,
                                         boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, WriterDTO writer) { }
 
     public record PostByIdDTO (PostInfoDTO post, PlayerResponse.PlayerNameDTO player) { }

@@ -14,4 +14,5 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     Optional<Like> findByPostIdAndPlayerUserId (@Param("postId") Long postId, @Param("playerUserId") Long playerUserId );
 
     void deleteByPlayerUserIn(List<PlayerUser> playerUsers);
+    void deleteByPlayerUser(PlayerUser playerUser);
 }

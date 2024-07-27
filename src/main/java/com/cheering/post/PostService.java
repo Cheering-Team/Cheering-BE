@@ -9,6 +9,7 @@ import com.cheering.player.Player;
 import com.cheering.player.PlayerResponse;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.player.relation.PlayerUserResponse;
 import com.cheering.post.Like.Like;
 import com.cheering.post.Like.LikeRepository;
 import com.cheering.post.PostImage.PostImage;
@@ -92,7 +93,7 @@ public class PostService {
                 }
             });
         }
-        return new PostResponse.PostIdDTO(post.getId());
+        return new PostResponse.PostIdDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(playerUser));
     }
 
 
@@ -130,7 +131,7 @@ public class PostService {
             List<PostImage> postImages = postImageRepository.findByPostId(post.getId());
             List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-            return new PostResponse.PostInfoDTO(post.getId(), playerUser.getUser().getId().equals(user.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+            return new PostResponse.PostInfoDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         })).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);
@@ -175,7 +176,7 @@ public class PostService {
             // 선수
             PlayerResponse.PlayerDTO playerDTO = new PlayerResponse.PlayerDTO(playerUser.getPlayer());
 
-            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), playerUser.getUser().getId().equals(user.getId()), playerDTO, post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), playerDTO, post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         })).toList();
 
         return new PostResponse.PostWithPlayerListDTO(postList, postInfoWithPlayerDTOS);
@@ -185,8 +186,6 @@ public class PostService {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         PlayerUser playerUser = post.getPlayerUser();
-
-        User writer = playerUser.getUser();
 
         Player player = playerUser.getPlayer();
 
@@ -211,7 +210,7 @@ public class PostService {
 
         PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
 
-        PostResponse.PostInfoDTO postInfoDTO = new PostResponse.PostInfoDTO(post.getId(), user.getId().equals(writer.getId()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+        PostResponse.PostInfoDTO postInfoDTO = new PostResponse.PostInfoDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         PlayerResponse.PlayerNameDTO playerNameDTO = new PlayerResponse.PlayerNameDTO(player);
 
         return new PostResponse.PostByIdDTO(postInfoDTO, playerNameDTO);
