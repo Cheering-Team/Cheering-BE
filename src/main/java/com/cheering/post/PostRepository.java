@@ -27,8 +27,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByPlayerIdAndTagName(@Param("playerId") Long playerId, @Param("tagName") String tagName, Pageable pageable);
 
     Page<Post> findByPlayerUser(PlayerUser playerUser,Pageable pageable);
+    List<Post> findByPlayerUser(PlayerUser playerUser);
 
     List<Post> findByPlayerUserIn(List<PlayerUser> playerUsers);
 
     void deleteByPlayerUserIn(List<PlayerUser> playerUsers);
+    void deleteByPlayerUser(PlayerUser playerUser);
 }

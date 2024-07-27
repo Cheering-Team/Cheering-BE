@@ -45,4 +45,11 @@ public class PlayerUserController {
         playerUserService.updatePlayerUserNickname(playerUserId, requestDTO);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "닉네임을 변경하였습니다.", null));
     }
+
+    // 커뮤니티 탈퇴
+    @DeleteMapping("/playerusers/{playerUserId}")
+    public ResponseEntity<?> deletePlayerUser(@PathVariable("playerUserId") Long playerUserId) {
+        playerUserService.deletePlayerUser(playerUserId);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티에서 탈퇴했습니다.", null));
+    }
 }

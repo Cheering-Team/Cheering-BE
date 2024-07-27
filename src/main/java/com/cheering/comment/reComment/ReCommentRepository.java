@@ -20,4 +20,5 @@ public interface ReCommentRepository extends JpaRepository<ReComment, Long> {
     Long countByPostId(@Param("postId") Long postId);
 
     void deleteByPlayerUserIn(List<PlayerUser> playerUsers);
+    void deleteByPlayerUser(PlayerUser playerUser);
 }
