@@ -31,7 +31,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -238,6 +237,58 @@ public class PostService {
             likeRepository.deleteById(like.get().getId());
 
             return false;
+        }
+    }
+
+    public void editPost(Long postId, String content, List<MultipartFile> images, List<String> tags, User user) {
+        Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
+
+        PlayerUser writer = post.getPlayerUser();
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(writer.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+        if(!writer.equals(curPlayerUser)) {
+            throw new CustomException(ExceptionCode.NOT_WRITER);
+        }
+
+        post.setContent(content);
+        postRepository.save(post);
+
+        postTagRepository.deleteByPost(post);
+        if(tags != null) {
+            tags.forEach((tagName) -> {
+                Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> new CustomException(ExceptionCode.TAG_NOT_FOUND));
+
+                PostTag postTag = PostTag.builder()
+                        .post(post)
+                        .tag(tag)
+                        .build();
+
+                postTagRepository.save(postTag);
+            });
+        }
+
+        postImageRepository.deleteByPost(post);
+        if(images != null ){
+            images.forEach((image)->{
+                try {
+                    String imageUrl = s3Util.upload(image);
+                    BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
+
+                    int width = bufferedImage.getWidth();
+                    int height = bufferedImage.getHeight();
+
+                    PostImage postImage = PostImage.builder()
+                            .path(imageUrl)
+                            .width(width)
+                            .height(height)
+                            .post(post)
+                            .build();
+
+                    postImageRepository.save(postImage);
+                } catch (IOException e) {
+                    throw new CustomException(ExceptionCode.IMAGE_UPLOAD_FAILED);
+                }
+            });
         }
     }
 }

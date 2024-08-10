@@ -14,7 +14,6 @@ public enum ExceptionCode {
     USER_FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없습니다."),
     USER_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않았습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 유효하지 않습니다."),
-
     DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "이미 존재하는 닉네임입니다."),
 
     // TEAM
@@ -26,6 +25,7 @@ public enum ExceptionCode {
 
     // POST
     POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 포스트를 찾을 수 없습니다."),
+    NOT_WRITER(HttpStatus.BAD_REQUEST, "해당 글의 작성자가 아닙니다."),
 
     // TAG
     TAG_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 태그를 찾을 수 없습니다."),
@@ -33,7 +33,6 @@ public enum ExceptionCode {
     // COMMENT
     COMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 댓글을 찾을 수 없습니다."),
     COMMENT_WRITER_NOT_FOUND(HttpStatus.BAD_REQUEST, "댓글 작성자를 찾을 수 없습니다."),
-
 
     // S3
     EMPTY_FILE(HttpStatus.BAD_REQUEST, "유효하지 않는 파일입니다."),
