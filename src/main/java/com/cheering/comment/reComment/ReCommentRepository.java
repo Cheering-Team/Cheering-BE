@@ -22,4 +22,5 @@ public interface ReCommentRepository extends JpaRepository<ReComment, Long> {
     void deleteByPlayerUserIn(List<PlayerUser> playerUsers);
     void deleteByPlayerUser(PlayerUser playerUser);
     void deleteByCommentIn(List<Comment> commentList);
+    void deleteByComment(Comment comment);
 }

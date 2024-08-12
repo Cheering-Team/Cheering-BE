@@ -33,6 +33,7 @@ public enum ExceptionCode {
     // COMMENT
     COMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 댓글을 찾을 수 없습니다."),
     COMMENT_WRITER_NOT_FOUND(HttpStatus.BAD_REQUEST, "댓글 작성자를 찾을 수 없습니다."),
+    RECOMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 답글을 찾을 수 없습니다."),
 
     // S3
     EMPTY_FILE(HttpStatus.BAD_REQUEST, "유효하지 않는 파일입니다."),

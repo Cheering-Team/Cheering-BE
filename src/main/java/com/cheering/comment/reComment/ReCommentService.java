@@ -3,8 +3,10 @@ package com.cheering.comment.reComment;
 import com.cheering._core.errors.*;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
+import com.cheering.player.Player;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.post.Post;
 import com.cheering.post.PostResponse;
 import com.cheering.user.User;
 
@@ -50,8 +52,12 @@ public class ReCommentService {
         return new ReCommentResponse.ReCommentIdDTO(reComment.getId());
     }
 
-    public Object getComments(Long commentId) {
+    public Object getComments(Long commentId, User user) {
         List<ReComment> reCommentList = reCommentRepository.findByCommentId(commentId);
+
+        Player player = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND)).getPlayerUser().getPlayer();
+
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
         List<ReCommentResponse.ReCommentDTO> reCommentDTOS = reCommentList.stream().map((reComment -> {
             PlayerUser writer = reComment.getPlayerUser();
@@ -59,10 +65,25 @@ public class ReCommentService {
 
             PostResponse.WriterDTO toDTO = new PostResponse.WriterDTO(reComment.getToPlayerUser());
 
-            return new ReCommentResponse.ReCommentDTO(reComment, toDTO, writerDTO);
+            return new ReCommentResponse.ReCommentDTO(reComment, toDTO, writerDTO, writer.equals(curPlayerUser));
         })).toList();
 
         return new ReCommentResponse.ReCommentListDTO(reCommentDTOS);
+    }
+
+    @Transactional
+    public void deleteReComment(Long reCommentId, User user) {
+        ReComment reComment = reCommentRepository.findById(reCommentId).orElseThrow(() -> new CustomException(ExceptionCode.RECOMMENT_NOT_FOUND));
+
+        PlayerUser writer = reComment.getPlayerUser();
+
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(writer.getPlayer().getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+        if(!writer.equals(curPlayerUser)) {
+            throw new CustomException(ExceptionCode.NOT_WRITER);
+        }
+
+        reCommentRepository.delete(reComment);
     }
 
 //    @Transactional
