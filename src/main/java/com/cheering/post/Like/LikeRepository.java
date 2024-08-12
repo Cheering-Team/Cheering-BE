@@ -1,6 +1,7 @@
 package com.cheering.post.Like;
 
 import com.cheering.player.relation.PlayerUser;
+import com.cheering.post.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,4 +16,5 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
 
     void deleteByPlayerUserIn(List<PlayerUser> playerUsers);
     void deleteByPlayerUser(PlayerUser playerUser);
+    void deleteByPost(Post post);
 }

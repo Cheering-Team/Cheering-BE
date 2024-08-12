@@ -17,4 +17,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     void deleteByPlayerUserIn(List<PlayerUser> playerUsers);
     void deleteByPlayerUser(PlayerUser playerUser);
+
+    void deleteByPost(Post post);
+
+    List<Comment> findByPost(Post post);
 }

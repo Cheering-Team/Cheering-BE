@@ -67,4 +67,10 @@ public class PostController {
         postService.editPost(postId, content, images, tags, customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글을 수정하였습니다.", null));
     }
+
+    @DeleteMapping("/posts/{postId}")
+    public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId,  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        postService.deletePost(postId, customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글을 삭제하였습니다.", null));
+    }
 }

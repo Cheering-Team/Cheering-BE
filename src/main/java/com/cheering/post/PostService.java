@@ -3,7 +3,9 @@ package com.cheering.post;
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.S3Util;
+import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
+import com.cheering.comment.reComment.ReComment;
 import com.cheering.comment.reComment.ReCommentRepository;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerResponse;
@@ -293,5 +295,35 @@ public class PostService {
                 }
             });
         }
+    }
+
+    @Transactional
+    public void deletePost(Long postId, User user) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
+
+        PlayerUser writer = post.getPlayerUser();
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(writer.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+        if(!writer.equals(curPlayerUser)) {
+            throw new CustomException(ExceptionCode.NOT_WRITER);
+        }
+
+
+        // Tag
+        postTagRepository.deleteByPost(post);
+
+        // Image
+        postImageRepository.deleteByPost(post);
+
+        // Comment
+        List<Comment> commentList = commentRepository.findByPost(post);
+        reCommentRepository.deleteByCommentIn(commentList);
+        commentRepository.deleteByPost(post);
+
+        // Like
+        likeRepository.deleteByPost(post);
+
+        // Post
+        postRepository.deleteById(postId);
     }
 }
