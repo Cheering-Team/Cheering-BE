@@ -67,7 +67,7 @@ public class PlayerUserService {
         // 유저의 글 목록
         Page<Post> postList = postRepository.findByPlayerUser(playerUser, pageable);
 
-        List<PostResponse.PostInfoDTO> postInfoDTOS = postList.stream().map((post -> {
+        List<PostResponse.PostInfoWithPlayerDTO> postInfoDTOS = postList.stream().map((post -> {
             PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
 
             // 태그
@@ -89,7 +89,7 @@ public class PlayerUserService {
             List<PostImage> postImages = postImageRepository.findByPostId(post.getId());
             List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-            return new PostResponse.PostInfoDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), new PlayerResponse.PlayerDTO(playerUser.getPlayer()), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         })).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);

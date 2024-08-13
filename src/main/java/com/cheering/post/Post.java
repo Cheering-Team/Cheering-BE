@@ -4,10 +4,7 @@ import com.cheering.BaseTimeEntity;
 import com.cheering.player.relation.PlayerUser;
 import jakarta.persistence.*;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,13 +13,14 @@ import java.util.Set;
 @Table(name = "post_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Setter
 public class Post extends BaseTimeEntity {
     @Id
     @GeneratedValue
     @Column(name = "post_id")
     private Long id;
 
-    @Column
+    @Column(length = 1000)
     private String content;
 
     @ManyToOne

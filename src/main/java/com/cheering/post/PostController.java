@@ -57,4 +57,20 @@ public class PostController {
 
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, isLike ? "게시글에 좋아요를 눌렀습니다." : "게시글에 좋아요를 취소했습니다.", null));
     }
+
+    @PutMapping("/posts/{postId}")
+    public ResponseEntity<?> editPost(@PathVariable("postId") Long postId,
+                                      @RequestParam(value = "content", required = false) String content,
+                                      @RequestParam(value = "images", required = false) List<MultipartFile> images,
+                                      @RequestParam(value = "tags", required = false) List<String> tags,
+                                      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        postService.editPost(postId, content, images, tags, customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글을 수정하였습니다.", null));
+    }
+
+    @DeleteMapping("/posts/{postId}")
+    public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId,  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        postService.deletePost(postId, customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글을 삭제하였습니다.", null));
+    }
 }

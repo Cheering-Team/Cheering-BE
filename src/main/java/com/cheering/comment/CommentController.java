@@ -12,12 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import retrofit2.http.Path;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,7 +27,13 @@ public class CommentController {
     }
 
     @GetMapping("/posts/{postId}/comments")
-    public ResponseEntity<?> getComments(@PathVariable("postId") Long postId){
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "댓글들을 불러왔습니다.", commentService.getComments(postId)));
+    public ResponseEntity<?> getComments(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "댓글들을 불러왔습니다.", commentService.getComments(postId,customUserDetails.getUser())));
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<?> deleteComment(@PathVariable("commentId") Long commentId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        commentService.deleteComment(commentId, customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "댓글이 삭제되었습니다.", null));
     }
 }

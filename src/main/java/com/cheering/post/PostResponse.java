@@ -12,16 +12,13 @@ import java.util.List;
 public class PostResponse {
     public record PostIdDTO (Long id, PlayerUserResponse.PlayerUserDTO playerUser) { }
 
-    public record PostInfoDTO(Long id, PlayerUserResponse.PlayerUserDTO playerUser, String content, LocalDateTime createdAt, List<String> tags,
-                              boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, WriterDTO writer) { }
-
     public record PostInfoWithPlayerDTO(Long id, PlayerUserResponse.PlayerUserDTO playerUser, PlayerResponse.PlayerDTO player, String content, LocalDateTime createdAt, List<String> tags,
                                         boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, WriterDTO writer) { }
 
-    public record PostByIdDTO (PostInfoDTO post, PlayerResponse.PlayerNameDTO player) { }
+    public record PostByIdDTO (PostInfoWithPlayerDTO post, PlayerResponse.PlayerNameDTO player) { }
 
-    public record PostListDTO(List<PostInfoDTO> posts, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last) {
-        public PostListDTO(Page<?> page, List<PostInfoDTO> posts) {
+    public record PostListDTO(List<PostInfoWithPlayerDTO> posts, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last) {
+        public PostListDTO(Page<?> page, List<PostInfoWithPlayerDTO> posts) {
             this(posts, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast());
         }
 
