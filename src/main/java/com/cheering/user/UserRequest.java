@@ -18,4 +18,8 @@ public class UserRequest {
     public record NicknameDTO (
             String nickname
     ) { }
+
+    public record IdDTO (
+            Long userId
+    ) { }
 }

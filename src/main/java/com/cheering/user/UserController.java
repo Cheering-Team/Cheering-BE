@@ -61,4 +61,32 @@ public class UserController {
         return ResponseEntity.ok()
                 .body(ApiUtils.success(HttpStatus.OK, "회원탈퇴되었습니다.", null));
     }
+
+    @PostMapping("/signin/kakao")
+    public ResponseEntity<?> signInWithKakao(@RequestParam String accessToken) {
+        UserResponse.TokenDTO tokenDTO = userService.signInWithKakao(accessToken);
+        if(tokenDTO == null) {
+            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "카카오 회원가입이 필요합니다.", null));
+        }
+        else {
+            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "로그인되었습니다.", tokenDTO));
+        }
+    }
+
+    @PostMapping("/phone/code/kakao")
+    public ResponseEntity<?> checkCodeKakao(@RequestParam String accessToken, @RequestBody UserRequest.CheckCodeDTO requestDTO) {
+        Object response = userService.checkCodeKakao(accessToken, requestDTO);
+        if(response instanceof UserResponse.UserWithCreatedAtDTO) {
+            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"이미 가입된 유저입니다.", response));
+        } else {
+            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"회원가입되었습니다.", response));
+        }
+    }
+
+    @PostMapping("/connect/kakao")
+    public ResponseEntity<?> connectKakao(@RequestParam String accessToken, @RequestBody UserRequest.IdDTO requestDTO) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"연결되었습니다.", userService.connectKakao(accessToken, requestDTO)));
+
+
+    }
 }
