@@ -6,12 +6,10 @@ import com.cheering._core.util.RedisUtils;
 import com.cheering._core.util.SmsUtil;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
-import com.cheering.community.UserCommunityInfoRepository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-
-import com.cheering.player.Player;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.post.Like.LikeRepository;
@@ -20,8 +18,13 @@ import com.cheering.post.PostImage.PostImageRepository;
 import com.cheering.post.PostRepository;
 import com.cheering.post.relation.PostTagRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -156,5 +159,114 @@ public class UserService {
 
         // 5. User
         userRepository.delete(user);
+    }
+
+    @Transactional
+    public UserResponse.TokenDTO signInWithKakao(String kakaoToken) {
+        RestTemplate restTemplate = new RestTemplate();
+        String requestUrl = "https://kapi.kakao.com/v2/user/me";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + kakaoToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
+
+        String kakaoId = response.getBody().get("id").toString();
+
+        Optional<User> optionalUser = userRepository.findByKakaoId(kakaoId);
+
+        if(optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
+            String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
+
+            redisUtils.deleteData(user.getId().toString());
+            redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
+
+            return new UserResponse.TokenDTO(accessToken, refreshToken);
+        } else {
+            return null;
+        }
+     }
+
+    @Transactional
+    public Object checkCodeKakao(String kakaoToken,UserRequest.CheckCodeDTO requestDTO) {
+        String phone = requestDTO.phone();
+        String code = requestDTO.code();
+
+        String storedCode = redisUtils.getData(phone);
+
+        if(storedCode == null) {
+            throw new CustomException(ExceptionCode.CODE_EXPIRED);
+        }
+
+        if(!storedCode.equals((code))){
+            throw new CustomException(ExceptionCode.CODE_NOT_EQUAL);
+        }
+
+        redisUtils.deleteData(phone);
+
+        Optional<User> optionalUser = userRepository.findByPhone(phone);
+
+        RestTemplate restTemplate = new RestTemplate();
+        String requestUrl = "https://kapi.kakao.com/v2/user/me";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + kakaoToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
+
+        String kakaoId = response.getBody().get("id").toString();
+        Map<String, Object> kakaoAccount = (Map<String, Object>) response.getBody().get("kakao_account");
+        String nickname = (String) ((Map<String, Object>) kakaoAccount.get("profile")).get("nickname");
+
+        if(optionalUser.isPresent()) {
+           return new UserResponse.UserWithCreatedAtDTO(optionalUser.get());
+        }
+
+        User user = User.builder()
+                    .nickname(nickname)
+                    .phone(phone)
+                    .role(Role.ROLE_USER)
+                    .kakaoId(kakaoId)
+                    .build();
+
+        userRepository.save(user);
+
+        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
+        String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
+
+        redisUtils.deleteData(user.getId().toString());
+        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
+
+        return new UserResponse.TokenDTO(accessToken, refreshToken);
+    }
+
+    @Transactional
+    public UserResponse.TokenDTO connectKakao(String kakaoToken, UserRequest.IdDTO requestDTO) {
+        User user = userRepository.findById(requestDTO.userId()).orElseThrow(()->new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+        RestTemplate restTemplate = new RestTemplate();
+        String requestUrl = "https://kapi.kakao.com/v2/user/me";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + kakaoToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
+
+        String kakaoId = response.getBody().get("id").toString();
+
+        user.setKakaoId(kakaoId);
+
+        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
+        String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
+
+        redisUtils.deleteData(user.getId().toString());
+        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
+
+        return new UserResponse.TokenDTO(accessToken, refreshToken);
     }
 }

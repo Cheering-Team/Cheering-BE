@@ -27,11 +27,16 @@ public class User extends BaseTimeEntity {
     @Enumerated(value = EnumType.STRING)
     private Role role;
 
+    @Column(nullable = true)
+    private String kakaoId;
+
+
     @Builder
-    public User(Long userId, String phone, String nickname, Role role) {
+    public User(Long userId, String phone, String nickname, Role role, String kakaoId) {
         this.id = userId;
         this.phone = phone;
         this.nickname = nickname;
         this.role = role;
+        this.kakaoId = kakaoId;
     }
 }
