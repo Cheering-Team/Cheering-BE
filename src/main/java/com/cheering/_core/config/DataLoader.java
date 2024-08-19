@@ -40,7 +40,7 @@ public class DataLoader implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         User user1 = User.builder()
-                .phone("01062013110")
+                .phone("01062013112")
                 .nickname("준서")
                 .role(Role.ROLE_USER)
                 .build();
