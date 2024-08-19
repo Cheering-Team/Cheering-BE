@@ -18,12 +18,11 @@ import com.cheering.post.PostImage.PostImageRepository;
 import com.cheering.post.PostRepository;
 import com.cheering.post.relation.PostTagRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -191,6 +190,46 @@ public class UserService {
      }
 
     @Transactional
+    public Object signInWithNaver(String naverToken) {
+        RestTemplate restTemplate = new RestTemplate();
+        String requestUrl = "https://openapi.naver.com/v1/nid/me";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + naverToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
+        Map<String, Object> successResponse = (Map<String, Object>) response.getBody().get("response");
+        String naverId = successResponse.get("id").toString();
+        String mobile = successResponse.get("mobile").toString().replace("-", "");
+        String nickname = successResponse.get("nickname").toString();
+
+        Optional<User> optionalUser = userRepository.findByPhone(mobile);
+
+        if(optionalUser.isPresent()) {
+            return new UserResponse.UserWithCreatedAtDTO(optionalUser.get());
+        }
+
+        User user = User.builder()
+                .nickname(nickname)
+                .phone(mobile)
+                .role(Role.ROLE_USER)
+                .naverId(naverId)
+                .build();
+
+        userRepository.save(user);
+
+        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
+        String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
+
+        redisUtils.deleteData(user.getId().toString());
+        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
+
+        return new UserResponse.TokenDTO(accessToken, refreshToken);
+    }
+
+    @Transactional
     public Object checkCodeKakao(String kakaoToken,UserRequest.CheckCodeDTO requestDTO) {
         String phone = requestDTO.phone();
         String code = requestDTO.code();
@@ -245,21 +284,37 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse.TokenDTO connectKakao(String kakaoToken, UserRequest.IdDTO requestDTO) {
+    public UserResponse.TokenDTO socialConnect(String token, String type, UserRequest.IdDTO requestDTO) {
         User user = userRepository.findById(requestDTO.userId()).orElseThrow(()->new CustomException(ExceptionCode.USER_NOT_FOUND));
 
-        RestTemplate restTemplate = new RestTemplate();
-        String requestUrl = "https://kapi.kakao.com/v2/user/me";
+        if(type.equals("kakao")){
+            RestTemplate restTemplate = new RestTemplate();
+            String requestUrl = "https://kapi.kakao.com/v2/user/me";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + kakaoToken);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer " + token);
 
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-        ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
 
-        String kakaoId = response.getBody().get("id").toString();
+            String kakaoId = response.getBody().get("id").toString();
 
-        user.setKakaoId(kakaoId);
+            user.setKakaoId(kakaoId);
+        } else if(type.equals("naver")) {
+            RestTemplate restTemplate = new RestTemplate();
+            String requestUrl = "https://openapi.naver.com/v1/nid/me";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer " + token);
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
+            Map<String, Object> successResponse = (Map<String, Object>) response.getBody().get("response");
+            String naverId = successResponse.get("id").toString();
+
+            user.setNaverId(naverId);
+        }
 
         String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
         String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
