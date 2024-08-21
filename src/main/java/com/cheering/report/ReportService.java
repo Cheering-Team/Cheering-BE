@@ -40,5 +40,11 @@ public class ReportService {
                 .build();
 
         reportRepository.save(newReport);
+
+        Long reportCount = reportRepository.countByPostId(postId);
+
+        if(reportCount >= 3 && !post.getIsHide()) {
+            post.setIsHide(true);
+        }
     }
 }

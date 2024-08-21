@@ -12,4 +12,7 @@ import java.util.Optional;
 public interface ReportRepository extends JpaRepository<Report, Long> {
     @Query("select r from Report r where r.post.id=:postId and r.playerUser.id=:playerUserId")
     Optional<Report> findByPostIdAndPlayerUserId (@Param("postId") Long postId, @Param("playerUserId") Long playerUserId);
+
+    @Query("SELECT COUNT(r) FROM Report r WHERE r.post.id = :postId")
+    Long countByPostId(@Param("postId") Long postId);
 }
