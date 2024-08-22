@@ -23,12 +23,15 @@ public class Post extends BaseTimeEntity {
     @Column(length = 1000)
     private String content;
 
+    @Column()
+    private Boolean isHide = false;
+
     @ManyToOne
     @JoinColumn(name = "player_user_id")
     private PlayerUser playerUser;
 
     @Builder
-    public Post(Long postId, String content, PlayerUser playerUser){
+    public Post(Long postId, String content, PlayerUser playerUser) {
         this.id = postId;
         this.content = content;
         this.playerUser = playerUser;

@@ -12,7 +12,7 @@ import java.util.List;
 public class PostResponse {
     public record PostIdDTO (Long id, PlayerUserResponse.PlayerUserDTO playerUser) { }
 
-    public record PostInfoWithPlayerDTO(Long id, PlayerUserResponse.PlayerUserDTO playerUser, PlayerResponse.PlayerDTO player, String content, LocalDateTime createdAt, List<String> tags,
+    public record PostInfoWithPlayerDTO(Long id, PlayerUserResponse.PlayerUserDTO playerUser, PlayerResponse.PlayerDTO player, String content, Boolean isHide, LocalDateTime createdAt, List<String> tags,
                                         boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, WriterDTO writer) { }
 
     public record PostByIdDTO (PostInfoWithPlayerDTO post, PlayerResponse.PlayerNameDTO player) { }

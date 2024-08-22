@@ -25,6 +25,7 @@ import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -134,7 +135,7 @@ public class PostService {
             List<PostImage> postImages = postImageRepository.findByPostId(post.getId());
             List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), new PlayerResponse.PlayerDTO(player), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), new PlayerResponse.PlayerDTO(player), post.getContent(), false, post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         })).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);
@@ -179,7 +180,7 @@ public class PostService {
             // 선수
             PlayerResponse.PlayerDTO playerDTO = new PlayerResponse.PlayerDTO(playerUser.getPlayer());
 
-            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), playerDTO, post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), playerDTO, post.getContent(), false, post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         })).toList();
 
         return new PostResponse.PostWithPlayerListDTO(postList, postInfoWithPlayerDTOS);
@@ -213,7 +214,7 @@ public class PostService {
 
         PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
 
-        PostResponse.PostInfoWithPlayerDTO postInfoDTO = new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), new PlayerResponse.PlayerDTO(player), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+        PostResponse.PostInfoWithPlayerDTO postInfoDTO = new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), new PlayerResponse.PlayerDTO(player), post.getContent(), false, post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         PlayerResponse.PlayerNameDTO playerNameDTO = new PlayerResponse.PlayerNameDTO(player);
 
         return new PostResponse.PostByIdDTO(postInfoDTO, playerNameDTO);
@@ -247,6 +248,10 @@ public class PostService {
     @Transactional
     public void editPost(Long postId, String content, List<MultipartFile> images, List<String> tags, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
+
+        if(post.getIsHide()) {
+            throw new CustomException(ExceptionCode.REPORTED_POST);
+        }
 
         PlayerUser writer = post.getPlayerUser();
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(writer.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
@@ -300,6 +305,10 @@ public class PostService {
     @Transactional
     public void deletePost(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
+
+        if(post.getIsHide()) {
+            throw new CustomException(ExceptionCode.REPORTED_POST);
+        }
 
         PlayerUser writer = post.getPlayerUser();
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(writer.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
