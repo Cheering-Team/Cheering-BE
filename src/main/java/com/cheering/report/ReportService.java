@@ -30,7 +30,7 @@ public class ReportService {
 
         Optional<Report> report = reportRepository.findByPostIdAndPlayerUserId(postId, curUser.getId());
 
-        if(report.isEmpty()) {
+        if(report.isPresent()) {
             throw new CustomException(ExceptionCode.ALREADY_REPORT);
         }
 
