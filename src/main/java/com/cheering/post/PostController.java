@@ -46,11 +46,13 @@ public class PostController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 목록을 불러왔습니다.", postService.getPlayersPosts(pageable, customUserDetails.getUser())));
     }
 
+    // 특정 게시글 불러오기
     @GetMapping("/posts/{postId}")
     public ResponseEntity<?> getPostById(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글을 불러왔습니다.", postService.getPostById(postId, customUserDetails.getUser())));
     }
 
+    // 좋아요 토글
     @PostMapping("/posts/{postId}/likes")
     public ResponseEntity<?> toggleLike(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         boolean isLike = postService.toggleLike(postId, customUserDetails.getUser());
@@ -58,6 +60,7 @@ public class PostController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, isLike ? "게시글에 좋아요를 눌렀습니다." : "게시글에 좋아요를 취소했습니다.", null));
     }
 
+    // 게시글 수정
     @PutMapping("/posts/{postId}")
     public ResponseEntity<?> editPost(@PathVariable("postId") Long postId,
                                       @RequestParam(value = "content", required = false) String content,
@@ -68,6 +71,7 @@ public class PostController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글을 수정하였습니다.", null));
     }
 
+    // 게시글 삭제
     @DeleteMapping("/posts/{postId}")
     public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId,  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         postService.deletePost(postId, customUserDetails.getUser());
