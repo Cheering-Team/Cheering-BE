@@ -134,7 +134,7 @@ public class PostService {
             List<PostImage> postImages = postImageRepository.findByPostId(post.getId());
             List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), new PlayerResponse.PlayerDTO(player), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), new PlayerResponse.PlayerDTO(player), post.getContent(), false, post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         })).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);
@@ -179,7 +179,7 @@ public class PostService {
             // 선수
             PlayerResponse.PlayerDTO playerDTO = new PlayerResponse.PlayerDTO(playerUser.getPlayer());
 
-            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), playerDTO, post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), playerDTO, post.getContent(), false, post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         })).toList();
 
         return new PostResponse.PostWithPlayerListDTO(postList, postInfoWithPlayerDTOS);
@@ -213,7 +213,7 @@ public class PostService {
 
         PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
 
-        PostResponse.PostInfoWithPlayerDTO postInfoDTO = new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), new PlayerResponse.PlayerDTO(player), post.getContent(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+        PostResponse.PostInfoWithPlayerDTO postInfoDTO = new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), new PlayerResponse.PlayerDTO(player), post.getContent(), false, post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
         PlayerResponse.PlayerNameDTO playerNameDTO = new PlayerResponse.PlayerNameDTO(player);
 
         return new PostResponse.PostByIdDTO(postInfoDTO, playerNameDTO);
