@@ -25,6 +25,7 @@ import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -248,6 +249,10 @@ public class PostService {
     public void editPost(Long postId, String content, List<MultipartFile> images, List<String> tags, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
+        if(post.getIsHide()) {
+            throw new CustomException(ExceptionCode.REPORTED_POST);
+        }
+
         PlayerUser writer = post.getPlayerUser();
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(writer.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
@@ -300,6 +305,10 @@ public class PostService {
     @Transactional
     public void deletePost(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
+
+        if(post.getIsHide()) {
+            throw new CustomException(ExceptionCode.REPORTED_POST);
+        }
 
         PlayerUser writer = post.getPlayerUser();
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(writer.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));

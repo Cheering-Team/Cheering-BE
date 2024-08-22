@@ -37,6 +37,7 @@ public enum ExceptionCode {
 
     // REPORT
     ALREADY_REPORT(HttpStatus.BAD_REQUEST, "이미 신고한 게시글입니다."),
+    REPORTED_POST(HttpStatus.BAD_REQUEST, "신고 누적된 게시글이므로 수정 및 삭제가 불가합니다."),
 
     // S3
     EMPTY_FILE(HttpStatus.BAD_REQUEST, "유효하지 않는 파일입니다."),
