@@ -1,4 +1,4 @@
-package com.cheering.report;
+package com.cheering.report.postReport;
 
 import com.cheering.BaseTimeEntity;
 import com.cheering.player.relation.PlayerUser;
@@ -10,13 +10,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "report_tb")
+@Table(name = "post_report_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Report extends BaseTimeEntity {
+public class PostReport extends BaseTimeEntity {
     @Id
     @GeneratedValue
-    @Column(name = "report_id")
+    @Column(name = "post_report_id")
     private Long id;
 
     @ManyToOne
@@ -28,7 +28,7 @@ public class Report extends BaseTimeEntity {
     private PlayerUser playerUser;
 
     @Builder
-    public Report(Long reportId, Post post, PlayerUser playerUser) {
+    public PostReport(Long reportId, Post post, PlayerUser playerUser) {
         this.id = reportId;
         this.post = post;
         this.playerUser = playerUser;
