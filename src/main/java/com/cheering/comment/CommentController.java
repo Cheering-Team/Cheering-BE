@@ -26,6 +26,7 @@ public class CommentController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "댓글이 작성되었습니다.", commentService.writeComment(postId, requestDTO, customUserDetails.getUser())));
     }
 
+    // 댓글 목록 불러오기
     @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<?> getComments(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "댓글들을 불러왔습니다.", commentService.getComments(postId,customUserDetails.getUser())));

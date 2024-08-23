@@ -1,6 +1,5 @@
 package com.cheering.report.commentReport;
 
-import com.cheering.report.postReport.PostReport;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
