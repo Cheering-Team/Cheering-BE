@@ -22,7 +22,7 @@ public class PostReportService {
 
     // 게시물 신고
     @Transactional
-    public void postReport(Long postId, User user) {
+    public void reportPost(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         PlayerUser curUser = playerUserRepository.findByPlayerIdAndUserId(post.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));

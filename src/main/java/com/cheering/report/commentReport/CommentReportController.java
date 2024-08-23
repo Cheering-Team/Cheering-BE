@@ -1,4 +1,4 @@
-package com.cheering.report.postReport;
+package com.cheering.report.commentReport;
 
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
@@ -14,12 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
-public class PostReportController {
-    private final PostReportService postReportService;
+public class CommentReportController {
+    private final CommentReportService commentReportService;
 
-    @PostMapping("/posts/{postId}/reports")
-    ResponseEntity<?> reportPost (@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        postReportService.reportPost(postId, customUserDetails.getUser());
+    // 댓글 신고
+    @PostMapping("/comments/{commentId}/reports")
+    ResponseEntity<?> commentReport (@PathVariable("commentId") Long commentId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        commentReportService.reportComment(commentId, customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "신고가 접수되었습니다.", null));
     }
 }

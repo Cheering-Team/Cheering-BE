@@ -23,7 +23,7 @@ public class Post extends BaseTimeEntity {
     @Column(length = 1000)
     private String content;
 
-    @Column()
+    @Column
     private Boolean isHide = false;
 
     @ManyToOne
