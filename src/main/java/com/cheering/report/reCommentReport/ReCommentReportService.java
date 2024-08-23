@@ -9,6 +9,7 @@ import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -19,6 +20,8 @@ public class ReCommentReportService {
     private final ReCommentRepository reCommentRepository;
     private final PlayerUserRepository playerUserRepository;
 
+    // 답글 신고
+    @Transactional
     public void reportReComment(Long reCommentId, User user) {
         ReComment reComment = reCommentRepository.findById(reCommentId).orElseThrow(() -> new CustomException(ExceptionCode.RECOMMENT_NOT_FOUND));
 
@@ -39,7 +42,10 @@ public class ReCommentReportService {
 
         Long reportCount = reCommentReportRepository.countByReCommentId(reCommentId);
 
+        System.out.println(reportCount);
+
         if(reportCount >= 3 && !reComment.getIsHide()) {
+            System.out.println("Here");
             reComment.setIsHide(true);
         }
     }
