@@ -9,10 +9,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId ORDER BY c.createdAt ASC")
+    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND c.isHide = false ORDER BY c.createdAt ASC")
     List<Comment> findByPostId(@Param("postId") Long postId);
 
-    @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId")
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND c.isHide = false")
     Long countByPostId(@Param("postId") Long postId);
 
     void deleteByPlayerUserIn(List<PlayerUser> playerUsers);

@@ -10,16 +10,14 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
 
 @Entity
 @Table(name = "comment_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Setter
 public class Comment extends BaseTimeEntity {
     @Id
     @GeneratedValue
@@ -28,6 +26,9 @@ public class Comment extends BaseTimeEntity {
 
     @Column
     private String content;
+
+    @Column
+    private Boolean isHide = false;
 
     @ManyToOne
     @JoinColumn(name = "post_id")

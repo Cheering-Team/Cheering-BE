@@ -10,13 +10,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ReCommentRepository extends JpaRepository<ReComment, Long> {
-    @Query("SELECT r FROM ReComment r WHERE r.comment.id = :commentId ORDER BY r.createdAt ASC")
+    @Query("SELECT r FROM ReComment r WHERE r.comment.id = :commentId AND r.isHide = false ORDER BY r.createdAt ASC")
     List<ReComment> findByCommentId(@Param("commentId") Long commentId);
 
-    @Query("SELECT COUNT(re) FROM ReComment re WHERE re.comment.id=:commentId")
+    @Query("SELECT COUNT(re) FROM ReComment re WHERE re.comment.id=:commentId AND re.isHide = false")
     Long countByCommentId(@Param("commentId") Long id);
 
-    @Query("SELECT COUNT(re) FROM ReComment re WHERE re.comment.post.id = :postId")
+    @Query("SELECT COUNT(re) FROM ReComment re WHERE re.comment.post.id = :postId AND re.isHide = false AND re.comment.isHide = false")
     Long countByPostId(@Param("postId") Long postId);
 
     void deleteByPlayerUserIn(List<PlayerUser> playerUsers);

@@ -7,16 +7,13 @@ import com.cheering.comment.Comment;
 import com.cheering.community.UserCommunityInfo;
 import com.cheering.player.relation.PlayerUser;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "re_comment_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Setter
 public class ReComment extends BaseTimeEntity {
     @Id
     @GeneratedValue
@@ -25,6 +22,9 @@ public class ReComment extends BaseTimeEntity {
 
     @Column
     private String content;
+
+    @Column
+    private Boolean isHide = false;
 
     @ManyToOne
     @JoinColumn(name = "comment_id")

@@ -1,8 +1,8 @@
-package com.cheering.report;
+package com.cheering.report.reCommentReport;
 
 import com.cheering.BaseTimeEntity;
+import com.cheering.comment.reComment.ReComment;
 import com.cheering.player.relation.PlayerUser;
-import com.cheering.post.Post;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -10,27 +10,27 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "report_tb")
+@Table(name = "re_comment_report_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Report extends BaseTimeEntity {
+public class ReCommentReport extends BaseTimeEntity {
     @Id
     @GeneratedValue
-    @Column(name = "report_id")
+    @Column(name = "re_comment_report_id")
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "post_id")
-    private Post post;
+    @JoinColumn(name = "re_comment_id")
+    private ReComment reComment;
 
     @ManyToOne
     @JoinColumn(name = "player_user_id")
     private PlayerUser playerUser;
 
     @Builder
-    public Report(Long reportId, Post post, PlayerUser playerUser) {
+    public ReCommentReport(Long reportId, ReComment reComment, PlayerUser playerUser) {
         this.id = reportId;
-        this.post = post;
+        this.reComment = reComment;
         this.playerUser = playerUser;
     }
 }
