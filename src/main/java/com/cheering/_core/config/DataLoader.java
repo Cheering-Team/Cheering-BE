@@ -240,6 +240,17 @@ public class DataLoader implements ApplicationRunner {
                 .content("황성빈 보고싶다")
                 .build();
 
+        postRepository.save(post1);
+        postRepository.save(post2);
+        postRepository.save(post3);
+        postRepository.save(post4);
+        postRepository.save(post5);
+        postRepository.save(post6);
+        postRepository.save(post7);
+        postRepository.save(post8);
+        postRepository.save(post9);
+        postRepository.save(post10);
+
         PostTag postTag1 = PostTag.builder()
                 .tag(tag1)
                 .post(post10)
@@ -263,16 +274,5 @@ public class DataLoader implements ApplicationRunner {
 
         postImageRepository.save(postImage1);
         postImageRepository.save(postImage2);
-
-        postRepository.save(post1);
-        postRepository.save(post2);
-        postRepository.save(post3);
-        postRepository.save(post4);
-        postRepository.save(post5);
-        postRepository.save(post6);
-        postRepository.save(post7);
-        postRepository.save(post8);
-        postRepository.save(post9);
-        postRepository.save(post10);
     }
 }
