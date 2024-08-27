@@ -47,14 +47,6 @@ public class DataLoader implements ApplicationRunner {
 
         userRepository.save(user1);
 
-        User user2 = User.builder()
-                .phone("01062013111")
-                .nickname("준서2")
-                .role(Role.ROLE_USER)
-                .build();
-
-        userRepository.save(user2);
-
         Sport baseball = Sport.builder()
                 .name("야구")
                 .build();
@@ -138,6 +130,13 @@ public class DataLoader implements ApplicationRunner {
                 .backgroundImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8B%E1%85%B2%E1%84%80%E1%85%A1%E1%86%BC%E1%84%82%E1%85%A1%E1%86%B7+%E1%84%87%E1%85%A2%E1%84%80%E1%85%A7%E1%86%BC.jpeg")
                 .build();
 
+        Player player4 = Player.builder()
+                .koreanName("황성빈")
+                .englishName("HWANG SEONG-BIN")
+                .image("https://tily-bucket.s3.ap-northeast-2.amazonaws.com/gT_KXRSxvR6nC+-+c-yu5VkxTJ_yRTf4It1MpvyUsFiKQUP1FrjZPAVBIqlYFC8HE5ItSfCqlqTizxmD1ob3hZLfnx9WIs-znJqg1bp-GVIovPNUL_ZLURv9z7-cY653dmihcVAXuSzp-be91bzsMSg.jpg")
+                .backgroundImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/674350_1031929_1335.jpg")
+                .build();
+
         Player player3 = Player.builder()
                 .koreanName("이민우")
                 .englishName("LEE MIN-WOO")
@@ -148,6 +147,7 @@ public class DataLoader implements ApplicationRunner {
         playerRepository.save(player1);
         playerRepository.save(player2);
         playerRepository.save(player3);
+        playerRepository.save(player4);
 
         TeamPlayer teamPlayer1 = TeamPlayer.builder()
                 .team(lotte)
@@ -164,25 +164,31 @@ public class DataLoader implements ApplicationRunner {
                 .player(player3)
                 .build();
 
+        TeamPlayer teamPlayer4 = TeamPlayer.builder()
+                .team(lotte)
+                .player(player4)
+                .build();
+
+
         teamPlayerRepository.save(teamPlayer1);
         teamPlayerRepository.save(teamPlayer2);
         teamPlayerRepository.save(teamPlayer3);
+        teamPlayerRepository.save(teamPlayer4);
 
         PlayerUser playerUser = PlayerUser.builder()
                 .player(player1)
                 .user(user1)
                 .nickname("전준우짱")
-                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/fc45d81e-cIMG_8827.PNG")
+                .build();
+
+        PlayerUser playerUser2 = PlayerUser.builder()
+                .player(player4)
+                .user(user1)
+                .nickname("황성빈짱")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/20240706500397.jpg")
                 .build();
 
         playerUserRepository.save(playerUser);
-
-        PlayerUser playerUser2 = PlayerUser.builder()
-                .player(player1)
-                .user(user2)
-                .nickname("우와아이앙")
-                .build();
-
         playerUserRepository.save(playerUser2);
 
         Tag tag1 = Tag.builder()
