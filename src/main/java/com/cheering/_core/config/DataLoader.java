@@ -5,9 +5,13 @@ import com.cheering.player.PlayerRepository;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.post.Post;
+import com.cheering.post.PostImage.PostImage;
+import com.cheering.post.PostImage.PostImageRepository;
 import com.cheering.post.PostRepository;
 import com.cheering.post.Tag.Tag;
 import com.cheering.post.Tag.TagRepository;
+import com.cheering.post.relation.PostTag;
+import com.cheering.post.relation.PostTagRepository;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.team.league.League;
@@ -36,6 +40,8 @@ public class DataLoader implements ApplicationRunner {
     private final PlayerUserRepository playerUserRepository;
     private final TagRepository tagRepository;
     private final PostRepository postRepository;
+    private final PostTagRepository postTagRepository;
+    private final PostImageRepository postImageRepository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -117,24 +123,17 @@ public class DataLoader implements ApplicationRunner {
         sportRepository.save(basketball);
 
         Player player1 = Player.builder()
+                .koreanName("황성빈")
+                .englishName("HWANG SEONG-BIN")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/50500_s.jpg")
+                .backgroundImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/674350_1031929_1335.jpg")
+                .build();
+
+        Player player2 = Player.builder()
                 .koreanName("전준우")
                 .englishName("JEON JUN-WOO")
                 .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8C%E1%85%A5%E1%86%AB%E1%84%8C%E1%85%AE%E1%86%AB%E1%84%8B%E1%85%AE.jpeg")
                 .backgroundImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8C%E1%85%A5%E1%86%AB%E1%84%8C%E1%85%AE%E1%86%AB%E1%84%8B%E1%85%AE+%E1%84%87%E1%85%A2%E1%84%80%E1%85%A7%E1%86%BC.jpeg")
-                .build();
-
-        Player player2 = Player.builder()
-                .koreanName("유강남")
-                .englishName("YOO KANG-NAM")
-                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8B%E1%85%B2%E1%84%80%E1%85%A1%E1%86%BC%E1%84%82%E1%85%A1%E1%86%B7.jpeg")
-                .backgroundImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8B%E1%85%B2%E1%84%80%E1%85%A1%E1%86%BC%E1%84%82%E1%85%A1%E1%86%B7+%E1%84%87%E1%85%A2%E1%84%80%E1%85%A7%E1%86%BC.jpeg")
-                .build();
-
-        Player player4 = Player.builder()
-                .koreanName("황성빈")
-                .englishName("HWANG SEONG-BIN")
-                .image("https://tily-bucket.s3.ap-northeast-2.amazonaws.com/gT_KXRSxvR6nC+-+c-yu5VkxTJ_yRTf4It1MpvyUsFiKQUP1FrjZPAVBIqlYFC8HE5ItSfCqlqTizxmD1ob3hZLfnx9WIs-znJqg1bp-GVIovPNUL_ZLURv9z7-cY653dmihcVAXuSzp-be91bzsMSg.jpg")
-                .backgroundImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/674350_1031929_1335.jpg")
                 .build();
 
         Player player3 = Player.builder()
@@ -147,7 +146,6 @@ public class DataLoader implements ApplicationRunner {
         playerRepository.save(player1);
         playerRepository.save(player2);
         playerRepository.save(player3);
-        playerRepository.save(player4);
 
         TeamPlayer teamPlayer1 = TeamPlayer.builder()
                 .team(lotte)
@@ -164,32 +162,17 @@ public class DataLoader implements ApplicationRunner {
                 .player(player3)
                 .build();
 
-        TeamPlayer teamPlayer4 = TeamPlayer.builder()
-                .team(lotte)
-                .player(player4)
-                .build();
-
-
         teamPlayerRepository.save(teamPlayer1);
         teamPlayerRepository.save(teamPlayer2);
         teamPlayerRepository.save(teamPlayer3);
-        teamPlayerRepository.save(teamPlayer4);
 
         PlayerUser playerUser = PlayerUser.builder()
                 .player(player1)
                 .user(user1)
-                .nickname("전준우짱")
-                .build();
-
-        PlayerUser playerUser2 = PlayerUser.builder()
-                .player(player4)
-                .user(user1)
                 .nickname("황성빈짱")
-                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/20240706500397.jpg")
                 .build();
 
         playerUserRepository.save(playerUser);
-        playerUserRepository.save(playerUser2);
 
         Tag tag1 = Tag.builder()
                 .name("photo")
@@ -254,8 +237,32 @@ public class DataLoader implements ApplicationRunner {
 
         Post post10 = Post.builder()
                 .playerUser(playerUser)
-                .content("10번 글")
+                .content("황성빈 보고싶다")
                 .build();
+
+        PostTag postTag1 = PostTag.builder()
+                .tag(tag1)
+                .post(post10)
+                .build();
+
+        postTagRepository.save(postTag1);
+
+        PostImage postImage1 = PostImage.builder()
+                .post(post10)
+                .width(950)
+                .height(574)
+                .path("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/690488_656493_3913.jpg")
+                .build();
+
+        PostImage postImage2 = PostImage.builder()
+                .post(post10)
+                .width(900)
+                .height(600)
+                .path("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/20240706500397.jpg")
+                .build();
+
+        postImageRepository.save(postImage1);
+        postImageRepository.save(postImage2);
 
         postRepository.save(post1);
         postRepository.save(post2);
