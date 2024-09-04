@@ -42,10 +42,7 @@ public class ReCommentReportService {
 
         Long reportCount = reCommentReportRepository.countByReCommentId(reCommentId);
 
-        System.out.println(reportCount);
-
         if(reportCount >= 3 && !reComment.getIsHide()) {
-            System.out.println("Here");
             reComment.setIsHide(true);
         }
     }
