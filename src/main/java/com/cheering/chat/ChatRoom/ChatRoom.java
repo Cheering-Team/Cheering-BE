@@ -18,14 +18,18 @@ public class ChatRoom {
     @Column(nullable = false)
     private String name;
 
+    @Column
+    private String description;
+
     @ManyToOne
     @JoinColumn(name = "player_id")
     private Player player;
 
     @Builder
-    public ChatRoom(Long chatRoomId, String name, Player player) {
+    public ChatRoom(Long chatRoomId, String name, String description, Player player) {
         this.id = chatRoomId;
         this.name = name;
+        this.description = description;
         this.player = player;
     }
 }

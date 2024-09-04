@@ -1,5 +1,7 @@
 package com.cheering._core.config;
 
+import com.cheering.chat.ChatRoom.ChatRoom;
+import com.cheering.chat.ChatRoom.ChatRoomRepository;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.player.relation.PlayerUser;
@@ -42,6 +44,7 @@ public class DataLoader implements ApplicationRunner {
     private final PostRepository postRepository;
     private final PostTagRepository postTagRepository;
     private final PostImageRepository postImageRepository;
+    private final ChatRoomRepository chatRoomRepository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -146,6 +149,24 @@ public class DataLoader implements ApplicationRunner {
         playerRepository.save(player1);
         playerRepository.save(player2);
         playerRepository.save(player3);
+
+
+        ChatRoom chatRoom1 = ChatRoom.builder()
+                .name("황성빈 공식")
+                .description("황성빈 팬들끼리 응원해요!")
+                .player(player1)
+                .build();
+
+        chatRoomRepository.save(chatRoom1);
+
+
+        ChatRoom chatRoom2 = ChatRoom.builder()
+                .name("전준우 공식")
+                .description("전준우 팬들끼리 응원해요!")
+                .player(player2)
+                .build();
+
+        chatRoomRepository.save(chatRoom2);
 
         TeamPlayer teamPlayer1 = TeamPlayer.builder()
                 .team(lotte)
