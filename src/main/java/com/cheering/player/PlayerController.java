@@ -33,13 +33,6 @@ public class PlayerController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "선수의 정보를 불러왔습니다.", playerService.getPlayerInfo(playerId, userDetails.getUser())));
     }
 
-    // 커뮤니티 가입 닉네임 중복확인
-    @GetMapping("/players/{playerId}/nickname")
-    public ResponseEntity<?> checkNickname(@PathVariable("playerId") Long playerId, @RequestParam("nickname") String nickname) {
-        playerService.checkNickname(playerId, nickname);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "사용 가능한 닉네임 입니다.", null));
-    }
-
     // 커뮤니티 가입
     @PostMapping("/players/{playerId}/users")
     public ResponseEntity<?> joinCommunity(@PathVariable Long playerId, @RequestPart("nickname") String nickname, @RequestPart(value = "image", required = false) MultipartFile image, @AuthenticationPrincipal CustomUserDetails userDetails) {

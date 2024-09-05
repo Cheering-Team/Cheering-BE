@@ -152,7 +152,7 @@ public class DataLoader implements ApplicationRunner {
 
 
         ChatRoom chatRoom1 = ChatRoom.builder()
-                .name("황성빈 공식")
+                .name("황성빈")
                 .description("황성빈 팬들끼리 응원해요!")
                 .player(player1)
                 .build();
@@ -161,7 +161,7 @@ public class DataLoader implements ApplicationRunner {
 
 
         ChatRoom chatRoom2 = ChatRoom.builder()
-                .name("전준우 공식")
+                .name("전준우")
                 .description("전준우 팬들끼리 응원해요!")
                 .player(player2)
                 .build();
