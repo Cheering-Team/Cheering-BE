@@ -10,12 +10,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class PostResponse {
-    public record PostIdDTO (Long id, PlayerUserResponse.PlayerUserDTO playerUser) { }
+    public record PostIdDTO (Long id) { }
 
     public record PostInfoWithPlayerDTO(Long id, PlayerUserResponse.PlayerUserDTO playerUser, PlayerResponse.PlayerDTO player, String content, Boolean isHide, LocalDateTime createdAt, List<String> tags,
                                         boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, WriterDTO writer) { }
-
-    public record PostByIdDTO (PostInfoWithPlayerDTO post, PlayerResponse.PlayerNameDTO player) { }
 
     public record PostListDTO(List<PostInfoWithPlayerDTO> posts, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last) {
         public PostListDTO(Page<?> page, List<PostInfoWithPlayerDTO> posts) {
@@ -31,7 +29,7 @@ public class PostResponse {
 
     }
 
-    public record WriterDTO (Long id, String name, String image) {
+    public record WriterDTO (Long id, String nickname, String image) {
         public WriterDTO(PlayerUser playerUser) {
             this(playerUser.getId(), playerUser.getNickname(), playerUser.getImage());
         }

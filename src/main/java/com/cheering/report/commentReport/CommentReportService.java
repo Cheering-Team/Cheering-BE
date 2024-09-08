@@ -25,12 +25,12 @@ public class CommentReportService {
     public void reportComment(Long commentId, User user) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
-        PlayerUser curUser = playerUserRepository.findByPlayerIdAndUserId(comment.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+        PlayerUser curUser = playerUserRepository.findByPlayerIdAndUserId(comment.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
         Optional<CommentReport> commentReport = commentReportRepository.findByCommentIdAndPlayerUserId(commentId, curUser.getId());
 
         if(commentReport.isPresent()) {
-            throw new CustomException(ExceptionCode.ALREADY_REPORT);
+            throw new CustomException(ExceptionCode.ALREADY_REPORT_POST);
         }
 
         CommentReport newCommentReport = CommentReport.builder()

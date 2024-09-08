@@ -8,6 +8,8 @@ import java.util.List;
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -28,8 +30,9 @@ public class CommentController {
 
     // 댓글 목록 불러오기
     @GetMapping("/posts/{postId}/comments")
-    public ResponseEntity<?> getComments(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "댓글들을 불러왔습니다.", commentService.getComments(postId,customUserDetails.getUser())));
+    public ResponseEntity<?> getComments(@PathVariable("postId") Long postId,  @RequestParam int page, @RequestParam int size, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "댓글들을 불러왔습니다.", commentService.getComments(postId, pageable, customUserDetails.getUser())));
     }
 
     @DeleteMapping("/comments/{commentId}")

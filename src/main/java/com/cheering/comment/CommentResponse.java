@@ -7,11 +7,16 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
+import org.springframework.data.domain.Page;
 
 public class CommentResponse {
     public record CommentIdDTO (Long id) { }
 
-    public record CommentListDTO (List<CommentDTO> comments) { }
+    public record CommentListDTO (List<CommentDTO> comments, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last) {
+        public CommentListDTO(Page<?> page, List<CommentDTO> comments) {
+            this(comments, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast());
+        }
+    }
 
     public record CommentDTO (Long id, String content, LocalDateTime createdAt, Long reCount, PostResponse.WriterDTO writer, boolean isWriter) {
         public CommentDTO(Comment comment, Long reCount, PostResponse.WriterDTO writer, boolean isWriter) {

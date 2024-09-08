@@ -20,15 +20,16 @@ public class ReCommentController {
 
     private final ReCommentService reCommentService;
 
+    // 답글 남기기
     @PostMapping("/comments/{commentId}/re")
     public ResponseEntity<?> writeReComment(@PathVariable("commentId") Long commentId, @RequestBody ReCommentRequest.WriteReCommentDTO requestDTO, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "답글이 작성되었습니다.", reCommentService.writeReComment(commentId, requestDTO, customUserDetails.getUser())));
     }
 
-    // 특정 댓글의 답글 불러오기
+    // 답글 불러오기
     @GetMapping("/comments/{commentId}/re")
     public ResponseEntity<?> getReComments(@PathVariable("commentId") Long commentId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "답글들을 불러왔습니다.", reCommentService.getComments(commentId, customUserDetails.getUser())));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "답글들을 불러왔습니다.", reCommentService.getReComments(commentId, customUserDetails.getUser())));
     }
 
     @DeleteMapping("/reComments/{reCommentId}")

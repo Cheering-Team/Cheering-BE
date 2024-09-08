@@ -20,7 +20,7 @@ public class ReComment extends BaseTimeEntity {
     @Column(name = "re_comment_id")
     private Long id;
 
-    @Column
+    @Column(length = 1000)
     private String content;
 
     @Column

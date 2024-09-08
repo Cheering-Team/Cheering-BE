@@ -128,7 +128,7 @@ public class DataLoader implements ApplicationRunner {
         Player player1 = Player.builder()
                 .koreanName("황성빈")
                 .englishName("HWANG SEONG-BIN")
-                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/50500_s.jpg")
+                .image("https://file.giantsclub.com/upload2014/Player/50500_s.jpg")
                 .backgroundImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/674350_1031929_1335.jpg")
                 .build();
 
@@ -281,16 +281,16 @@ public class DataLoader implements ApplicationRunner {
 
         PostImage postImage1 = PostImage.builder()
                 .post(post10)
-                .width(950)
-                .height(574)
-                .path("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/690488_656493_3913.jpg")
+                .width(1024)
+                .height(1374)
+                .path("https://imgnews.pstatic.net/image/109/2022/06/28/0004646589_001_20220628193005455.jpg")
                 .build();
 
         PostImage postImage2 = PostImage.builder()
                 .post(post10)
-                .width(900)
-                .height(600)
-                .path("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/20240706500397.jpg")
+                .width(1021)
+                .height(1361)
+                .path("https://search.pstatic.net/common/?src=http%3A%2F%2Fimgnews.naver.net%2Fimage%2F109%2F2022%2F06%2F01%2F0004627413_001_20220601180505442.jpg")
                 .build();
 
         postImageRepository.save(postImage1);

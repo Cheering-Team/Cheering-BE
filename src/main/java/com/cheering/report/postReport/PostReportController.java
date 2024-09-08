@@ -20,6 +20,6 @@ public class PostReportController {
     @PostMapping("/posts/{postId}/reports")
     ResponseEntity<?> reportPost (@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         postReportService.reportPost(postId, customUserDetails.getUser());
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "신고가 접수되었습니다.", null));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "게시글을 신고하였습니다.", null));
     }
 }

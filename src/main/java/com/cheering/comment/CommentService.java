@@ -11,6 +11,8 @@ import com.cheering.user.User;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,12 +43,14 @@ public class CommentService {
         return new CommentResponse.CommentIdDTO(comment.getId());
     }
 
-    public CommentResponse.CommentListDTO getComments(Long postId, User user) {
+    // 특정 게시글 댓글 목록 불러오기 (무한 스크롤)
+    @Transactional
+    public CommentResponse.CommentListDTO getComments(Long postId, Pageable pageable, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(post.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
-        List<Comment> commentList = commentRepository.findByPostId(postId);
+        Page<Comment> commentList = commentRepository.findByPostId(postId, pageable);
 
         List<CommentResponse.CommentDTO> commentDTOS = commentList.stream().map((comment -> {
             PlayerUser writer = comment.getPlayerUser();
@@ -55,7 +59,7 @@ public class CommentService {
             return new CommentResponse.CommentDTO(comment, reCount, writerDTO, writer.equals(curPlayerUser));
         })).toList();
 
-        return new CommentResponse.CommentListDTO(commentDTOS);
+        return new CommentResponse.CommentListDTO(commentList, commentDTOS);
     }
 
     @Transactional

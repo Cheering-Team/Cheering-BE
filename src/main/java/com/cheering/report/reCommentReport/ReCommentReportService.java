@@ -30,7 +30,7 @@ public class ReCommentReportService {
         Optional<ReCommentReport> reCommentReport = reCommentReportRepository.findByReCommentIdAndPlayerUserId(reCommentId, curUser.getId());
 
         if(reCommentReport.isPresent()) {
-            throw new CustomException(ExceptionCode.ALREADY_REPORT);
+            throw new CustomException(ExceptionCode.ALREADY_REPORT_POST);
         }
 
         ReCommentReport newReCommentReport = ReCommentReport.builder()

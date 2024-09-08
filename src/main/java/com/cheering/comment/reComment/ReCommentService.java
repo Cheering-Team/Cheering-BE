@@ -52,7 +52,7 @@ public class ReCommentService {
         return new ReCommentResponse.ReCommentIdDTO(reComment.getId());
     }
 
-    public Object getComments(Long commentId, User user) {
+    public Object getReComments(Long commentId, User user) {
         List<ReComment> reCommentList = reCommentRepository.findByCommentId(commentId);
 
         Player player = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND)).getPlayerUser().getPlayer();
