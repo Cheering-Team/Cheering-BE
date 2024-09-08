@@ -7,6 +7,10 @@ import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.post.Post;
 import com.cheering.post.PostRepository;
 import com.cheering.post.PostResponse;
+import com.cheering.report.commentReport.CommentReport;
+import com.cheering.report.commentReport.CommentReportRepository;
+import com.cheering.report.reCommentReport.ReCommentReport;
+import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.user.User;
 
 import java.util.List;
@@ -23,6 +27,8 @@ public class CommentService {
     private final PlayerUserRepository playerUserRepository;
     private final CommentRepository commentRepository;
     private final ReCommentRepository reCommentRepository;
+    private final CommentReportRepository commentReportRepository;
+    private final ReCommentReportRepository reCommentReportRepository;
 
     @Transactional
     public CommentResponse.CommentIdDTO writeComment(Long postId, CommentRequest.WriteCommentDTO requestDTO, User user) {
@@ -74,7 +80,16 @@ public class CommentService {
             throw new CustomException(ExceptionCode.NOT_WRITER);
         }
 
+        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByCommentId(commentId);
+        for(ReCommentReport reCommentReport : reCommentReports) {
+            reCommentReport.setReComment(null);
+        }
         reCommentRepository.deleteByComment(comment);
+
+        List<CommentReport> commentReports = commentReportRepository.findByComment(comment);
+        for(CommentReport commentReport : commentReports) {
+            commentReport.setComment(null);
+        }
         commentRepository.delete(comment);
     }
 }

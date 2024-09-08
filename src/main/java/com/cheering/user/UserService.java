@@ -49,7 +49,8 @@ public class UserService {
         boolean isUser = user.isPresent();
 
         String verificationCode = String.valueOf((int) (Math.random() * 900000) + 100000);
-        smsUtil.sendOne(phone, verificationCode);
+//        smsUtil.sendOne(phone, verificationCode);
+        System.out.println(verificationCode);
 
         redisUtils.setDataExpire(phone, verificationCode, 60 * 5L);
 

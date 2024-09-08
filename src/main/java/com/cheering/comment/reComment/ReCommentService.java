@@ -8,6 +8,8 @@ import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.post.Post;
 import com.cheering.post.PostResponse;
+import com.cheering.report.reCommentReport.ReCommentReport;
+import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.user.User;
 
 import lombok.RequiredArgsConstructor;
@@ -22,8 +24,7 @@ public class ReCommentService {
     private final ReCommentRepository reCommentRepository;
     private final CommentRepository commentRepository;
     private final PlayerUserRepository playerUserRepository;
-
-
+    private final ReCommentReportRepository reCommentReportRepository;
 
     @Transactional
     public ReCommentResponse.ReCommentIdDTO writeReComment(Long commentId, ReCommentRequest.WriteReCommentDTO requestDTO, User user) {
@@ -82,6 +83,11 @@ public class ReCommentService {
 
         if(!writer.equals(curPlayerUser)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);
+        }
+
+        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByReComment(reComment);
+        for(ReCommentReport reCommentReport : reCommentReports) {
+            reCommentReport.setReComment(null);
         }
 
         reCommentRepository.delete(reComment);

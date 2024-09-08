@@ -36,6 +36,8 @@ public class PostReportService {
         PostReport newPostReport = PostReport.builder()
                 .post(post)
                 .playerUser(curUser)
+                .userId(post.getPlayerUser().getUser().getId())
+                .reportContent(post.getContent())
                 .build();
 
         postReportRepository.save(newPostReport);

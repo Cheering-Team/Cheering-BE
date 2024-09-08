@@ -21,6 +21,12 @@ import com.cheering.post.Tag.Tag;
 import com.cheering.post.Tag.TagRepository;
 import com.cheering.post.relation.PostTag;
 import com.cheering.post.relation.PostTagRepository;
+import com.cheering.report.commentReport.CommentReport;
+import com.cheering.report.commentReport.CommentReportRepository;
+import com.cheering.report.postReport.PostReport;
+import com.cheering.report.postReport.PostReportRepository;
+import com.cheering.report.reCommentReport.ReCommentReport;
+import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,7 +45,6 @@ import java.util.*;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final PlayerRepository playerRepository;
     private final PlayerUserRepository playerUserRepository;
     private final PostImageRepository postImageRepository;
     private final TagRepository tagRepository;
@@ -47,6 +52,9 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final CommentRepository commentRepository;
     private final ReCommentRepository reCommentRepository;
+    private final PostReportRepository postReportRepository;
+    private final CommentReportRepository commentReportRepository;
+    private final ReCommentReportRepository reCommentReportRepository;
     private final S3Util s3Util;
 
     @Transactional
@@ -210,10 +218,6 @@ public class PostService {
     public void editPost(Long postId, String content, List<MultipartFile> images, List<String> tags, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        if(post.getIsHide()) {
-            throw new CustomException(ExceptionCode.REPORTED_POST);
-        }
-
         PlayerUser writer = post.getPlayerUser();
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(writer.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
@@ -268,10 +272,6 @@ public class PostService {
     public void deletePost(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        if(post.getIsHide()) {
-            throw new CustomException(ExceptionCode.REPORTED_POST);
-        }
-
         PlayerUser writer = post.getPlayerUser();
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(writer.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
@@ -288,11 +288,27 @@ public class PostService {
 
         // Comment
         List<Comment> commentList = commentRepository.findByPost(post);
+
+        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByCommentIn(commentList);
+        for(ReCommentReport reCommentReport : reCommentReports) {
+            reCommentReport.setReComment(null);
+        }
         reCommentRepository.deleteByCommentIn(commentList);
+
+        List<CommentReport> commentReports = commentReportRepository.findByCommentIn(commentList);
+        for(CommentReport commentReport : commentReports) {
+            commentReport.setComment(null);
+        }
         commentRepository.deleteByPost(post);
 
         // Like
         likeRepository.deleteByPost(post);
+
+        // Report
+        List<PostReport> reportList = postReportRepository.findByPost(post);
+        for(PostReport report : reportList) {
+            report.setPost(null);
+        }
 
         // Post
         postRepository.deleteById(postId);

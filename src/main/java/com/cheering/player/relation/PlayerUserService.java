@@ -18,6 +18,12 @@ import com.cheering.post.Tag.Tag;
 import com.cheering.post.Tag.TagRepository;
 import com.cheering.post.relation.PostTag;
 import com.cheering.post.relation.PostTagRepository;
+import com.cheering.report.commentReport.CommentReport;
+import com.cheering.report.commentReport.CommentReportRepository;
+import com.cheering.report.postReport.PostReport;
+import com.cheering.report.postReport.PostReportRepository;
+import com.cheering.report.reCommentReport.ReCommentReport;
+import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.user.User;
 import com.cheering.user.UserRequest;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +47,9 @@ public class PlayerUserService {
     private final CommentRepository commentRepository;
     private final ReCommentRepository reCommentRepository;
     private final PostImageRepository postImageRepository;
+    private final PostReportRepository postReportRepository;
+    private final CommentReportRepository commentReportRepository;
+    private final ReCommentReportRepository reCommentReportRepository;
     private final S3Util s3Util;
 
     public PlayerUserResponse.ProfileDTO getPlayerUserInfo(Long playerUserId, User user) {
@@ -124,6 +133,7 @@ public class PlayerUserService {
         playerUserRepository.save(playerUser);
     }
 
+    // 커뮤니티 탈퇴
     @Transactional
     public void deletePlayerUser(Long playerUserId) {
         PlayerUser playerUser = playerUserRepository.findById(playerUserId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
@@ -135,17 +145,33 @@ public class PlayerUserService {
         postTagRepository.deleteByPostIn(posts);
         postImageRepository.deleteByPostIn(posts);
 
-        postRepository.deleteByPlayerUser(playerUser);
-
-        // 3. Comment
-        commentRepository.deleteByPlayerUser(playerUser);
-
-        // 4. ReComment
+        // 3. ReComment
+        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByWriter(playerUser);
+        for(ReCommentReport reCommentReport : reCommentReports) {
+            reCommentReport.setReComment(null);
+        }
+        reCommentReportRepository.deleteByPlayerUser(playerUser);
         reCommentRepository.deleteByPlayerUser(playerUser);
+
+        // 4. Comment
+        List<CommentReport> commentReports = commentReportRepository.findByWriter(playerUser);
+        for(CommentReport commentReport : commentReports) {
+            commentReport.setComment(null);
+        }
+        commentReportRepository.deleteByPlayerUser(playerUser);
+        commentRepository.deleteByPlayerUser(playerUser);
 
         // 5. Like
         likeRepository.deleteByPlayerUser(playerUser);
 
+        // 6. PostReport
+        List<PostReport> postReports = postReportRepository.findByPlayerUser(playerUser);
+        for(PostReport postReport : postReports) {
+            postReport.setPost(null);
+        }
+        postReportRepository.deleteByPlayerUser(playerUser);
+
+        postRepository.deleteByPlayerUser(playerUser);
         playerUserRepository.deleteById(playerUserId);
     }
 }

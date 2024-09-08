@@ -36,6 +36,8 @@ public class CommentReportService {
         CommentReport newCommentReport = CommentReport.builder()
                 .comment(comment)
                 .playerUser(curUser)
+                .userId(comment.getPlayerUser().getUser().getId())
+                .reportContent(comment.getContent())
                 .build();
 
         commentReportRepository.save(newCommentReport);

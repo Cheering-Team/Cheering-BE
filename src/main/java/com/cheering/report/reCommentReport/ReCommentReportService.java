@@ -36,6 +36,8 @@ public class ReCommentReportService {
         ReCommentReport newReCommentReport = ReCommentReport.builder()
                 .reComment(reComment)
                 .playerUser(curUser)
+                .userId(reComment.getPlayerUser().getUser().getId())
+                .reportContent(reComment.getContent())
                 .build();
 
         reCommentReportRepository.save(newReCommentReport);

@@ -4,6 +4,7 @@ import com.cheering.player.relation.PlayerUser;
 import com.cheering.post.Post;
 import java.util.List;
 
+import com.cheering.report.commentReport.CommentReport;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
