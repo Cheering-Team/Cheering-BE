@@ -71,9 +71,10 @@ public class ReCommentService {
         return new ReCommentResponse.ReCommentListDTO(reCommentDTOS);
     }
 
+    // 답글 삭제
     @Transactional
     public void deleteReComment(Long reCommentId, User user) {
-        ReComment reComment = reCommentRepository.findById(reCommentId).orElseThrow(() -> new CustomException(ExceptionCode.RECOMMENT_NOT_FOUND));
+        ReComment reComment = reCommentRepository.findById(reCommentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
         PlayerUser writer = reComment.getPlayerUser();
 
@@ -85,46 +86,4 @@ public class ReCommentService {
 
         reCommentRepository.delete(reComment);
     }
-
-//    @Transactional
-//    public Long createReComment(Long communityId, Long postId, Long commentId, String content) {
-//        User loginUser = getLoginUser();
-//
-//        Community findCommunity = communityRepository.findById(communityId)
-//                .orElseThrow(() -> new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
-//
-//        UserCommunityInfo findUserCommunityInfo = userCommunityInfoRepository.findByUserAndCommunity(loginUser,
-//                        findCommunity)
-//                .orElseThrow(() -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO));
-//
-//        Comment findComment = commentRepository.findById(commentId)
-//                .orElseThrow(() -> new NotFoundCommentException(ExceptionMessage.NOT_FOUND_COMMENT));
-//
-//        ReComment newReComment = ReComment.builder()
-//                .comment(findComment)
-//                .content(content)
-//                .writerInfo(findUserCommunityInfo)
-//                .build();
-//
-//        reCommentRepository.save(newReComment);
-//
-//        return newReComment.getId();
-//    }
-//
-//    private User getLoginUser() {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        String loginId = authentication.getName();
-//        return userRepository.findById(Long.valueOf(loginId))
-//                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
-//    }
-//
-//    public List<ReCommentResponse> getReComments(Long commentId) {
-//        Comment findComment = commentRepository.findById(commentId)
-//                .orElseThrow(() -> new NotFoundCommentException(ExceptionMessage.NOT_FOUND_COMMENT));
-//
-//        List<ReComment> findReComments = reCommentRepository.findByComment(findComment);
-//
-//        return ReCommentResponse.ofList(findReComments);
-//    }
-
 }

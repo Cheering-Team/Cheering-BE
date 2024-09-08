@@ -30,7 +30,7 @@ public class PostReportService {
         Optional<PostReport> report = postReportRepository.findByPostIdAndPlayerUserId(postId, curUser.getId());
 
         if(report.isPresent()) {
-            throw new CustomException(ExceptionCode.ALREADY_REPORT_POST);
+            throw new CustomException(ExceptionCode.ALREADY_REPORT);
         }
 
         PostReport newPostReport = PostReport.builder()

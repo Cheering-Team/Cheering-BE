@@ -77,44 +77,4 @@ public class CommentService {
         reCommentRepository.deleteByComment(comment);
         commentRepository.delete(comment);
     }
-//    @Transactional
-//    public Long createComment(Long communityId, Long postId, String content) {
-//        User loginUser = getLoginUser();
-//
-//        Community findCommunity = communityRepository.findById(communityId)
-//                .orElseThrow(() -> new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
-//
-//        UserCommunityInfo findUserCommunityInfo = userCommunityInfoRepository.findByUserAndCommunity(loginUser,
-//                        findCommunity)
-//                .orElseThrow(() -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO));
-//
-//        Post findPost = postRepository.findById(postId)
-//                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
-//
-//        Comment newComment = Comment.builder()
-//                .content(content)
-//                .post(findPost)
-//                .content(content)
-//                .writerInfo(findUserCommunityInfo)
-//                .build();
-//
-//        commentRepository.save(newComment);
-//
-//        return newComment.getId();
-//    }
-//
-//    public List<CommentResponse> getComments(Long communityId, Long postId) {
-//        Post findPost = postRepository.findById(postId)
-//                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
-//        List<Comment> findComments = commentRepository.findCommentsByPost(findPost);
-//
-//        return CommentResponse.ofList(findComments);
-//    }
-//
-//    private User getLoginUser() {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        String loginId = authentication.getName();
-//        return userRepository.findById(Long.valueOf(loginId))
-//                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
-//    }
 }

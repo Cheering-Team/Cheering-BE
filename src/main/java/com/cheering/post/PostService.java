@@ -263,6 +263,7 @@ public class PostService {
         }
     }
 
+    // 게시글 삭제
     @Transactional
     public void deletePost(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));

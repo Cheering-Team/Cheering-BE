@@ -30,7 +30,7 @@ public class CommentReportService {
         Optional<CommentReport> commentReport = commentReportRepository.findByCommentIdAndPlayerUserId(commentId, curUser.getId());
 
         if(commentReport.isPresent()) {
-            throw new CustomException(ExceptionCode.ALREADY_REPORT_POST);
+            throw new CustomException(ExceptionCode.ALREADY_REPORT);
         }
 
         CommentReport newCommentReport = CommentReport.builder()

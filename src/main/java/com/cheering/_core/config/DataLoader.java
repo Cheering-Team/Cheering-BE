@@ -2,6 +2,10 @@ package com.cheering._core.config;
 
 import com.cheering.chat.ChatRoom.ChatRoom;
 import com.cheering.chat.ChatRoom.ChatRoomRepository;
+import com.cheering.comment.Comment;
+import com.cheering.comment.CommentRepository;
+import com.cheering.comment.reComment.ReComment;
+import com.cheering.comment.reComment.ReCommentRepository;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.player.relation.PlayerUser;
@@ -45,6 +49,8 @@ public class DataLoader implements ApplicationRunner {
     private final PostTagRepository postTagRepository;
     private final PostImageRepository postImageRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final CommentRepository commentRepository;
+    private final ReCommentRepository reCommentRepository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -295,5 +301,22 @@ public class DataLoader implements ApplicationRunner {
 
         postImageRepository.save(postImage1);
         postImageRepository.save(postImage2);
+
+        Comment comment1 = Comment.builder()
+                .post(post10)
+                .content("댓글1")
+                .playerUser(playerUser)
+                .build();
+
+        commentRepository.save(comment1);
+
+        ReComment reComment1 = ReComment.builder()
+                .comment(comment1)
+                .content("답글1")
+                .playerUser(playerUser)
+                .toPlayerUser(playerUser)
+                .build();
+
+        reCommentRepository.save(reComment1);
     }
 }

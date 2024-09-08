@@ -32,12 +32,11 @@ public enum ExceptionCode {
     TAG_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 태그를 찾을 수 없습니다."),
 
     // COMMENT
-    COMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 댓글을 찾을 수 없습니다."),
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
     COMMENT_WRITER_NOT_FOUND(HttpStatus.BAD_REQUEST, "댓글 작성자를 찾을 수 없습니다."),
-    RECOMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 답글을 찾을 수 없습니다."),
 
     // REPORT
-    ALREADY_REPORT_POST(HttpStatus.BAD_REQUEST, "이미 신고한 게시글입니다."),
+    ALREADY_REPORT(HttpStatus.BAD_REQUEST, "이미 신고하였습니다."),
     REPORTED_POST(HttpStatus.BAD_REQUEST, "신고 누적된 게시글이므로 수정 및 삭제가 불가합니다."),
 
     // S3
