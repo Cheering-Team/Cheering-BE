@@ -20,4 +20,10 @@ public class ChatRoomController {
     public ResponseEntity<?> getChatRooms(@PathVariable("playerId") Long playerId) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 목록을 불러왔습니다.", chatRoomService.getChatRooms(playerId)));
     }
+
+    // 채팅방 정보 불러오기
+    @GetMapping("/chatrooms/{chatRoomId}")
+    public ResponseEntity<?> getChatRoomById(@PathVariable("chatRoomId") Long chatRoomId) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 정보를 불러왔습니다.", chatRoomService.getChatRoomById(chatRoomId)));
+    }
 }

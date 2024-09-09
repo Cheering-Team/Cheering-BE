@@ -159,6 +159,7 @@ public class DataLoader implements ApplicationRunner {
 
         ChatRoom chatRoom1 = ChatRoom.builder()
                 .name("황성빈")
+                .image("https://file.giantsclub.com/upload2014/Player/50500_s.jpg")
                 .description("황성빈 팬들끼리 응원해요!")
                 .player(player1)
                 .build();
@@ -168,6 +169,7 @@ public class DataLoader implements ApplicationRunner {
 
         ChatRoom chatRoom2 = ChatRoom.builder()
                 .name("전준우")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8C%E1%85%A5%E1%86%AB%E1%84%8C%E1%85%AE%E1%86%AB%E1%84%8B%E1%85%AE.jpeg")
                 .description("전준우 팬들끼리 응원해요!")
                 .player(player2)
                 .build();
