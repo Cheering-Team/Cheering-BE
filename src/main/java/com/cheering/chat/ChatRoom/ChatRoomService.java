@@ -7,6 +7,7 @@ import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -41,16 +42,18 @@ public class ChatRoomService {
         } )).toList();
     }
 
-    public ChatRoomResponse.ChatRoomDTO getChatRoomById(Long chatRoomId) {
+    public ChatRoomResponse.ChatRoomDTO getChatRoomById(Long chatRoomId, User user) {
         // 존재하지 않는 채팅방 -> 뒤로가기
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(chatRoom.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
         int count = 0;
         if(chatRoomSessions.get(chatRoomId) != null) {
             count = chatRoomSessions.get(chatRoomId).size();
         }
 
-        return new ChatRoomResponse.ChatRoomDTO(chatRoom, count);
+        return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curPlayerUser);
     }
 
     public void addUserToRoom(Long chatRoomId, String sessionId, Long userId) {
