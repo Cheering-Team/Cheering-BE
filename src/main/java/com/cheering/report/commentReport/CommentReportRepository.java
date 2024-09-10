@@ -1,10 +1,14 @@
 package com.cheering.report.commentReport;
 
+import com.cheering.comment.Comment;
+import com.cheering.player.relation.PlayerUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -15,4 +19,13 @@ public interface CommentReportRepository extends JpaRepository<CommentReport, Lo
 
     @Query("SELECT COUNT(cr) FROM CommentReport cr WHERE cr.comment.id = :commentId")
     Long countByCommentId(@Param("commentId") Long commentId);
+
+    List<CommentReport> findByComment(Comment comment);
+
+    List<CommentReport> findByCommentIn(List<Comment> commentList);
+
+    @Query("SELECT cr FROM CommentReport cr WHERE cr.comment.playerUser=:playerUser")
+    List<CommentReport> findByWriter(@Param("playerUser") PlayerUser playerUser);
+
+    void deleteByPlayerUser(PlayerUser playerUser);
 }

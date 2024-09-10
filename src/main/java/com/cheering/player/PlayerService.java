@@ -102,16 +102,13 @@ public class PlayerService {
     }
 
     @Transactional
-    public void checkNickname(Long playerId, String nickname) {
-        Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndNickname(playerId, nickname);
+    public void joinCommunity(Long playerId, String nickname, MultipartFile image, User user) {
+        Optional<PlayerUser> duplicatePlayerUser = playerUserRepository.findByPlayerIdAndNickname(playerId, nickname);
 
-        if(playerUser.isPresent()) {
+        if(duplicatePlayerUser.isPresent()) {
             throw new CustomException(ExceptionCode.DUPLICATE_NICKNAME);
         }
-    }
 
-    @Transactional
-    public void joinCommunity(Long playerId, String nickname, MultipartFile image, User user) {
         Player player = playerRepository.findById(playerId).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
         String imageUrl = "";

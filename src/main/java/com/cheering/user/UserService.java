@@ -49,7 +49,8 @@ public class UserService {
         boolean isUser = user.isPresent();
 
         String verificationCode = String.valueOf((int) (Math.random() * 900000) + 100000);
-        smsUtil.sendOne(phone, verificationCode);
+//        smsUtil.sendOne(phone, verificationCode);
+        System.out.println(verificationCode);
 
         redisUtils.setDataExpire(phone, verificationCode, 60 * 5L);
 
@@ -222,6 +223,7 @@ public class UserService {
 
         String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
         String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
+
 
         redisUtils.deleteData(user.getId().toString());
         redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);

@@ -1,0 +1,45 @@
+package com.cheering.chat.ChatRoom;
+
+import com.cheering.player.Player;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.web.socket.WebSocketSession;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+@Entity
+@Table(name = "chat_room_tb")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Setter
+public class ChatRoom {
+    @Id
+    @GeneratedValue
+    @Column(name = "chat_room_id")
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column
+    private String image;
+
+    @Column
+    private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "player_id")
+    private Player player;
+
+    @Builder
+    public ChatRoom(Long chatRoomId, String name, String image, String description, Player player) {
+        this.id = chatRoomId;
+        this.name = name;
+        this.image = image;
+        this.description = description;
+        this.player = player;
+    }
+}

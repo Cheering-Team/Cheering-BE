@@ -25,7 +25,7 @@ public class PostReportService {
     public void reportPost(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        PlayerUser curUser = playerUserRepository.findByPlayerIdAndUserId(post.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+        PlayerUser curUser = playerUserRepository.findByPlayerIdAndUserId(post.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
         Optional<PostReport> report = postReportRepository.findByPostIdAndPlayerUserId(postId, curUser.getId());
 
@@ -36,6 +36,8 @@ public class PostReportService {
         PostReport newPostReport = PostReport.builder()
                 .post(post)
                 .playerUser(curUser)
+                .userId(post.getPlayerUser().getUser().getId())
+                .reportContent(post.getContent())
                 .build();
 
         postReportRepository.save(newPostReport);

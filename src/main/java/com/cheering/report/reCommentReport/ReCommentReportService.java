@@ -23,7 +23,7 @@ public class ReCommentReportService {
     // 답글 신고
     @Transactional
     public void reportReComment(Long reCommentId, User user) {
-        ReComment reComment = reCommentRepository.findById(reCommentId).orElseThrow(() -> new CustomException(ExceptionCode.RECOMMENT_NOT_FOUND));
+        ReComment reComment = reCommentRepository.findById(reCommentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
         PlayerUser curUser = playerUserRepository.findByPlayerIdAndUserId(reComment.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
@@ -36,16 +36,15 @@ public class ReCommentReportService {
         ReCommentReport newReCommentReport = ReCommentReport.builder()
                 .reComment(reComment)
                 .playerUser(curUser)
+                .userId(reComment.getPlayerUser().getUser().getId())
+                .reportContent(reComment.getContent())
                 .build();
 
         reCommentReportRepository.save(newReCommentReport);
 
         Long reportCount = reCommentReportRepository.countByReCommentId(reCommentId);
 
-        System.out.println(reportCount);
-
         if(reportCount >= 3 && !reComment.getIsHide()) {
-            System.out.println("Here");
             reComment.setIsHide(true);
         }
     }

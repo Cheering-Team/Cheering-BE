@@ -1,5 +1,11 @@
 package com.cheering._core.config;
 
+import com.cheering.chat.ChatRoom.ChatRoom;
+import com.cheering.chat.ChatRoom.ChatRoomRepository;
+import com.cheering.comment.Comment;
+import com.cheering.comment.CommentRepository;
+import com.cheering.comment.reComment.ReComment;
+import com.cheering.comment.reComment.ReCommentRepository;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.player.relation.PlayerUser;
@@ -42,6 +48,9 @@ public class DataLoader implements ApplicationRunner {
     private final PostRepository postRepository;
     private final PostTagRepository postTagRepository;
     private final PostImageRepository postImageRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final CommentRepository commentRepository;
+    private final ReCommentRepository reCommentRepository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -125,7 +134,7 @@ public class DataLoader implements ApplicationRunner {
         Player player1 = Player.builder()
                 .koreanName("황성빈")
                 .englishName("HWANG SEONG-BIN")
-                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/50500_s.jpg")
+                .image("https://file.giantsclub.com/upload2014/Player/50500_s.jpg")
                 .backgroundImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/674350_1031929_1335.jpg")
                 .build();
 
@@ -146,6 +155,26 @@ public class DataLoader implements ApplicationRunner {
         playerRepository.save(player1);
         playerRepository.save(player2);
         playerRepository.save(player3);
+
+
+        ChatRoom chatRoom1 = ChatRoom.builder()
+                .name("황성빈")
+                .image("https://file.giantsclub.com/upload2014/Player/50500_s.jpg")
+                .description("황성빈 팬들끼리 응원해요!")
+                .player(player1)
+                .build();
+
+        chatRoomRepository.save(chatRoom1);
+
+
+        ChatRoom chatRoom2 = ChatRoom.builder()
+                .name("전준우")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8C%E1%85%A5%E1%86%AB%E1%84%8C%E1%85%AE%E1%86%AB%E1%84%8B%E1%85%AE.jpeg")
+                .description("전준우 팬들끼리 응원해요!")
+                .player(player2)
+                .build();
+
+        chatRoomRepository.save(chatRoom2);
 
         TeamPlayer teamPlayer1 = TeamPlayer.builder()
                 .team(lotte)
@@ -260,19 +289,36 @@ public class DataLoader implements ApplicationRunner {
 
         PostImage postImage1 = PostImage.builder()
                 .post(post10)
-                .width(950)
-                .height(574)
-                .path("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/690488_656493_3913.jpg")
+                .width(1024)
+                .height(1374)
+                .path("https://imgnews.pstatic.net/image/109/2022/06/28/0004646589_001_20220628193005455.jpg")
                 .build();
 
         PostImage postImage2 = PostImage.builder()
                 .post(post10)
-                .width(900)
-                .height(600)
-                .path("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/20240706500397.jpg")
+                .width(1021)
+                .height(1361)
+                .path("https://search.pstatic.net/common/?src=http%3A%2F%2Fimgnews.naver.net%2Fimage%2F109%2F2022%2F06%2F01%2F0004627413_001_20220601180505442.jpg")
                 .build();
 
         postImageRepository.save(postImage1);
         postImageRepository.save(postImage2);
+
+        Comment comment1 = Comment.builder()
+                .post(post10)
+                .content("댓글1")
+                .playerUser(playerUser)
+                .build();
+
+        commentRepository.save(comment1);
+
+        ReComment reComment1 = ReComment.builder()
+                .comment(comment1)
+                .content("답글1")
+                .playerUser(playerUser)
+                .toPlayerUser(playerUser)
+                .build();
+
+        reCommentRepository.save(reComment1);
     }
 }

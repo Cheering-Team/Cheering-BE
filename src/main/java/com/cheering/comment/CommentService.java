@@ -7,10 +7,16 @@ import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.post.Post;
 import com.cheering.post.PostRepository;
 import com.cheering.post.PostResponse;
+import com.cheering.report.commentReport.CommentReport;
+import com.cheering.report.commentReport.CommentReportRepository;
+import com.cheering.report.reCommentReport.ReCommentReport;
+import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.user.User;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +27,8 @@ public class CommentService {
     private final PlayerUserRepository playerUserRepository;
     private final CommentRepository commentRepository;
     private final ReCommentRepository reCommentRepository;
+    private final CommentReportRepository commentReportRepository;
+    private final ReCommentReportRepository reCommentReportRepository;
 
     @Transactional
     public CommentResponse.CommentIdDTO writeComment(Long postId, CommentRequest.WriteCommentDTO requestDTO, User user) {
@@ -41,12 +49,14 @@ public class CommentService {
         return new CommentResponse.CommentIdDTO(comment.getId());
     }
 
-    public CommentResponse.CommentListDTO getComments(Long postId, User user) {
+    // 특정 게시글 댓글 목록 불러오기 (무한 스크롤)
+    @Transactional
+    public CommentResponse.CommentListDTO getComments(Long postId, Pageable pageable, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(post.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
-        List<Comment> commentList = commentRepository.findByPostId(postId);
+        Page<Comment> commentList = commentRepository.findByPostId(postId, pageable);
 
         List<CommentResponse.CommentDTO> commentDTOS = commentList.stream().map((comment -> {
             PlayerUser writer = comment.getPlayerUser();
@@ -55,7 +65,7 @@ public class CommentService {
             return new CommentResponse.CommentDTO(comment, reCount, writerDTO, writer.equals(curPlayerUser));
         })).toList();
 
-        return new CommentResponse.CommentListDTO(commentDTOS);
+        return new CommentResponse.CommentListDTO(commentList, commentDTOS);
     }
 
     @Transactional
@@ -70,47 +80,16 @@ public class CommentService {
             throw new CustomException(ExceptionCode.NOT_WRITER);
         }
 
+        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByCommentId(commentId);
+        for(ReCommentReport reCommentReport : reCommentReports) {
+            reCommentReport.setReComment(null);
+        }
         reCommentRepository.deleteByComment(comment);
+
+        List<CommentReport> commentReports = commentReportRepository.findByComment(comment);
+        for(CommentReport commentReport : commentReports) {
+            commentReport.setComment(null);
+        }
         commentRepository.delete(comment);
     }
-//    @Transactional
-//    public Long createComment(Long communityId, Long postId, String content) {
-//        User loginUser = getLoginUser();
-//
-//        Community findCommunity = communityRepository.findById(communityId)
-//                .orElseThrow(() -> new NotFoundCommunityException(ExceptionMessage.NOT_FOUND_COMMUNITY));
-//
-//        UserCommunityInfo findUserCommunityInfo = userCommunityInfoRepository.findByUserAndCommunity(loginUser,
-//                        findCommunity)
-//                .orElseThrow(() -> new NotFoundUserCommunityInfoException(ExceptionMessage.NOT_FOUND_COMMUNITY_INFO));
-//
-//        Post findPost = postRepository.findById(postId)
-//                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
-//
-//        Comment newComment = Comment.builder()
-//                .content(content)
-//                .post(findPost)
-//                .content(content)
-//                .writerInfo(findUserCommunityInfo)
-//                .build();
-//
-//        commentRepository.save(newComment);
-//
-//        return newComment.getId();
-//    }
-//
-//    public List<CommentResponse> getComments(Long communityId, Long postId) {
-//        Post findPost = postRepository.findById(postId)
-//                .orElseThrow(() -> new NotFoundPostException(ExceptionMessage.NOT_FOUND_POST));
-//        List<Comment> findComments = commentRepository.findCommentsByPost(findPost);
-//
-//        return CommentResponse.ofList(findComments);
-//    }
-//
-//    private User getLoginUser() {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        String loginId = authentication.getName();
-//        return userRepository.findById(Long.valueOf(loginId))
-//                .orElseThrow(() -> new NotFoundUserException(ExceptionMessage.NOT_FOUND_USER));
-//    }
 }

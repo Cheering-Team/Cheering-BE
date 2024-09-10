@@ -32,21 +32,14 @@ public class PostController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글이 작성되었습니다.", postService.writePost(playerId, content, images, tags, customUserDetails.getUser())));
     }
 
-    // 특정 커뮤니티 게시글 불러오기
+    // 특정 커뮤니티 게시글 불러오기 (id = 0 -> 내가 가입된 모든 커뮤니티 게시글)
     @GetMapping("/players/{playerId}/posts")
     public ResponseEntity<?> getPosts(@PathVariable("playerId") Long playerId, @RequestParam(required = false) String tag, @RequestParam int page, @RequestParam int size, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 목록을 불러왔습니다.", postService.getPosts(playerId, tag, pageable, customUserDetails.getUser())));
     }
 
-    // 내 커뮤니티 게시글 불러오기
-    @GetMapping("/my/players/posts")
-    public ResponseEntity<?> getMyPlayersPosts(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 목록을 불러왔습니다.", postService.getPlayersPosts(pageable, customUserDetails.getUser())));
-    }
-
-    // 특정 게시글 불러오기
+    // 게시글 불러오가
     @GetMapping("/posts/{postId}")
     public ResponseEntity<?> getPostById(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글을 불러왔습니다.", postService.getPostById(postId, customUserDetails.getUser())));

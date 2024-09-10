@@ -22,18 +22,21 @@ public enum ExceptionCode {
     // PLAYER
     PLAYER_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 선수를 찾을 수 없습니다."),
     PLAYER_USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 커뮤니티에 가입되지 않은 유저입니다."),
+    CUR_PLAYER_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 커뮤니티 유저를 찾을 수 없습니다."),
 
     // POST
-    POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 포스트를 찾을 수 없습니다."),
+    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."),
     NOT_WRITER(HttpStatus.BAD_REQUEST, "해당 글의 작성자가 아닙니다."),
 
     // TAG
     TAG_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 태그를 찾을 수 없습니다."),
 
     // COMMENT
-    COMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 댓글을 찾을 수 없습니다."),
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
     COMMENT_WRITER_NOT_FOUND(HttpStatus.BAD_REQUEST, "댓글 작성자를 찾을 수 없습니다."),
-    RECOMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 답글을 찾을 수 없습니다."),
+
+    // CHAT
+    CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),
 
     // REPORT
     ALREADY_REPORT(HttpStatus.BAD_REQUEST, "이미 신고하였습니다."),

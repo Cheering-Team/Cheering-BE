@@ -83,7 +83,7 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth)->auth
-                        .requestMatchers("/api/phone/sms", "/api/phone/code", "/api/signin", "/api/signup", "/api/refresh", "api/signin/kakao", "api/signin/naver", "api/phone/code/kakao", "api/connect","/hc", "/env").permitAll()
+                        .requestMatchers("/api/phone/sms", "/api/phone/code", "/api/signin", "/api/signup", "/api/refresh", "api/signin/kakao", "api/signin/naver", "api/phone/code/kakao", "api/connect","/hc", "/env", "/ws/**").permitAll()
                         .anyRequest().authenticated());
 
         http
