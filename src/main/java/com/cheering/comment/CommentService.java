@@ -2,6 +2,8 @@ package com.cheering.comment;
 
 import com.cheering._core.errors.*;
 import com.cheering.comment.reComment.ReCommentRepository;
+import com.cheering.notification.Notification;
+import com.cheering.notification.NotificationRepository;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.post.Post;
@@ -29,6 +31,7 @@ public class CommentService {
     private final ReCommentRepository reCommentRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public CommentResponse.CommentIdDTO writeComment(Long postId, CommentRequest.WriteCommentDTO requestDTO, User user) {
@@ -36,15 +39,21 @@ public class CommentService {
 
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        PlayerUser playerUser = playerUserRepository.findByPlayerIdAndUserId(post.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+        PlayerUser curplayerUser = playerUserRepository.findByPlayerIdAndUserId(post.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
         Comment comment = Comment.builder()
                 .content(content)
-                .playerUser(playerUser)
+                .playerUser(curplayerUser)
                 .post(post)
                 .build();
 
         commentRepository.save(comment);
+
+        if(!post.getPlayerUser().equals(curplayerUser)) {
+            Notification notification = new Notification("COMMENT", post.getPlayerUser(), curplayerUser, post, comment);
+
+            notificationRepository.save(notification);
+        }
 
         return new CommentResponse.CommentIdDTO(comment.getId());
     }

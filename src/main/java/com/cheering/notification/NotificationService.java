@@ -34,10 +34,13 @@ public class NotificationService {
             }
             return true;
         })).map((notification -> {
+            List<PostImage> postImages = postImageRepository.findByPostId(notification.getPost().getId());
             if(notification.getType().equals("LIKE")) {
                 Long count = likeRepository.countByPostId(notification.getPost().getId());
-                List<PostImage> postImages = postImageRepository.findByPostId(notification.getPost().getId());
                 return postImages.isEmpty() ? new NotificationResponse.NotificationDTO(notification, count) : new NotificationResponse.NotificationDTO(notification, count, postImages.get(0));
+            }
+            if(notification.getType().equals("COMMENT")) {
+                return postImages.isEmpty() ? new NotificationResponse.NotificationDTO(notification) : new NotificationResponse.NotificationDTO(notification, postImages.get(0));
             }
             return null;
         })).toList();

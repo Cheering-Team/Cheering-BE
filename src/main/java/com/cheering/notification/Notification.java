@@ -33,26 +33,25 @@ public class Notification extends BaseTimeEntity {
     private PlayerUser from;
 
     @ManyToOne
-    @JoinColumn(name = "post_id", nullable = true)
+    @JoinColumn(name = "post_id")
     private Post post;
 
     @ManyToOne
-    @JoinColumn(name = "comment_id", nullable = true)
+    @JoinColumn(name = "comment_id")
     private Comment comment;
 
-    @Builder
-    public  Notification(String type, PlayerUser to, PlayerUser from, Post post) {
+    public Notification(String type, PlayerUser to, PlayerUser from, Post post) {
         this.type = type;
         this.to = to;
         this.from = from;
         this.post =post;
     }
 
-    @Builder
-    public  Notification(String type, PlayerUser to, PlayerUser from, Comment comment) {
+    public Notification(String type, PlayerUser to, PlayerUser from, Post post, Comment comment) {
         this.type = type;
         this.to = to;
         this.from = from;
-        this.comment =comment;
+        this.post = post;
+        this.comment = comment;
     }
 }

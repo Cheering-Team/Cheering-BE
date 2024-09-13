@@ -209,12 +209,7 @@ public class PostService {
             likeRepository.save(newLike);
 
             if(!post.getPlayerUser().equals(curPlayerUser)){
-                Notification notification = Notification.builder()
-                        .type("LIKE")
-                        .to(post.getPlayerUser())
-                        .from(curPlayerUser)
-                        .post(post)
-                        .build();
+                Notification notification = new Notification("LIKE", post.getPlayerUser(), curPlayerUser, post);
 
                 notificationRepository.save(notification);
             }

@@ -62,6 +62,14 @@ public class DataLoader implements ApplicationRunner {
 
         userRepository.save(user1);
 
+        User user2 = User.builder()
+                .phone("01062013111")
+                .nickname("준서2")
+                .role(Role.ROLE_USER)
+                .build();
+
+        userRepository.save(user2);
+
         Sport baseball = Sport.builder()
                 .name("야구")
                 .build();
@@ -202,6 +210,14 @@ public class DataLoader implements ApplicationRunner {
                 .build();
 
         playerUserRepository.save(playerUser);
+
+        PlayerUser playerUser2 = PlayerUser.builder()
+                .player(player1)
+                .user(user2)
+                .nickname("황성빈굿맨")
+                .build();
+
+        playerUserRepository.save(playerUser2);
 
         Tag tag1 = Tag.builder()
                 .name("photo")

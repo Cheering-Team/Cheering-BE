@@ -18,6 +18,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     void deleteLikeByPostAndFrom(@Param("post") Post post, @Param("from") PlayerUser curPlayerUser, @Param("type") String type);
 
 
-    @Query("SELECT n FROM Notification n WHERE n.to.user = :user")
+    @Query("SELECT n FROM Notification n WHERE n.to.user = :user ORDER BY n.createdAt DESC")
     Page<Notification> findByUser(@Param("user") User user, Pageable pageable);
 }

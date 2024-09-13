@@ -28,6 +28,14 @@ public class NotificationResponse {
         public NotificationDTO(Notification notification, Long count) {
             this(notification.getId(), notification.getType(), new PlayerUserResponse.PlayerUserDTO(notification.getFrom()), new PlayerUserResponse.PlayerUserDTO(notification.getTo()), count, new NotificationPostDTO(notification.getPost()), null);
         }
+
+        // 댓글 알림 생성자
+        public NotificationDTO(Notification notification, PostImage postImage) {
+            this(notification.getId(), notification.getType(), new PlayerUserResponse.PlayerUserDTO(notification.getFrom()), new PlayerUserResponse.PlayerUserDTO(notification.getTo()), null, new NotificationPostDTO(notification.getPost(), postImage), notification.getComment().getContent());
+        }
+        public NotificationDTO(Notification notification) {
+            this(notification.getId(), notification.getType(), new PlayerUserResponse.PlayerUserDTO(notification.getFrom()), new PlayerUserResponse.PlayerUserDTO(notification.getTo()), null, null, notification.getComment().getContent());
+        }
     }
 
     public record NotificationListDTO(List<NotificationDTO> notifications, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last) {
