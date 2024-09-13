@@ -34,6 +34,7 @@ public class CommentService {
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
 
+    // 댓글 작성
     @Transactional
     public CommentResponse.CommentIdDTO writeComment(Long postId, CommentRequest.WriteCommentDTO requestDTO, User user) {
         String content = requestDTO.content();
@@ -94,13 +95,12 @@ public class CommentService {
         for(ReCommentReport reCommentReport : reCommentReports) {
             reCommentReport.setReComment(null);
         }
-        notificationRepository.deleteByCommentId(commentId);
-        reCommentRepository.deleteByComment(comment);
 
         List<CommentReport> commentReports = commentReportRepository.findByComment(comment);
         for(CommentReport commentReport : commentReports) {
             commentReport.setComment(null);
         }
+
         commentRepository.delete(comment);
     }
 }

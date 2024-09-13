@@ -97,7 +97,6 @@ public class ReCommentService {
         for(ReCommentReport reCommentReport : reCommentReports) {
             reCommentReport.setReComment(null);
         }
-        notificationRepository.deleteByReComment(reComment);
 
         reCommentRepository.delete(reComment);
     }

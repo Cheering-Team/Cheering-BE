@@ -289,14 +289,6 @@ public class PostService {
         if(!writer.equals(curPlayerUser)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);
         }
-
-
-        // Tag
-        postTagRepository.deleteByPost(post);
-
-        // Image
-        postImageRepository.deleteByPost(post);
-
         // Comment
         List<Comment> commentList = commentRepository.findByPost(post);
 
@@ -304,16 +296,11 @@ public class PostService {
         for(ReCommentReport reCommentReport : reCommentReports) {
             reCommentReport.setReComment(null);
         }
-        reCommentRepository.deleteByCommentIn(commentList);
 
         List<CommentReport> commentReports = commentReportRepository.findByCommentIn(commentList);
         for(CommentReport commentReport : commentReports) {
             commentReport.setComment(null);
         }
-        commentRepository.deleteByPost(post);
-
-        // Like
-        likeRepository.deleteByPost(post);
 
         // Report
         List<PostReport> reportList = postReportRepository.findByPost(post);

@@ -1,12 +1,8 @@
 package com.cheering.comment;
 
-import com.cheering.community.UserCommunityInfo;
 import com.cheering.post.PostResponse;
-import com.cheering.user.WriterResponse;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import lombok.Builder;
 import org.springframework.data.domain.Page;
 
 public class CommentResponse {

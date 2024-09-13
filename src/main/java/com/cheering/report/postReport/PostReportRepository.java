@@ -24,4 +24,7 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
 
     @Query("SELECT pr FROM PostReport pr WHERE pr.post.playerUser=:playerUser")
     List<PostReport> findByPlayerUser(@Param("playerUser") PlayerUser playerUser);
+
+    @Query("SELECT pr FROM PostReport pr WHERE pr.post.playerUser.user.id=:userId")
+    List<PostReport> findByUserId(@Param("userId") Long id);
 }

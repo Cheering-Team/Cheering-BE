@@ -1,11 +1,11 @@
 package com.cheering.comment;
 
-import static jakarta.persistence.FetchType.LAZY;
-
 import com.cheering.BaseTimeEntity;
-import com.cheering.community.UserCommunityInfo;
+import com.cheering.comment.reComment.ReComment;
+import com.cheering.notification.Notification;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.post.Post;
+import com.cheering.report.commentReport.CommentReport;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -37,6 +37,15 @@ public class Comment extends BaseTimeEntity {
     @ManyToOne
     @JoinColumn(name = "player_user_id")
     private PlayerUser playerUser;
+
+    @OneToMany(mappedBy = "comment")
+    private List<CommentReport> commentReports = new ArrayList<>();
+
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE)
+    private List<ReComment> reComments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE)
+    private List<Notification> notifications = new ArrayList<>();
 
     @Builder
     public Comment(Long commentId, String content, Post post, PlayerUser playerUser) {

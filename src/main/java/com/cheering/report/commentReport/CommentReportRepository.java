@@ -27,5 +27,6 @@ public interface CommentReportRepository extends JpaRepository<CommentReport, Lo
     @Query("SELECT cr FROM CommentReport cr WHERE cr.comment.playerUser=:playerUser")
     List<CommentReport> findByWriter(@Param("playerUser") PlayerUser playerUser);
 
-    void deleteByPlayerUser(PlayerUser playerUser);
+    @Query("SELECT cr FROM CommentReport cr WHERE cr.comment.playerUser.user.id=:userId")
+    List<CommentReport> findByUserId(@Param("userId") Long id);
 }
