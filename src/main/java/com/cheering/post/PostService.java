@@ -208,19 +208,23 @@ public class PostService {
 
             likeRepository.save(newLike);
 
-            Notification notification = Notification.builder()
-                    .type("LIKE")
-                    .to(post.getPlayerUser())
-                    .from(curPlayerUser)
-                    .post(post)
-                    .build();
+            if(!post.getPlayerUser().equals(curPlayerUser)){
+                Notification notification = Notification.builder()
+                        .type("LIKE")
+                        .to(post.getPlayerUser())
+                        .from(curPlayerUser)
+                        .post(post)
+                        .build();
 
-            notificationRepository.save(notification);
-
+                notificationRepository.save(notification);
+            }
             return true;
         } else {
             likeRepository.deleteById(like.get().getId());
-            notificationRepository.deleteLikeByPostAndFrom(post, curPlayerUser, "LIKE");
+            if(!post.getPlayerUser().equals(curPlayerUser)) {
+                notificationRepository.deleteLikeByPostAndFrom(post, curPlayerUser, "LIKE");
+            }
+
 
             return false;
         }

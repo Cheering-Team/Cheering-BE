@@ -1,0 +1,38 @@
+package com.cheering.notification;
+
+import com.cheering.player.relation.PlayerUser;
+import com.cheering.player.relation.PlayerUserResponse;
+import com.cheering.post.Post;
+import com.cheering.post.PostImage.PostImage;
+import com.cheering.post.PostImage.PostImageResponse;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
+
+public class NotificationResponse {
+    public record NotificationPostDTO (Long id, PostImageResponse.ImageDTO image) {
+        public NotificationPostDTO(Post post, PostImage postImage){
+            this(post.getId(), new PostImageResponse.ImageDTO(postImage));
+        }
+        public NotificationPostDTO(Post post){
+            this(post.getId(), null);
+        }
+
+    }
+    public record NotificationDTO (Long id, String type, PlayerUserResponse.PlayerUserDTO from, PlayerUserResponse.PlayerUserDTO to, Long count, NotificationPostDTO post, String content) {
+
+        // 좋아요 알림 생성자
+        public NotificationDTO(Notification notification, Long count, PostImage postImage) {
+            this(notification.getId(), notification.getType(), new PlayerUserResponse.PlayerUserDTO(notification.getFrom()), new PlayerUserResponse.PlayerUserDTO(notification.getTo()), count, new NotificationPostDTO(notification.getPost(), postImage), null);
+        }
+        public NotificationDTO(Notification notification, Long count) {
+            this(notification.getId(), notification.getType(), new PlayerUserResponse.PlayerUserDTO(notification.getFrom()), new PlayerUserResponse.PlayerUserDTO(notification.getTo()), count, new NotificationPostDTO(notification.getPost()), null);
+        }
+    }
+
+    public record NotificationListDTO(List<NotificationDTO> notifications, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last) {
+        public NotificationListDTO(Page<?> page, List<NotificationDTO> notifications) {
+            this(notifications, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast());
+        }
+    }
+}
