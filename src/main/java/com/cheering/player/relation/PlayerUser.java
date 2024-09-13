@@ -17,6 +17,7 @@ public class PlayerUser {
 
     @Id
     @GeneratedValue
+    @Column(name = "player_user_id")
     private Long id;
 
     @ManyToOne

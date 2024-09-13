@@ -10,6 +10,7 @@ import lombok.*;
 public class Player {
     @Id
     @GeneratedValue
+    @Column(name = "player_id")
     private Long id;
 
     @Column(length = 20, nullable = false)

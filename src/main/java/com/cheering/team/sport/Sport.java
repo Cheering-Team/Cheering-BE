@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class Sport {
     @Id
     @GeneratedValue
+    @Column(name = "sport_id")
     private Long id;
 
     @Column(length = 20, nullable = false, unique = true)

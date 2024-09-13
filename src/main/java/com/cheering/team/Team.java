@@ -19,6 +19,7 @@ import java.util.List;
 public class Team {
     @Id
     @GeneratedValue
+    @Column(name = "team_id")
     private Long id;
 
     @Column(length = 30, nullable = false)

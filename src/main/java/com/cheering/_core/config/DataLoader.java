@@ -135,7 +135,7 @@ public class DataLoader implements ApplicationRunner {
                 .koreanName("황성빈")
                 .englishName("HWANG SEONG-BIN")
                 .image("https://file.giantsclub.com/upload2014/Player/50500_s.jpg")
-                .backgroundImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/674350_1031929_1335.jpg")
+                .backgroundImage("https://thumbnews.nateimg.co.kr/view610///news.nateimg.co.kr/orgImg/su/2024/04/25/674350_1031929_1335.jpg")
                 .build();
 
         Player player2 = Player.builder()

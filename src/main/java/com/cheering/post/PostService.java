@@ -6,6 +6,8 @@ import com.cheering._core.util.S3Util;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
+import com.cheering.notification.Notification;
+import com.cheering.notification.NotificationRepository;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.player.PlayerResponse;
@@ -55,6 +57,7 @@ public class PostService {
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
+    private final NotificationRepository notificationRepository;
     private final S3Util s3Util;
 
     @Transactional
@@ -205,9 +208,19 @@ public class PostService {
 
             likeRepository.save(newLike);
 
+            Notification notification = Notification.builder()
+                    .type("LIKE")
+                    .to(post.getPlayerUser())
+                    .from(curPlayerUser)
+                    .post(post)
+                    .build();
+
+            notificationRepository.save(notification);
+
             return true;
         } else {
             likeRepository.deleteById(like.get().getId());
+            notificationRepository.deleteLikeByPostAndFrom(post, curPlayerUser, "LIKE");
 
             return false;
         }
