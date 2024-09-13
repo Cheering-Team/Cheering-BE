@@ -190,6 +190,7 @@ public class PostService {
 
     }
 
+    @Transactional
     // 게시글 좋아요
     public boolean toggleLike(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
@@ -215,12 +216,10 @@ public class PostService {
             }
             return true;
         } else {
-            likeRepository.deleteById(like.get().getId());
             if(!post.getPlayerUser().equals(curPlayerUser)) {
                 notificationRepository.deleteLikeByPostAndFrom(post, curPlayerUser, "LIKE");
             }
-
-
+            likeRepository.deleteById(like.get().getId());
             return false;
         }
     }

@@ -1,6 +1,7 @@
 package com.cheering.comment;
 
 import com.cheering._core.errors.*;
+import com.cheering.comment.reComment.ReComment;
 import com.cheering.comment.reComment.ReCommentRepository;
 import com.cheering.notification.Notification;
 import com.cheering.notification.NotificationRepository;
@@ -93,6 +94,7 @@ public class CommentService {
         for(ReCommentReport reCommentReport : reCommentReports) {
             reCommentReport.setReComment(null);
         }
+        notificationRepository.deleteByCommentId(commentId);
         reCommentRepository.deleteByComment(comment);
 
         List<CommentReport> commentReports = commentReportRepository.findByComment(comment);

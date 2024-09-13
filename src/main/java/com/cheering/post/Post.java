@@ -1,6 +1,7 @@
 package com.cheering.post;
 
 import com.cheering.BaseTimeEntity;
+import com.cheering.comment.Comment;
 import com.cheering.player.relation.PlayerUser;
 import jakarta.persistence.*;
 

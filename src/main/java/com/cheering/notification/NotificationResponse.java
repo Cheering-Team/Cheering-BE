@@ -1,5 +1,7 @@
 package com.cheering.notification;
 
+import com.cheering.comment.Comment;
+import com.cheering.comment.reComment.ReComment;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserResponse;
 import com.cheering.post.Post;
@@ -30,11 +32,19 @@ public class NotificationResponse {
         }
 
         // 댓글 알림 생성자
-        public NotificationDTO(Notification notification, PostImage postImage) {
-            this(notification.getId(), notification.getType(), new PlayerUserResponse.PlayerUserDTO(notification.getFrom()), new PlayerUserResponse.PlayerUserDTO(notification.getTo()), null, new NotificationPostDTO(notification.getPost(), postImage), notification.getComment().getContent());
+        public NotificationDTO(Notification notification, Comment comment, PostImage postImage) {
+            this(notification.getId(), notification.getType(), new PlayerUserResponse.PlayerUserDTO(notification.getFrom()), new PlayerUserResponse.PlayerUserDTO(notification.getTo()), null, new NotificationPostDTO(notification.getPost(), postImage), comment.getContent());
         }
-        public NotificationDTO(Notification notification) {
-            this(notification.getId(), notification.getType(), new PlayerUserResponse.PlayerUserDTO(notification.getFrom()), new PlayerUserResponse.PlayerUserDTO(notification.getTo()), null, null, notification.getComment().getContent());
+        public NotificationDTO(Notification notification, Comment comment) {
+            this(notification.getId(), notification.getType(), new PlayerUserResponse.PlayerUserDTO(notification.getFrom()), new PlayerUserResponse.PlayerUserDTO(notification.getTo()), null, null, comment.getContent());
+        }
+
+        // 답글 알림 생성자
+        public NotificationDTO(Notification notification, ReComment reComment, PostImage postImage) {
+            this(notification.getId(), notification.getType(), new PlayerUserResponse.PlayerUserDTO(notification.getFrom()), new PlayerUserResponse.PlayerUserDTO(notification.getTo()), null, new NotificationPostDTO(notification.getPost(), postImage), reComment.getContent());
+        }
+        public NotificationDTO(Notification notification, ReComment reComment) {
+            this(notification.getId(), notification.getType(), new PlayerUserResponse.PlayerUserDTO(notification.getFrom()), new PlayerUserResponse.PlayerUserDTO(notification.getTo()), null, null, reComment.getContent());
         }
     }
 

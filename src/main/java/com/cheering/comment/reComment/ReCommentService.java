@@ -3,6 +3,8 @@ package com.cheering.comment.reComment;
 import com.cheering._core.errors.*;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
+import com.cheering.notification.Notification;
+import com.cheering.notification.NotificationRepository;
 import com.cheering.player.Player;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
@@ -25,6 +27,7 @@ public class ReCommentService {
     private final CommentRepository commentRepository;
     private final PlayerUserRepository playerUserRepository;
     private final ReCommentReportRepository reCommentReportRepository;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public ReCommentResponse.ReCommentIdDTO writeReComment(Long commentId, ReCommentRequest.WriteReCommentDTO requestDTO, User user) {
@@ -35,7 +38,7 @@ public class ReCommentService {
 
         Long playerId = comment.getPost().getPlayerUser().getPlayer().getId();
 
-        PlayerUser playerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()->new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
         PlayerUser toPlayerUser = playerUserRepository.findById(toId).orElseThrow(()->new CustomException(ExceptionCode.COMMENT_WRITER_NOT_FOUND));
 
@@ -44,16 +47,21 @@ public class ReCommentService {
         ReComment reComment = ReComment.builder()
                 .content(content)
                 .comment(comment)
-                .playerUser(playerUser)
+                .playerUser(curPlayerUser)
                 .toPlayerUser(toPlayerUser)
                 .build();
 
         reCommentRepository.save(reComment);
 
+        if(!toPlayerUser.equals(curPlayerUser)) {
+            Notification notification = new Notification("RECOMMENT", toPlayerUser, curPlayerUser, comment.getPost(), reComment);
+            notificationRepository.save(notification);
+        }
+
         return new ReCommentResponse.ReCommentIdDTO(reComment.getId());
     }
 
-    public Object getReComments(Long commentId, User user) {
+    public ReCommentResponse.ReCommentListDTO getReComments(Long commentId, User user) {
         List<ReComment> reCommentList = reCommentRepository.findByCommentId(commentId);
 
         Player player = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND)).getPlayerUser().getPlayer();
@@ -89,6 +97,7 @@ public class ReCommentService {
         for(ReCommentReport reCommentReport : reCommentReports) {
             reCommentReport.setReComment(null);
         }
+        notificationRepository.deleteByReComment(reComment);
 
         reCommentRepository.delete(reComment);
     }
