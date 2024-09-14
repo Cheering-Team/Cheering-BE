@@ -16,9 +16,16 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationController {
     private final NotificationService notificationService;
 
+    // 알림 목록 가져오기
     @GetMapping("/notifications")
     public ResponseEntity<?> getNotifications(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림을 불러왔습니다.", notificationService.getNotifications(customUserDetails.getUser(), pageable)));
+    }
+
+    // 안읽은 알림 여부 가져오기
+    @GetMapping("/notifications/is-unread")
+    public ResponseEntity<?> getIsUnread(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림 여부를 확인했습니다.", notificationService.isUnread(customUserDetails.getUser())));
     }
 }

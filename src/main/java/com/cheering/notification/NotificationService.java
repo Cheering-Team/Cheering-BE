@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,7 @@ public class NotificationService {
     private final LikeRepository likeRepository;
     private final PostImageRepository postImageRepository;
 
+    @Transactional
     public NotificationResponse.NotificationListDTO getNotifications(User user, Pageable pageable) {
         Page<Notification> notifications = notificationRepository.findByUser(user, pageable);
 
@@ -45,6 +47,16 @@ public class NotificationService {
             }
         })).toList();
 
+        notifications.forEach(notification -> {
+            if(!notification.getIsRead()) {
+                notification.setIsRead(true);
+            }
+        });
+
         return new NotificationResponse.NotificationListDTO(notifications, notificationDTOS);
+    }
+
+    public boolean isUnread(User user) {
+        return notificationRepository.isUnreadByUser(user);
     }
 }

@@ -23,7 +23,7 @@ public class Notification extends BaseTimeEntity {
     private String type;
 
     @Column
-    private boolean isRead = false;
+    private Boolean isRead;
 
     @ManyToOne
     @JoinColumn(name = "to_id")
@@ -50,6 +50,7 @@ public class Notification extends BaseTimeEntity {
         this.to = to;
         this.from = from;
         this.post =post;
+        this.isRead = false;
     }
 
     public Notification(String type, PlayerUser to, PlayerUser from, Post post, Comment comment) {
@@ -58,6 +59,7 @@ public class Notification extends BaseTimeEntity {
         this.from = from;
         this.post = post;
         this.comment = comment;
+        this.isRead = false;
     }
 
     public Notification(String type, PlayerUser to, PlayerUser from, Post post, ReComment reComment) {
@@ -66,5 +68,6 @@ public class Notification extends BaseTimeEntity {
         this.from = from;
         this.post = post;
         this.reComment = reComment;
+        this.isRead = false;
     }
 }

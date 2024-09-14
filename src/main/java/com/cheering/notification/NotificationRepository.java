@@ -37,4 +37,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Modifying
     @Query("DELETE FROM Notification n WHERE n.reComment.comment.id = :commentId")
     void deleteByCommentId(@Param("commentId") Long commentId);
+
+    @Query("SELECT CASE WHEN COUNT(n) > 0 THEN true ELSE false END FROM Notification n WHERE n.to.user = :user AND n.isRead = false")
+    boolean isUnreadByUser(@Param("user") User user);
 }
