@@ -14,6 +14,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -40,4 +41,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     @Query("SELECT CASE WHEN COUNT(n) > 0 THEN true ELSE false END FROM Notification n WHERE n.to.user = :user AND n.isRead = false")
     boolean isUnreadByUser(@Param("user") User user);
+
+    void deleteByCreatedAtBefore(LocalDateTime oneMonthAgo);
 }

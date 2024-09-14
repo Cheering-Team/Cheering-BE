@@ -7,9 +7,11 @@ import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,4 +61,12 @@ public class NotificationService {
     public boolean isUnread(User user) {
         return notificationRepository.isUnreadByUser(user);
     }
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    @Transactional
+    public void deleteOldNotifications() {
+        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        notificationRepository.deleteByCreatedAtBefore(oneMonthAgo);
+    }
+
 }
