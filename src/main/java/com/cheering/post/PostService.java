@@ -6,6 +6,8 @@ import com.cheering._core.util.S3Util;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
+import com.cheering.notification.Notification;
+import com.cheering.notification.NotificationRepository;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.player.PlayerResponse;
@@ -55,6 +57,7 @@ public class PostService {
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
+    private final NotificationRepository notificationRepository;
     private final S3Util s3Util;
 
     @Transactional
@@ -187,6 +190,7 @@ public class PostService {
 
     }
 
+    @Transactional
     // 게시글 좋아요
     public boolean toggleLike(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
@@ -205,10 +209,17 @@ public class PostService {
 
             likeRepository.save(newLike);
 
+            if(!post.getPlayerUser().equals(curPlayerUser)){
+                Notification notification = new Notification("LIKE", post.getPlayerUser(), curPlayerUser, post);
+
+                notificationRepository.save(notification);
+            }
             return true;
         } else {
+            if(!post.getPlayerUser().equals(curPlayerUser)) {
+                notificationRepository.deleteLikeByPostAndFrom(post, curPlayerUser, "LIKE");
+            }
             likeRepository.deleteById(like.get().getId());
-
             return false;
         }
     }
@@ -278,14 +289,6 @@ public class PostService {
         if(!writer.equals(curPlayerUser)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);
         }
-
-
-        // Tag
-        postTagRepository.deleteByPost(post);
-
-        // Image
-        postImageRepository.deleteByPost(post);
-
         // Comment
         List<Comment> commentList = commentRepository.findByPost(post);
 
@@ -293,16 +296,11 @@ public class PostService {
         for(ReCommentReport reCommentReport : reCommentReports) {
             reCommentReport.setReComment(null);
         }
-        reCommentRepository.deleteByCommentIn(commentList);
 
         List<CommentReport> commentReports = commentReportRepository.findByCommentIn(commentList);
         for(CommentReport commentReport : commentReports) {
             commentReport.setComment(null);
         }
-        commentRepository.deleteByPost(post);
-
-        // Like
-        likeRepository.deleteByPost(post);
 
         // Report
         List<PostReport> reportList = postReportRepository.findByPost(post);

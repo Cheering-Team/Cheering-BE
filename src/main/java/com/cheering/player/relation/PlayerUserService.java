@@ -57,7 +57,7 @@ public class PlayerUserService {
         PlayerUser playerUser = playerUserRepository.findById(playerUserId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
         // 현 접속자
-        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerUser.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerUser.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
         PlayerUserResponse.PlayerUserDTO playerUserDTO = new PlayerUserResponse.PlayerUserDTO(playerUser);
 
@@ -71,7 +71,7 @@ public class PlayerUserService {
         PlayerUser playerUser = playerUserRepository.findById(playerUserId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
         // 현재 접속 유저
-        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerUser.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerUser.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
         // 유저의 글 목록
         Page<Post> postList = postRepository.findByPlayerUser(playerUser, pageable);
@@ -138,40 +138,21 @@ public class PlayerUserService {
     public void deletePlayerUser(Long playerUserId) {
         PlayerUser playerUser = playerUserRepository.findById(playerUserId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
-        // 1. Post
-        List<Post> posts = postRepository.findByPlayerUser(playerUser);
-
-        // 2. PostTag
-        postTagRepository.deleteByPostIn(posts);
-        postImageRepository.deleteByPostIn(posts);
-
-        // 3. ReComment
         List<ReCommentReport> reCommentReports = reCommentReportRepository.findByWriter(playerUser);
         for(ReCommentReport reCommentReport : reCommentReports) {
             reCommentReport.setReComment(null);
         }
-        reCommentReportRepository.deleteByPlayerUser(playerUser);
-        reCommentRepository.deleteByPlayerUser(playerUser);
 
-        // 4. Comment
         List<CommentReport> commentReports = commentReportRepository.findByWriter(playerUser);
         for(CommentReport commentReport : commentReports) {
             commentReport.setComment(null);
         }
-        commentReportRepository.deleteByPlayerUser(playerUser);
-        commentRepository.deleteByPlayerUser(playerUser);
 
-        // 5. Like
-        likeRepository.deleteByPlayerUser(playerUser);
-
-        // 6. PostReport
         List<PostReport> postReports = postReportRepository.findByPlayerUser(playerUser);
         for(PostReport postReport : postReports) {
             postReport.setPost(null);
         }
-        postReportRepository.deleteByPlayerUser(playerUser);
 
-        postRepository.deleteByPlayerUser(playerUser);
         playerUserRepository.deleteById(playerUserId);
     }
 }

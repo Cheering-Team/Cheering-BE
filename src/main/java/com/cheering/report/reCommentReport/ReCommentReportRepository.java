@@ -31,5 +31,6 @@ public interface ReCommentReportRepository extends JpaRepository<ReCommentReport
     @Query("SELECT rr FROM ReCommentReport rr WHERE rr.reComment.playerUser=:playerUser")
     List<ReCommentReport> findByWriter(@Param("playerUser") PlayerUser playerUser);
 
-    void deleteByPlayerUser(PlayerUser playerUser);
+    @Query("SELECT rr FROM ReCommentReport rr WHERE rr.reComment.playerUser.user.id=:userId")
+    List<ReCommentReport> findByUserId(@Param("userId") Long id);
 }

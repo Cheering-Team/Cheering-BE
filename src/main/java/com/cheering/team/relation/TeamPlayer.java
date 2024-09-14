@@ -13,6 +13,7 @@ public class TeamPlayer {
 
     @Id
     @GeneratedValue
+    @Column(name = "team_player_id")
     private Long id;
 
     @ManyToOne

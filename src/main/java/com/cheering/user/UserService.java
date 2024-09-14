@@ -17,6 +17,12 @@ import com.cheering.post.Post;
 import com.cheering.post.PostImage.PostImageRepository;
 import com.cheering.post.PostRepository;
 import com.cheering.post.relation.PostTagRepository;
+import com.cheering.report.commentReport.CommentReport;
+import com.cheering.report.commentReport.CommentReportRepository;
+import com.cheering.report.postReport.PostReport;
+import com.cheering.report.postReport.PostReportRepository;
+import com.cheering.report.reCommentReport.ReCommentReport;
+import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -29,13 +35,9 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final PlayerUserRepository playerUserRepository;
-    private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
-    private final ReCommentRepository reCommentRepository;
-    private final LikeRepository likeRepository;
-    private final PostTagRepository postTagRepository;
-    private final PostImageRepository postImageRepository;
+    private final PostReportRepository postReportRepository;
+    private final CommentReportRepository commentReportRepository;
+    private final ReCommentReportRepository reCommentReportRepository;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
     private final JWTUtil jwtUtil;
@@ -135,29 +137,20 @@ public class UserService {
 
     @Transactional
     public void deleteUser(User user) {
-        // 1. PlayerUser
-        List<PlayerUser> playerUsers = playerUserRepository.findByUserId(user.getId());
-        playerUserRepository.deleteByUserId(user.getId());
+        List<PostReport> postReports = postReportRepository.findByUserId(user.getId());
+        for(PostReport postReport : postReports) {
+            postReport.setPost(null);
+        }
 
-        // 2. Post
-        List<Post> posts = postRepository.findByPlayerUserIn(playerUsers);
+        List<CommentReport> commentReports = commentReportRepository.findByUserId(user.getId());
+        for(CommentReport commentReport : commentReports) {
+            commentReport.setComment(null);
+        }
 
-        // 3. PostTag
-        postTagRepository.deleteByPostIn(posts);
-        postImageRepository.deleteByPostIn(posts);
-
-        postRepository.deleteByPlayerUserIn(playerUsers);
-
-        // 3. Comment
-        commentRepository.deleteByPlayerUserIn(playerUsers);
-
-        // 4. ReComment
-        reCommentRepository.deleteByPlayerUserIn(playerUsers);
-
-        // 5. Like
-        likeRepository.deleteByPlayerUserIn(playerUsers);
-
-        // 5. User
+        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByUserId(user.getId());
+        for(ReCommentReport reCommentReport : reCommentReports) {
+            reCommentReport.setReComment(null);
+        }
         userRepository.delete(user);
     }
 

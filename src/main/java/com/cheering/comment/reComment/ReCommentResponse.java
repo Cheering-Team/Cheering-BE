@@ -1,14 +1,8 @@
 package com.cheering.comment.reComment;
 
-import com.cheering.comment.Comment;
-import com.cheering.comment.CommentResponse;
-import com.cheering.community.UserCommunityInfo;
 import com.cheering.post.PostResponse;
-import com.cheering.user.WriterResponse;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import lombok.Builder;
 
 public class ReCommentResponse {
     public record ReCommentIdDTO (Long id) { }

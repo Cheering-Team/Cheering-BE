@@ -62,6 +62,14 @@ public class DataLoader implements ApplicationRunner {
 
         userRepository.save(user1);
 
+        User user2 = User.builder()
+                .phone("01062013111")
+                .nickname("준서2")
+                .role(Role.ROLE_USER)
+                .build();
+
+        userRepository.save(user2);
+
         Sport baseball = Sport.builder()
                 .name("야구")
                 .build();
@@ -135,7 +143,7 @@ public class DataLoader implements ApplicationRunner {
                 .koreanName("황성빈")
                 .englishName("HWANG SEONG-BIN")
                 .image("https://file.giantsclub.com/upload2014/Player/50500_s.jpg")
-                .backgroundImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/674350_1031929_1335.jpg")
+                .backgroundImage("https://thumbnews.nateimg.co.kr/view610///news.nateimg.co.kr/orgImg/su/2024/04/25/674350_1031929_1335.jpg")
                 .build();
 
         Player player2 = Player.builder()
@@ -202,6 +210,14 @@ public class DataLoader implements ApplicationRunner {
                 .build();
 
         playerUserRepository.save(playerUser);
+
+        PlayerUser playerUser2 = PlayerUser.builder()
+                .player(player1)
+                .user(user2)
+                .nickname("황성빈굿맨")
+                .build();
+
+        playerUserRepository.save(playerUser2);
 
         Tag tag1 = Tag.builder()
                 .name("photo")

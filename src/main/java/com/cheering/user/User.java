@@ -3,8 +3,13 @@ package com.cheering.user;
 import static jakarta.persistence.FetchType.LAZY;
 
 import com.cheering.BaseTimeEntity;
+import com.cheering.player.relation.PlayerUser;
+import com.cheering.post.Post;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -15,6 +20,7 @@ public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue
+    @Column(name = "user_id")
     private Long id;
 
     @Column(length = 15, nullable = false, unique = true)
@@ -32,6 +38,9 @@ public class User extends BaseTimeEntity {
 
     @Column
     private String naverId;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<PlayerUser> playerUsers = new ArrayList<>();
 
 
     @Builder
