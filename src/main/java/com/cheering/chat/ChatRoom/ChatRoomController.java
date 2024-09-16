@@ -23,6 +23,13 @@ public class ChatRoomController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 목록을 불러왔습니다.", chatRoomService.getChatRooms(playerId)));
     }
 
+    // 내 참여중인 모든 채팅방 불러오기
+    // (대표는 가입된 모두 커뮤니티)
+    @GetMapping("/my/chatrooms")
+    public ResponseEntity<?> getMyChatRooms(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "내 채팅방 목록을 불러왔습니다.", chatRoomService.getMyChatRooms(customUserDetails.getUser())));
+    }
+
     // 채팅방 정보 불러오기
     @GetMapping("/chatrooms/{chatRoomId}")
     public ResponseEntity<?> getChatRoomById(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {

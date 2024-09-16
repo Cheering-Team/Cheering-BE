@@ -42,6 +42,22 @@ public class ChatRoomService {
         } )).toList();
     }
 
+    public List<ChatRoomResponse.ChatRoomDTO> getMyChatRooms(User user) {
+        List<PlayerUser> playerUsers = playerUserRepository.findByUserId(user.getId());
+
+        List<Player> players = playerUsers.stream().map((PlayerUser::getPlayer)).toList();
+
+        List<ChatRoom> chatRooms = chatRoomRepository.findByPlayerIn(players);
+
+        return chatRooms.stream().map((chatRoom -> {
+            int count = 0;
+            if(chatRoomSessions.get(chatRoom.getId()) != null) {
+                count = chatRoomSessions.get(chatRoom.getId()).size();
+            }
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count);
+        } )).toList();
+    }
+
     public ChatRoomResponse.ChatRoomDTO getChatRoomById(Long chatRoomId, User user) {
         // 존재하지 않는 채팅방 -> 뒤로가기
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
