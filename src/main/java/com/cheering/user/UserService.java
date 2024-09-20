@@ -201,7 +201,18 @@ public class UserService {
 
         Optional<User> optionalUser = userRepository.findByPhone(mobile);
 
+        // 이미 가입된 번호일 때 연동
         if(optionalUser.isPresent()) {
+            if(optionalUser.get().getNaverId() != null && optionalUser.get().getNaverId().equals(naverId)) {
+                String accessToken = jwtUtil.createJwt(optionalUser.get().getPhone(), optionalUser.get().getRole().getValue(), 1000 * 60 * 60 * 24L);
+                String refreshToken = jwtUtil.createJwt(optionalUser.get().getPhone(), optionalUser.get().getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
+
+
+                redisUtils.deleteData(optionalUser.get().getId().toString());
+                redisUtils.setDataExpire(optionalUser.get().getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
+
+                return new UserResponse.TokenDTO(accessToken, refreshToken);
+            }
             return new UserResponse.UserWithCreatedAtDTO(optionalUser.get());
         }
 
@@ -221,7 +232,8 @@ public class UserService {
         redisUtils.deleteData(user.getId().toString());
         redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
 
-        return new UserResponse.TokenDTO(accessToken, refreshToken);
+        // 가입되지 않은 번호일 때, 회원가입 후 자동 로그인
+        return new UserResponse.SignUpTokenDTO(accessToken, refreshToken);
     }
 
     @Transactional

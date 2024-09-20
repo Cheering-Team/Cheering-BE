@@ -19,6 +19,7 @@ public class UserController {
 
     private final UserService userService;
 
+    // 인증번호 전송
     @PostMapping("/phone/sms")
     public ResponseEntity<?> sendSMS(@RequestBody UserRequest.SendSMSDTO requestDTO) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "인증번호가 전송되었습니다.", userService.sendSMS(requestDTO)));
@@ -33,7 +34,7 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@RequestBody UserRequest.SignUpDTO requestDTO) {
         return ResponseEntity.ok()
-                .body(ApiUtils.success(HttpStatus.CREATED, "회원가입에 성공하였습니다.", userService.signUp(requestDTO)));
+                .body(ApiUtils.success(HttpStatus.CREATED, "회원가입이 완료되었습니다.", userService.signUp(requestDTO)));
     }
 
     @GetMapping("/refresh")
@@ -78,8 +79,10 @@ public class UserController {
         Object response = userService.signInWithNaver(accessToken);
         if(response instanceof UserResponse.UserWithCreatedAtDTO) {
             return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"이미 가입된 유저입니다.", response));
-        } else {
+        } else if(response instanceof UserResponse.SignUpTokenDTO){
             return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"회원가입되었습니다.", response));
+        } else {
+            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"로그인되었습니다.", response));
         }
     }
 
@@ -95,8 +98,6 @@ public class UserController {
 
     @PostMapping("/connect")
     public ResponseEntity<?> socialConnect(@RequestParam String accessToken, @RequestParam String type, @RequestBody UserRequest.IdDTO requestDTO) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"연결되었습니다.", userService.socialConnect(accessToken, type, requestDTO)));
-
-
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"계정이 연결되었습니다.", userService.socialConnect(accessToken, type, requestDTO)));
     }
 }
