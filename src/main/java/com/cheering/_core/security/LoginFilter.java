@@ -73,7 +73,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         responseResult.put("refreshToken", refreshToken);
 
         responseData.put("code", HttpServletResponse.SC_OK);
-        responseData.put("message", "로그인에 성공하였습니다.");
+        responseData.put("message", "로그인되었습니다.");
         responseData.put("result", responseResult);
 
 
