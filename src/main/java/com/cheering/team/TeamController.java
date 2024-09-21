@@ -19,15 +19,4 @@ public class TeamController {
     public ResponseEntity<?> getTeams(@PathVariable("leagueId") Long leagueId){
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "팀들을 불러왔습니다.", teamService.getTeams(leagueId)));
     }
-//    @PostMapping("/s3/upload")
-//    public ResponseEntity<?> s3Upload(@RequestPart(value = "image", required = false) MultipartFile image){
-//        String profileImage = s3Util.upload(image);
-//        return ResponseEntity.ok(profileImage);
-//    }
-//
-//    @GetMapping("/s3/delete")
-//    public ResponseEntity<?> s3delete(@RequestParam String addr){
-//        s3Util.deleteImageFromS3(addr);
-//        return ResponseEntity.ok(null);
-//    }
 }
