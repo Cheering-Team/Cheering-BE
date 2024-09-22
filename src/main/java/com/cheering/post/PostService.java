@@ -215,7 +215,7 @@ public class PostService {
                 Notification notification = new Notification("LIKE", post.getPlayerUser(), curPlayerUser, post);
 
                 notificationRepository.save(notification);
-                fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), curPlayerUser.getNickname(), "회원님의 게시글을 좋아합니다.", postId);
+                fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), curPlayerUser.getNickname(), "회원님의 게시글을 좋아합니다.", postId, notification.getId());
             }
             return true;
         } else {

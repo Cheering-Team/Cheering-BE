@@ -8,10 +8,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FcmServiceImpl {
-    public void sendMessageTo(String token, String title, String body, Long postId) {
+    public void sendMessageTo(String token, String title, String body, Long postId, Long notificationId) {
         Message message = Message.builder()
                 .setToken(token)
                 .putData("postId", postId.toString())
+                .putData("notificationId", notificationId.toString())
                 .setNotification(Notification.builder()
                         .setTitle(title)
                         .setBody(body)
