@@ -6,6 +6,7 @@ import com.cheering._core.util.S3Util;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
+import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.notification.Notification;
 import com.cheering.notification.NotificationRepository;
 import com.cheering.player.Player;
@@ -59,6 +60,7 @@ public class PostService {
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
     private final S3Util s3Util;
+    private final FcmServiceImpl fcmService;
 
     @Transactional
     public PostResponse.PostIdDTO writePost(Long playerId, String content, List<MultipartFile> images, List<String> tags, User user) {
@@ -213,6 +215,7 @@ public class PostService {
                 Notification notification = new Notification("LIKE", post.getPlayerUser(), curPlayerUser, post);
 
                 notificationRepository.save(notification);
+                fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), curPlayerUser.getNickname(), "회원님의 게시글을 좋아합니다.", postId, notification.getId());
             }
             return true;
         } else {

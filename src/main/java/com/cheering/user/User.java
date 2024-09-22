@@ -39,6 +39,9 @@ public class User extends BaseTimeEntity {
     @Column
     private String naverId;
 
+    @Column
+    private String deviceToken;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<PlayerUser> playerUsers = new ArrayList<>();
 

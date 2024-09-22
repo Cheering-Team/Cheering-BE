@@ -2,6 +2,7 @@ package com.cheering.notification;
 
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
+import com.cheering.user.UserRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,5 +28,11 @@ public class NotificationController {
     @GetMapping("/notifications/is-unread")
     public ResponseEntity<?> getIsUnread(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림 여부를 확인했습니다.", notificationService.isUnread(customUserDetails.getUser())));
+    }
+
+    @PutMapping("/notifications/{notificationId}")
+    public ResponseEntity<?> readNotification(@PathVariable("notificationId") Long notificationId) {
+        notificationService.readNotification(notificationId);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림을 읽었습니다.", null));
     }
 }

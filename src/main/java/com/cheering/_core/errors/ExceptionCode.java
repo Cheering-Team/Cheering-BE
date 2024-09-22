@@ -42,11 +42,17 @@ public enum ExceptionCode {
     ALREADY_REPORT(HttpStatus.BAD_REQUEST, "이미 신고하였습니다."),
     REPORTED_POST(HttpStatus.BAD_REQUEST, "신고 누적된 게시글이므로 수정 및 삭제가 불가합니다."),
 
+    // NOTIFICATION
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 알림을 찾을 수 없습니다."),
+
     // S3
     EMPTY_FILE(HttpStatus.BAD_REQUEST, "유효하지 않는 파일입니다."),
     INVALID_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "확장자가 유효하지 않습니다."),
     IMAGE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "이미지 업로드에 실패하였습니다."),
-    IMAGE_DELETE_FAILED(HttpStatus.BAD_REQUEST, "이미지 삭제에 실패하였습니다.");
+    IMAGE_DELETE_FAILED(HttpStatus.BAD_REQUEST, "이미지 삭제에 실패하였습니다."),
+
+    // FCM
+    FAILED_TO_SEND(HttpStatus.BAD_REQUEST, "FCM 전송에 실패했습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

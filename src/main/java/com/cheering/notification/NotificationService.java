@@ -1,5 +1,7 @@
 package com.cheering.notification;
 
+import com.cheering._core.errors.CustomException;
+import com.cheering._core.errors.ExceptionCode;
 import com.cheering.post.Like.LikeRepository;
 import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.PostImage.PostImageRepository;
@@ -69,4 +71,11 @@ public class NotificationService {
         notificationRepository.deleteByCreatedAtBefore(oneMonthAgo);
     }
 
+    @Transactional
+    public void readNotification(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId).orElseThrow(()-> new CustomException(ExceptionCode.NOTIFICATION_NOT_FOUND));
+
+        notification.setIsRead(true);
+        notificationRepository.save(notification);
+    }
 }
