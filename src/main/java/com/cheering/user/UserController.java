@@ -100,4 +100,16 @@ public class UserController {
     public ResponseEntity<?> socialConnect(@RequestParam String accessToken, @RequestParam String type, @RequestBody UserRequest.IdDTO requestDTO) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"계정이 연결되었습니다.", userService.socialConnect(accessToken, type, requestDTO)));
     }
+
+    @PostMapping("/fcm-token")
+    public ResponseEntity<?> saveFCMToken(@RequestParam String token, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        userService.saveFCMToken(token, customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"FCM 토큰이 저장되었습니다.", null));
+    }
+
+    @DeleteMapping("/fcm-token")
+    public ResponseEntity<?> deleteFCMToken(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        userService.deleteFCMToken(customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"FCM 토큰이 삭제되었습니다.", null));
+    }
 }

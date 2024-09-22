@@ -331,4 +331,20 @@ public class UserService {
 
         return new UserResponse.TokenDTO(accessToken, refreshToken);
     }
+
+    @Transactional
+    public void saveFCMToken(String token, User user) {
+        User curUser = userRepository.findById(user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+        curUser.setDeviceToken(token);
+        userRepository.save(curUser);
+    }
+
+    @Transactional
+    public void deleteFCMToken(User user) {
+        User curUser = userRepository.findById(user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+        curUser.setDeviceToken(null);
+        userRepository.save(curUser);
+    }
 }
