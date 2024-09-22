@@ -13,7 +13,7 @@ import java.io.IOException;
 public class FirebaseConfig {
     @Bean
     public FirebaseApp initializeFirebase() throws IOException {
-        FileInputStream serviceAccount = new FileInputStream("/firebase/cheering-56d3b-firebase-adminsdk-rcj2y-7e52fc295c.json");
+        FileInputStream serviceAccount = new FileInputStream("/cheering-56d3b-firebase-adminsdk-rcj2y-7e52fc295c.json");
 
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
