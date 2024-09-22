@@ -3,6 +3,7 @@ package com.cheering.comment.reComment;
 import com.cheering._core.errors.*;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
+import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.notification.Notification;
 import com.cheering.notification.NotificationRepository;
 import com.cheering.player.Player;
@@ -28,6 +29,7 @@ public class ReCommentService {
     private final PlayerUserRepository playerUserRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
+    private final FcmServiceImpl fcmService;
 
     @Transactional
     public ReCommentResponse.ReCommentIdDTO writeReComment(Long commentId, ReCommentRequest.WriteReCommentDTO requestDTO, User user) {
@@ -56,6 +58,7 @@ public class ReCommentService {
         if(!toPlayerUser.equals(curPlayerUser)) {
             Notification notification = new Notification("RECOMMENT", toPlayerUser, curPlayerUser, comment.getPost(), reComment);
             notificationRepository.save(notification);
+            fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), curPlayerUser.getNickname(), "회원님의 댓글에 답글을 남겼습니다:\"" + reComment.getContent() + "\"", comment.getPost().getId());
         }
 
         return new ReCommentResponse.ReCommentIdDTO(reComment.getId());

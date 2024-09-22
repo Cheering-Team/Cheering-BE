@@ -46,7 +46,10 @@ public enum ExceptionCode {
     EMPTY_FILE(HttpStatus.BAD_REQUEST, "유효하지 않는 파일입니다."),
     INVALID_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "확장자가 유효하지 않습니다."),
     IMAGE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "이미지 업로드에 실패하였습니다."),
-    IMAGE_DELETE_FAILED(HttpStatus.BAD_REQUEST, "이미지 삭제에 실패하였습니다.");
+    IMAGE_DELETE_FAILED(HttpStatus.BAD_REQUEST, "이미지 삭제에 실패하였습니다."),
+
+    // FCM
+    FAILED_TO_SEND(HttpStatus.BAD_REQUEST, "FCM 전송에 실패했습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

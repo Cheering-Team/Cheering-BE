@@ -41,6 +41,9 @@ dependencies {
     implementation 'io.netty:netty-resolver-dns-native-macos:4.1.68.Final:osx-aarch_64'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
 
+    // fcm
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
+
     //redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 

@@ -3,6 +3,7 @@ package com.cheering.comment;
 import com.cheering._core.errors.*;
 import com.cheering.comment.reComment.ReComment;
 import com.cheering.comment.reComment.ReCommentRepository;
+import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.notification.Notification;
 import com.cheering.notification.NotificationRepository;
 import com.cheering.player.relation.PlayerUser;
@@ -33,6 +34,7 @@ public class CommentService {
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
+    private final FcmServiceImpl fcmService;
 
     // 댓글 작성
     @Transactional
@@ -55,6 +57,7 @@ public class CommentService {
             Notification notification = new Notification("COMMENT", post.getPlayerUser(), curplayerUser, post, comment);
 
             notificationRepository.save(notification);
+            fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), "댓글", comment.getPlayerUser().getNickname() + "님이 댓글을 남겼습니다:\"" + comment.getContent() + "\"", postId);
         }
 
         return new CommentResponse.CommentIdDTO(comment.getId());
