@@ -1,5 +1,7 @@
 package com.cheering.user;
 
+import com.cheering._core.errors.CustomException;
+import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
 import lombok.RequiredArgsConstructor;
@@ -109,6 +111,9 @@ public class UserController {
 
     @DeleteMapping("/fcm-token")
     public ResponseEntity<?> deleteFCMToken(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        if(!customUserDetails.isEnabled()){
+            throw new CustomException(ExceptionCode.USER_NOT_FOUND);
+        }
         userService.deleteFCMToken(customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"FCM 토큰이 삭제되었습니다.", null));
     }
