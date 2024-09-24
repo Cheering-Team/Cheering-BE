@@ -111,7 +111,7 @@ public class UserController {
 
     @DeleteMapping("/fcm-token")
     public ResponseEntity<?> deleteFCMToken(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        if(!customUserDetails.isEnabled()){
+        if(customUserDetails == null){
             throw new CustomException(ExceptionCode.USER_NOT_FOUND);
         }
         userService.deleteFCMToken(customUserDetails.getUser());

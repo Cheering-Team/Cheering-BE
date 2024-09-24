@@ -29,7 +29,7 @@ public class NotificationController {
     // 안읽은 알림 여부 가져오기
     @GetMapping("/notifications/is-unread")
     public ResponseEntity<?> getIsUnread(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        if(!customUserDetails.isEnabled()){
+        if(customUserDetails == null){
             throw new CustomException(ExceptionCode.USER_NOT_FOUND);
         }
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림 여부를 확인했습니다.", notificationService.isUnread(customUserDetails.getUser())));
