@@ -57,7 +57,10 @@ public class CommentService {
             Notification notification = new Notification("COMMENT", post.getPlayerUser(), curplayerUser, post, comment);
 
             notificationRepository.save(notification);
-            fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), "댓글", comment.getPlayerUser().getNickname() + "님이 댓글을 남겼습니다:\"" + comment.getContent() + "\"", postId, notification.getId());
+            if(notification.getTo().getUser().getDeviceToken() != null) {
+                fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), "댓글", comment.getPlayerUser().getNickname() + "님이 댓글을 남겼습니다:\"" + comment.getContent() + "\"", postId, notification.getId());
+            }
+
         }
 
         return new CommentResponse.CommentIdDTO(comment.getId());
