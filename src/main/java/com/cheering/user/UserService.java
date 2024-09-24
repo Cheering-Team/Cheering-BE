@@ -176,11 +176,15 @@ public class UserService {
 
         if(optionalUser.isPresent()) {
             User user = optionalUser.get();
-            String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
-            String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
+//            String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
+//            String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
+
+            String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60L);
+            String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 2L);
 
             redisUtils.deleteData(user.getId().toString());
-            redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
+//            redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
+            redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 2L);
 
             return new UserResponse.TokenDTO(accessToken, refreshToken);
         } else {
