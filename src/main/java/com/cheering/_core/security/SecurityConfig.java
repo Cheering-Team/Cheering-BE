@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -83,7 +84,8 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth)->auth
-                        .requestMatchers("/api/phone/sms", "/api/phone/code", "/api/signin", "/api/signup", "/api/refresh", "api/signin/kakao", "api/signin/naver", "api/phone/code/kakao", "api/connect","/hc", "/env", "/ws/**").permitAll()
+                        .requestMatchers("/api/phone/sms", "/api/phone/code", "/api/signin", "/api/signup", "/api/refresh", "api/signin/kakao", "api/signin/naver", "api/phone/code/kakao", "api/notifications/is-unread", "api/connect","/hc", "/env", "/ws/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "api/fcm-token").permitAll()
                         .anyRequest().authenticated());
 
         http
