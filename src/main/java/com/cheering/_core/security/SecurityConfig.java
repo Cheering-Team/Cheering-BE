@@ -84,8 +84,7 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth)->auth
-                        .requestMatchers("/api/phone/sms", "/api/phone/code", "/api/signin", "/api/signup", "/api/refresh", "api/signin/kakao", "api/signin/naver", "api/phone/code/kakao", "api/notifications/is-unread", "api/connect","/hc", "/env", "/ws/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "api/fcm-token").permitAll()
+                        .requestMatchers("/api/phone/sms", "/api/phone/code", "/api/signin", "/api/signup", "/api/refresh", "api/signin/kakao", "api/signin/naver", "api/phone/code/kakao", "api/notifications/is-unread", "api/fcm-token", "api/connect","/hc", "/env", "/ws/**").permitAll()
                         .anyRequest().authenticated());
 
         http
