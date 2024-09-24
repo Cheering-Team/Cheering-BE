@@ -102,6 +102,7 @@ public class UserService {
 
     @Transactional
     public UserResponse.TokenDTO refresh(String refreshToken) {
+        System.out.println("토큰 재발급");
         String token = refreshToken.split(" ")[1];
 
         String phone = jwtUtil.getUsername(token);
@@ -115,12 +116,17 @@ public class UserService {
             throw new CustomException(ExceptionCode.INVALID_TOKEN);
         }
 
-        String accessToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24L);
-        refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24 * 30L);
+//        String accessToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24L);
+//        refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24 * 30L);
+
+        String accessToken = jwtUtil.createJwt(phone, role, 1000 * 60L);
+        refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 2L);
 
         redisUtils.deleteData(user.getId().toString());
-        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
+//        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
+        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 2L);
 
+        System.out.println("토큰 재발급 완료");
         return new UserResponse.TokenDTO(accessToken, refreshToken);
     }
 

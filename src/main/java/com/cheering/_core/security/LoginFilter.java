@@ -61,8 +61,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String accessToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24L);
-        String refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24 * 30L);
+//        String accessToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24L);
+//        String refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24 * 30L);
+        String accessToken = jwtUtil.createJwt(phone, role, 1000 * 60L);
+        String refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 2L);
+
+        System.out.println("로그인 완료");
 
         redisUtils.setDataExpire(customUserDetails.getUser().getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
 
