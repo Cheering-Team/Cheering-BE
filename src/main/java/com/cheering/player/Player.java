@@ -25,12 +25,16 @@ public class Player {
     @Column
     private String backgroundImage;
 
+    @Enumerated(EnumType.STRING)
+    private CommunityType type;
+
     @Builder
-    public Player(Long playerId, String koreanName, String englishName, String image, String backgroundImage) {
+    public Player(Long playerId, String koreanName, String englishName, String image, String backgroundImage, CommunityType type) {
         this.id = playerId;
         this.koreanName = koreanName;
         this.englishName = englishName;
         this.image = image;
         this.backgroundImage = backgroundImage;
+        this.type = type;
     }
 }

@@ -1,0 +1,1 @@
+ALTER TABLE player_tb ADD COLUMN type VARCHAR(20);
