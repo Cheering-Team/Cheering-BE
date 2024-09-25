@@ -1,5 +1,6 @@
 package com.cheering.team;
 
+import com.cheering.player.Player;
 import com.cheering.team.league.League;
 import com.cheering.team.relation.TeamPlayer;
 import com.cheering.team.sport.Sport;
@@ -34,6 +35,9 @@ public class Team {
 
     @Column
     private Long fanCount;
+
+    @OneToOne(mappedBy = "team", cascade = CascadeType.ALL)
+    private Player player;
 
     @Builder
     public Team(Long teamId, String name, League league, String image, Long fanCount) {

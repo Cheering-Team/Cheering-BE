@@ -1,5 +1,6 @@
 package com.cheering.player;
 
+import com.cheering.team.Team;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,16 +26,17 @@ public class Player {
     @Column
     private String backgroundImage;
 
-    @Enumerated(EnumType.STRING)
-    private CommunityType type;
+    @OneToOne
+    @JoinColumn(name = "team_id")
+    private Team team;
 
     @Builder
-    public Player(Long playerId, String koreanName, String englishName, String image, String backgroundImage, CommunityType type) {
+    public Player(Long playerId, String koreanName, String englishName, String image, String backgroundImage, Team team) {
         this.id = playerId;
         this.koreanName = koreanName;
         this.englishName = englishName;
         this.image = image;
         this.backgroundImage = backgroundImage;
-        this.type = type;
+        this.team = team;
     }
 }
