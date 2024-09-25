@@ -1,10 +1,5 @@
 package com.cheering.comment;
 
-import com.cheering._core.errors.SuccessMessage;
-import com.cheering._core.errors.ResponseBodyDto;
-import com.cheering._core.errors.ResponseGenerator;
-import java.util.List;
-
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
 import lombok.RequiredArgsConstructor;
@@ -12,10 +7,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import retrofit2.http.Path;
 
 @RestController
 @RequiredArgsConstructor

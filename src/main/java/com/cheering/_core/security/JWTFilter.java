@@ -28,18 +28,12 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String requestURL = request.getRequestURL().toString();
-        System.out.println("현재 요청 URL: " + requestURL);
-
         String authorization = request.getHeader("Authorization");
 
         if(authorization == null || !authorization.startsWith("Bearer ")) {
             filterChain.doFilter(request,response);
             return;
         }
-
-        LocalDateTime now = LocalDateTime.now();
-        System.out.println("현재 시각: " + now);
 
         String token = authorization.split(" ")[1];
 
