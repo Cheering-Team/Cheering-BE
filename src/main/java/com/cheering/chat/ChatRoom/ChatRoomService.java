@@ -13,6 +13,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +48,7 @@ public class ChatRoomService {
 
         List<Player> players = playerUsers.stream().map((PlayerUser::getPlayer)).toList();
 
-        List<ChatRoom> chatRooms = chatRoomRepository.findByPlayerIn(players);
+        List<ChatRoom> chatRooms = chatRoomRepository.findByPlayerIn(players).stream().sorted(Comparator.comparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
 
         return chatRooms.stream().map((chatRoom -> {
             int count = 0;
