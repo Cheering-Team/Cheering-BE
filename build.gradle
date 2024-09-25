@@ -41,7 +41,7 @@ dependencies {
     implementation 'io.netty:netty-resolver-dns-native-macos:4.1.68.Final:osx-aarch_64'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
 
-    // fcm
+    //fcm
     implementation 'com.google.firebase:firebase-admin:9.2.0'
 
     //redis
@@ -63,6 +63,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.assertj:assertj-core:3.25.1'
     runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.flywaydb:flyway-core'
 }
 
 

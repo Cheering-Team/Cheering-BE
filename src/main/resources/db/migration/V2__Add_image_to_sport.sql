@@ -1,0 +1,1 @@
+ALTER TABLE sport ADD COLUMN image VARCHAR(255);

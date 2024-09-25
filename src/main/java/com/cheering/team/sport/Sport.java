@@ -18,9 +18,13 @@ public class Sport {
     @Column(length = 20, nullable = false, unique = true)
     private String name;
 
+    @Column
+    private String image;
+
     @Builder
-    public Sport(Long sportId, String name) {
+    public Sport(Long sportId, String name, String image) {
         this.id = sportId;
         this.name = name;
+        this.image = image;
     }
 }
