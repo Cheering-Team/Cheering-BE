@@ -152,6 +152,7 @@ public class PlayerService {
     }
 
     public List<PlayerResponse.PlayerDTO> getMyPlayers(User user) {
-        return playerUserRepository.findByUserId(user.getId()).stream().map((playerUser -> new PlayerResponse.PlayerDTO(playerUser.getPlayer(), new PlayerUserResponse.PlayerUserDTO(playerUser)))).toList();
+        List<PlayerUser> playerUsers = playerUserRepository.findByUserId(user.getId()).stream().sorted(Comparator.comparing(playerUser -> playerUser.getPlayer().getTeam() != null ? 0 : 1)).toList();
+        return playerUsers.stream().map((playerUser -> new PlayerResponse.PlayerDTO(playerUser.getPlayer(), new PlayerUserResponse.PlayerUserDTO(playerUser)))).toList();
     }
 }
