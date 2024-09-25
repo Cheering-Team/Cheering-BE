@@ -102,6 +102,8 @@ public class UserService {
 
     @Transactional
     public UserResponse.TokenDTO refresh(String refreshToken) {
+        System.out.println("재발급 시도");
+
         String token = refreshToken.split(" ")[1];
 
         String phone = jwtUtil.getUsername(token);

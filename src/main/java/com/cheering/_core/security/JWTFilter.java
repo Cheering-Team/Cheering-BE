@@ -17,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.InvalidClassException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,9 +35,13 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
+        LocalDateTime now = LocalDateTime.now();
+        System.out.println("현재 시각: " + now);
+
         String token = authorization.split(" ")[1];
 
         if(jwtUtil.isExpired(token)) {
+            System.out.println("토큰 만료");
             filterChain.doFilter(request, response);
             return;
         }
