@@ -46,7 +46,7 @@ public class PlayerService {
 
             List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map((team -> {
                 Player community = playerRepository.findByTeamId(team.getId());
-                return new TeamResponse.TeamDTO(team, community.getId());
+                return new TeamResponse.TeamDTO(team, null, community.getId());
             })).toList();
 
             Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId());
@@ -73,6 +73,7 @@ public class PlayerService {
         Player community = playerRepository.findByTeamId(teamId);
 
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+        Player teamCommunity = playerRepository.findByTeamId(team.getId());
         League league = team.getLeague();
         Sport sport = league.getSport();
 
@@ -87,7 +88,7 @@ public class PlayerService {
             }
 
         }).toList();
-        TeamResponse.TeamDTO teamDTO = new TeamResponse.TeamDTO(team, community.getId());
+        TeamResponse.TeamDTO teamDTO = new TeamResponse.TeamDTO(team, playerUserRepository.countByPlayerId(teamCommunity.getId()), community.getId());
 
         return new PlayerResponse.PlayersOfTeamDTO(sport, league, teamDTO, playerDTOS);
     }
@@ -103,7 +104,7 @@ public class PlayerService {
 
         List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map((team -> {
             Player community = playerRepository.findByTeamId(team.getId());
-            return new TeamResponse.TeamDTO(team, community.getId());
+            return new TeamResponse.TeamDTO(team, null, community.getId());
         })).toList();
 
         Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId());
