@@ -39,13 +39,17 @@ public class PlayerResponse {
         }
     }
 
-    public record PlayerAndTeamsDTO(Long id, String koreanName, String englishName, String image, String backgroundImage, Long fanCount, PlayerUserResponse.PlayerUserDTO user, List<TeamResponse.TeamDTO> teams) {
+    public record PlayerAndTeamsDTO(Long id, String koreanName, String englishName, String image, String backgroundImage, Long fanCount, PlayerUserResponse.PlayerUserDTO user, List<TeamResponse.TeamDTO> teams, String sportName, String leagueName) {
 
         public PlayerAndTeamsDTO(Player player, Long fanCount, List<TeamResponse.TeamDTO> teams) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, null, teams);
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, null, teams, null, null);
         }
         public PlayerAndTeamsDTO(Player player, Long fanCount, PlayerUserResponse.PlayerUserDTO playerUserDTO, List<TeamResponse.TeamDTO> teams) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, playerUserDTO, teams);
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, playerUserDTO, teams, null, null);
+        }
+
+        public PlayerAndTeamsDTO(Player player, Long fanCount, PlayerUserResponse.PlayerUserDTO playerUserDTO, String sportName, String leagueName) {
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, playerUserDTO, null, sportName, leagueName);
         }
     }
 }
