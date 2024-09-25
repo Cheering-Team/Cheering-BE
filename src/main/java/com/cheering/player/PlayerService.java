@@ -21,8 +21,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +37,7 @@ public class PlayerService {
 
     public List<PlayerResponse.PlayerAndTeamsDTO> getPlayers(String name, User user) {
         name = name.replace(" ", "");
-        List<Player> players = playerRepository.findByNameOrTeamName(name);
+        List<Player> players = playerRepository.findByNameOrTeamName(name).stream().sorted(Comparator.comparing(player -> player.getTeam() != null ? 0 : 1)).toList();
 
         return players.stream().map((player -> {
             long fanCount = playerUserRepository.countByPlayerId(player.getId());
