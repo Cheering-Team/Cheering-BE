@@ -110,8 +110,14 @@ public class PlayerService {
 
         if(playerUser.isPresent()) {
             PlayerUserResponse.PlayerUserDTO playerUserDTO = new PlayerUserResponse.PlayerUserDTO(playerUser.get());
+            if(player.getTeam() != null) {
+                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName());
+            }
             return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, teamDTOS);
         } else {
+            if(player.getTeam() != null) {
+                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName());
+            }
             return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, teamDTOS);
         }
     }
