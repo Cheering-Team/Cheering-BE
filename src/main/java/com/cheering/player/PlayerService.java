@@ -42,7 +42,10 @@ public class PlayerService {
 
             List<Team> teams = teamPlayerRepository.findByPlayerId(player.getId());
 
-            List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map(TeamResponse.TeamDTO::new).toList();
+            List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map((team -> {
+                Player community = playerRepository.findByTeamId(team.getId());
+                return new TeamResponse.TeamDTO(team, community.getId());
+            })).toList();
 
             Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId());
 
@@ -59,6 +62,7 @@ public class PlayerService {
     @Transactional
     public PlayerResponse.PlayersOfTeamDTO getPlayersByTeam(Long teamId, User user) {
         List<Player> players = teamPlayerRepository.findByTeamId(teamId);
+        Player community = playerRepository.findByTeamId(teamId);
 
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
         League league = team.getLeague();
@@ -75,7 +79,7 @@ public class PlayerService {
             }
 
         }).toList();
-        TeamResponse.TeamDTO teamDTO = new TeamResponse.TeamDTO(team);
+        TeamResponse.TeamDTO teamDTO = new TeamResponse.TeamDTO(team, community.getId());
 
         return new PlayerResponse.PlayersOfTeamDTO(sport, league, teamDTO, playerDTOS);
     }
@@ -89,7 +93,10 @@ public class PlayerService {
 
         List<Team> teams = teamPlayerRepository.findByPlayerId(playerId);
 
-        List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map(TeamResponse.TeamDTO::new).toList();
+        List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map((team -> {
+            Player community = playerRepository.findByTeamId(team.getId());
+            return new TeamResponse.TeamDTO(team, community.getId());
+        })).toList();
 
         Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId());
 

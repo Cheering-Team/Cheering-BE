@@ -1,5 +1,7 @@
 package com.cheering.team;
 
+import com.cheering.player.Player;
+import com.cheering.player.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +11,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TeamService {
     private final TeamRepository teamRepository;
+    private final PlayerRepository playerRepository;
+
     public List<TeamResponse.TeamDTO> getTeams(Long leagueId) {
         List<Team> teams = teamRepository.findByLeagueId(leagueId);
 
