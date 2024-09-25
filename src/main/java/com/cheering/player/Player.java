@@ -31,8 +31,7 @@ public class Player {
     private Team team;
 
     @Builder
-    public Player(Long playerId, String koreanName, String englishName, String image, String backgroundImage, Team team) {
-        this.id = playerId;
+    public Player(String koreanName, String englishName, String image, String backgroundImage, Team team) {
         this.koreanName = koreanName;
         this.englishName = englishName;
         this.image = image;
