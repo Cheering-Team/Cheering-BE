@@ -3,4 +3,4 @@ CREATE TABLE public.notice_tb (
     title VARCHAT(256),
     created_at TIMESTAMP(6) WITHOUT TIME ZONE,
     updated_at TIMESTAMP(6) WITHOUT TIME ZONE,
-)
+);
