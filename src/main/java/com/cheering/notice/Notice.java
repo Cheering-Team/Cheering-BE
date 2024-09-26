@@ -15,4 +15,11 @@ public class Notice extends BaseTimeEntity {
 
     @Column
     private String title;
+
+    @Column
+    private String image;
+
+    @Column(length = 1000)
+    private String content;
+
 }
