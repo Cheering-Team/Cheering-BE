@@ -6,16 +6,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class ChatRoomController {
     private final ChatRoomService chatRoomService;
+
+    // 특정 선수 채팅방 만들기
+    @GetMapping("/players/{playerId}/chatrooms")
+    public ResponseEntity<?> createChatRoom(@PathVariable("playerId") Long playerId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방을 개설하였습니다.", chatRoomService.createChatRoom(playerId, customUserDetails.getUser())));
+    }
 
     // 특정 선수 채팅방 목록 불러오기 (일단 대표만)
     @GetMapping("/players/{playerId}/chatrooms")

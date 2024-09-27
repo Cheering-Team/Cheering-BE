@@ -30,16 +30,25 @@ public class ChatRoom {
     @Column
     private String description;
 
+    @Column
+    private Integer max;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private ChatRoomType type;
+
     @ManyToOne
     @JoinColumn(name = "player_id")
     private Player player;
 
     @Builder
-    public ChatRoom(Long chatRoomId, String name, String image, String description, Player player) {
+    public ChatRoom(Long chatRoomId, String name, String image, String description, Player player, Integer max, ChatRoomType type) {
         this.id = chatRoomId;
         this.name = name;
         this.image = image;
         this.description = description;
         this.player = player;
+        this.max = max;
+        this.type = type;
     }
 }

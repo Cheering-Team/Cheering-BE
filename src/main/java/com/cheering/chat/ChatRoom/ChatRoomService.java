@@ -28,6 +28,12 @@ public class ChatRoomService {
 
     final private Map<Long, Map<String, Long>> chatRoomSessions = new ConcurrentHashMap<>();
 
+    public ChatRoomResponse.IdDTO createChatRoom(Long playerId, User user) {
+        PlayerUser curUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+        return null;
+    }
+
     public List<ChatRoomResponse.ChatRoomDTO> getChatRooms(Long playerId) {
         Player player = playerRepository.findById(playerId).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
@@ -39,7 +45,7 @@ public class ChatRoomService {
             if(chatRoomSessions.get(chatRoom.getId()) != null) {
                 count = chatRoomSessions.get(chatRoom.getId()).size();
             }
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count);
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer().getId());
         } )).toList();
     }
 
@@ -55,7 +61,7 @@ public class ChatRoomService {
             if(chatRoomSessions.get(chatRoom.getId()) != null) {
                 count = chatRoomSessions.get(chatRoom.getId()).size();
             }
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count);
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer().getId());
         } )).toList();
     }
 
