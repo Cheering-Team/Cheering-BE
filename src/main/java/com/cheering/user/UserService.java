@@ -111,7 +111,7 @@ public class UserService {
 
         String storedToken = redisUtils.getData(user.getId().toString());
 
-        if(!storedToken.equals(token)) {
+        if(storedToken == null || !storedToken.equals(token)) {
             throw new CustomException(ExceptionCode.INVALID_TOKEN);
         }
 
