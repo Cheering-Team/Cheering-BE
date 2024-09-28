@@ -62,7 +62,6 @@ public class ChatRoomService {
 
         List<ChatRoom> chatRooms = chatRoomRepository.findByPlayer(player);
 
-
         return chatRooms.stream().map((chatRoom -> {
             int count = 0;
             if(chatRoomSessions.get(chatRoom.getId()) != null) {
@@ -77,7 +76,9 @@ public class ChatRoomService {
 
         List<Player> players = playerUsers.stream().map((PlayerUser::getPlayer)).toList();
 
-        List<ChatRoom> chatRooms = chatRoomRepository.findByPlayerIn(players).stream().sorted(Comparator.comparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
+        List<ChatRoom> chatRooms = chatRoomRepository.findByPlayerIn(players).stream().sorted(Comparator
+                        .comparing((ChatRoom chatRoom) -> !chatRoom.getType().equals(ChatRoomType.OFFICIAL))
+                        .thenComparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
 
         return chatRooms.stream().map((chatRoom -> {
             int count = 0;

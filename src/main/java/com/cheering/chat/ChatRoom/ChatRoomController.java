@@ -27,7 +27,7 @@ public class ChatRoomController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방을 개설하였습니다.", chatRoomService.createChatRoom(playerId, name, description, image, max, customUserDetails.getUser())));
     }
 
-    // 특정 선수 채팅방 목록 불러오기 (일단 대표만)
+    // 특정 선수 채팅방 목록 불러오기
     @GetMapping("/players/{playerId}/chatrooms")
     public ResponseEntity<?> getChatRooms(@PathVariable("playerId") Long playerId) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 목록을 불러왔습니다.", chatRoomService.getChatRooms(playerId)));
