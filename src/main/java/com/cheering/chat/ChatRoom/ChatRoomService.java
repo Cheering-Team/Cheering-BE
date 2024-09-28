@@ -122,8 +122,11 @@ public class ChatRoomService {
         if(chatRoomSessions.get(chatRoomId) != null) {
             count = chatRoomSessions.get(chatRoomId).size();
         }
-
-        return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curPlayerUser);
+        if(chatRoom.getType().equals(ChatRoomType.OFFICIAL)) {
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curPlayerUser);
+        } else {
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curPlayerUser, chatRoom.getCreator());
+        }
     }
 
     public void addUserToRoom(Long chatRoomId, String sessionId, Long userId) {

@@ -15,8 +15,12 @@ public class ChatRoomResponse {
             this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType().toString(), count, null, new PlayerResponse.PlayerDTO(player), null);
         }
 
+        public ChatRoomDTO(ChatRoom chatRoom, Integer count, PlayerUser playerUser, PlayerUser creator) {
+            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType().toString(), count, new PlayerUserResponse.PlayerUserDTO(playerUser), new PlayerResponse.PlayerDTO(playerUser.getPlayer()), new PlayerUserResponse.PlayerUserDTO(creator));
+        }
+
         public ChatRoomDTO(ChatRoom chatRoom, Integer count, PlayerUser playerUser) {
-            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType().toString(), count, new PlayerUserResponse.PlayerUserDTO(playerUser), new PlayerResponse.PlayerDTO(playerUser.getPlayer()), new PlayerUserResponse.PlayerUserDTO(chatRoom.getCreator()));
+            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType().toString(), count, new PlayerUserResponse.PlayerUserDTO(playerUser), new PlayerResponse.PlayerDTO(playerUser.getPlayer()), null);
         }
     }
 
