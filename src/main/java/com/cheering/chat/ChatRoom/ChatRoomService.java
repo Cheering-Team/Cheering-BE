@@ -2,6 +2,7 @@ package com.cheering.chat.ChatRoom;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
+import com.cheering._core.util.S3Util;
 import com.cheering.chat.ChatRequest;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
@@ -11,6 +12,7 @@ import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -25,13 +27,34 @@ public class ChatRoomService {
     private final PlayerRepository playerRepository;
     private final PlayerUserRepository playerUserRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final S3Util s3Util;
 
     final private Map<Long, Map<String, Long>> chatRoomSessions = new ConcurrentHashMap<>();
 
-    public ChatRoomResponse.IdDTO createChatRoom(Long playerId, User user) {
+    public ChatRoomResponse.IdDTO createChatRoom(Long playerId, String name, String description, MultipartFile image, Integer max, User user) {
+        Player player = playerRepository.findById(playerId).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
         PlayerUser curUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
-        return null;
+        String imageUrl = "";
+        if(image == null) {
+            imageUrl = "https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-chat-profile.png";
+        } else {
+            imageUrl = s3Util.upload(image);
+        }
+
+        ChatRoom chatRoom = ChatRoom.builder()
+                .name(name)
+                .description(description)
+                .max(max)
+                .image(imageUrl)
+                .player(player)
+                .creator(curUser)
+                .type(ChatRoomType.PUBLIC)
+                .build();
+
+        chatRoomRepository.save(chatRoom);
+
+        return new ChatRoomResponse.IdDTO(chatRoom.getId());
     }
 
     public List<ChatRoomResponse.ChatRoomDTO> getChatRooms(Long playerId) {

@@ -1,5 +1,6 @@
 package com.cheering.player.relation;
 
+import com.cheering.chat.ChatRoom.ChatRoom;
 import com.cheering.comment.Comment;
 import com.cheering.comment.reComment.ReComment;
 import com.cheering.notification.Notification;
@@ -74,6 +75,9 @@ public class PlayerUser {
 
     @OneToMany(mappedBy = "from", cascade = CascadeType.REMOVE)
     private List<Notification> notificationsFrom = new ArrayList<>();
+
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.REMOVE)
+    private List<ChatRoom> chatRooms = new ArrayList<>();
 
     @Builder
     public PlayerUser(Player player, User user, String nickname, String image) {

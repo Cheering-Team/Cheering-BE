@@ -1,6 +1,7 @@
 package com.cheering.chat.ChatRoom;
 
 import com.cheering.player.Player;
+import com.cheering.player.relation.PlayerUser;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.web.socket.WebSocketSession;
@@ -41,8 +42,12 @@ public class ChatRoom {
     @JoinColumn(name = "player_id")
     private Player player;
 
+    @ManyToOne
+    @JoinColumn(name = "player_user_id")
+    private PlayerUser creator;
+
     @Builder
-    public ChatRoom(Long chatRoomId, String name, String image, String description, Player player, Integer max, ChatRoomType type) {
+    public ChatRoom(Long chatRoomId, String name, String image, String description, Player player, Integer max, ChatRoomType type, PlayerUser creator) {
         this.id = chatRoomId;
         this.name = name;
         this.image = image;
@@ -50,5 +55,6 @@ public class ChatRoom {
         this.player = player;
         this.max = max;
         this.type = type;
+        this.creator = creator;
     }
 }
