@@ -10,13 +10,13 @@ import java.util.List;
 public class ChatRoomResponse {
     public record IdDTO (Long id) { }
 
-    public record ChatRoomDTO (Long id, String name, String image, String description, Integer max, String type, Integer count, PlayerUserResponse.PlayerUserDTO playerUser, Long playerId) {
-        public ChatRoomDTO(ChatRoom chatRoom, Integer count, Long playerId) {
-            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType().toString(), count, null, playerId);
+    public record ChatRoomDTO (Long id, String name, String image, String description, Integer max, String type, Integer count, PlayerUserResponse.PlayerUserDTO playerUser, PlayerResponse.PlayerDTO player, PlayerUserResponse.PlayerUserDTO creator) {
+        public ChatRoomDTO(ChatRoom chatRoom, Integer count, Player player) {
+            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType().toString(), count, null, new PlayerResponse.PlayerDTO(player), null);
         }
 
         public ChatRoomDTO(ChatRoom chatRoom, Integer count, PlayerUser playerUser) {
-            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType().toString(), count, new PlayerUserResponse.PlayerUserDTO(playerUser), playerUser.getPlayer().getId());
+            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType().toString(), count, new PlayerUserResponse.PlayerUserDTO(playerUser), new PlayerResponse.PlayerDTO(playerUser.getPlayer()), new PlayerUserResponse.PlayerUserDTO(chatRoom.getCreator()));
         }
     }
 

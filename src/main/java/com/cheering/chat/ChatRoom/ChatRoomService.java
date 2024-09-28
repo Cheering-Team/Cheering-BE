@@ -68,7 +68,7 @@ public class ChatRoomService {
             if(chatRoomSessions.get(chatRoom.getId()) != null) {
                 count = chatRoomSessions.get(chatRoom.getId()).size();
             }
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer().getId());
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer());
         } )).toList();
 
         List <ChatRoomResponse.ChatRoomDTO> publicChatRoomDTOs =  publicChatRooms.stream().map((chatRoom -> {
@@ -76,7 +76,7 @@ public class ChatRoomService {
             if(chatRoomSessions.get(chatRoom.getId()) != null) {
                 count = chatRoomSessions.get(chatRoom.getId()).size();
             }
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer().getId());
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer());
         } )).toList();
 
         return List.of(new ChatRoomResponse.ChatRoomSectionDTO("official", officialChatRoomDTOs),
@@ -97,7 +97,7 @@ public class ChatRoomService {
             if(chatRoomSessions.get(chatRoom.getId()) != null) {
                 count = chatRoomSessions.get(chatRoom.getId()).size();
             }
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer().getId());
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer());
         } )).toList();
 
         List<ChatRoomResponse.ChatRoomDTO> publicChatRoomDTOs = publicChatRooms.stream().map((chatRoom -> {
@@ -105,7 +105,7 @@ public class ChatRoomService {
             if(chatRoomSessions.get(chatRoom.getId()) != null) {
                 count = chatRoomSessions.get(chatRoom.getId()).size();
             }
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer().getId());
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer());
         } )).toList();
 
         return List.of(new ChatRoomResponse.ChatRoomSectionDTO("official", officialChatRoomDTOs),
