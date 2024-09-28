@@ -57,36 +57,59 @@ public class ChatRoomService {
         return new ChatRoomResponse.IdDTO(chatRoom.getId());
     }
 
-    public List<ChatRoomResponse.ChatRoomDTO> getChatRooms(Long playerId) {
+    public List<ChatRoomResponse.ChatRoomSectionDTO> getChatRooms(Long playerId) {
         Player player = playerRepository.findById(playerId).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
-        List<ChatRoom> chatRooms = chatRoomRepository.findByPlayer(player);
+        List<ChatRoom> officialChatRooms = chatRoomRepository.findByPlayerAndType(player, ChatRoomType.OFFICIAL);
+        List<ChatRoom> publicChatRooms = chatRoomRepository.findByPlayerAndType(player, ChatRoomType.PUBLIC);
 
-        return chatRooms.stream().map((chatRoom -> {
+        List <ChatRoomResponse.ChatRoomDTO> officialChatRoomDTOs = officialChatRooms.stream().map((chatRoom -> {
             int count = 0;
             if(chatRoomSessions.get(chatRoom.getId()) != null) {
                 count = chatRoomSessions.get(chatRoom.getId()).size();
             }
             return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer().getId());
         } )).toList();
+
+        List <ChatRoomResponse.ChatRoomDTO> publicChatRoomDTOs =  publicChatRooms.stream().map((chatRoom -> {
+            int count = 0;
+            if(chatRoomSessions.get(chatRoom.getId()) != null) {
+                count = chatRoomSessions.get(chatRoom.getId()).size();
+            }
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer().getId());
+        } )).toList();
+
+        return List.of(new ChatRoomResponse.ChatRoomSectionDTO("official", officialChatRoomDTOs),
+                new ChatRoomResponse.ChatRoomSectionDTO("public", publicChatRoomDTOs));
     }
 
-    public List<ChatRoomResponse.ChatRoomDTO> getMyChatRooms(User user) {
+    public List<ChatRoomResponse.ChatRoomSectionDTO> getMyChatRooms(User user) {
         List<PlayerUser> playerUsers = playerUserRepository.findByUserId(user.getId());
 
         List<Player> players = playerUsers.stream().map((PlayerUser::getPlayer)).toList();
 
-        List<ChatRoom> chatRooms = chatRoomRepository.findByPlayerIn(players).stream().sorted(Comparator
-                        .comparing((ChatRoom chatRoom) -> !chatRoom.getType().equals(ChatRoomType.OFFICIAL))
-                        .thenComparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
+        List<ChatRoom> officialChatRooms = chatRoomRepository.findByPlayerInAndType(players, ChatRoomType.OFFICIAL).stream().sorted(Comparator.comparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
 
-        return chatRooms.stream().map((chatRoom -> {
+        List<ChatRoom> publicChatRooms = chatRoomRepository.findByPlayerInAndType(players, ChatRoomType.PUBLIC).stream().sorted(Comparator.comparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
+
+        List<ChatRoomResponse.ChatRoomDTO> officialChatRoomDTOs = officialChatRooms.stream().map((chatRoom -> {
             int count = 0;
             if(chatRoomSessions.get(chatRoom.getId()) != null) {
                 count = chatRoomSessions.get(chatRoom.getId()).size();
             }
             return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer().getId());
         } )).toList();
+
+        List<ChatRoomResponse.ChatRoomDTO> publicChatRoomDTOs = publicChatRooms.stream().map((chatRoom -> {
+            int count = 0;
+            if(chatRoomSessions.get(chatRoom.getId()) != null) {
+                count = chatRoomSessions.get(chatRoom.getId()).size();
+            }
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer().getId());
+        } )).toList();
+
+        return List.of(new ChatRoomResponse.ChatRoomSectionDTO("official", officialChatRoomDTOs),
+                new ChatRoomResponse.ChatRoomSectionDTO("public", publicChatRoomDTOs));
     }
 
     public ChatRoomResponse.ChatRoomDTO getChatRoomById(Long chatRoomId, User user) {

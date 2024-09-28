@@ -9,8 +9,7 @@ import java.util.List;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
-    @Query("SELECT c FROM ChatRoom c WHERE c.player = :player ORDER BY CASE WHEN c.type = 'OFFICIAL' THEN 0 ELSE 1 END")
-    List<ChatRoom> findByPlayer(@Param("player") Player player);
+    List<ChatRoom> findByPlayerAndType(Player player, ChatRoomType type);
 
-    List<ChatRoom> findByPlayerIn(List<Player> players);
+    List<ChatRoom> findByPlayerInAndType(List<Player> players, ChatRoomType type);
 }
