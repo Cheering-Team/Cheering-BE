@@ -1,19 +1,12 @@
 package com.cheering.chat;
 
-import com.cheering._core.errors.CustomException;
-import com.cheering._core.errors.ExceptionCode;
-import com.cheering.chat.ChatRoom.ChatRoom;
-import com.cheering.chat.ChatRoom.ChatRoomRepository;
 import com.cheering.chat.ChatRoom.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
-import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.util.List;
 import java.util.Map;

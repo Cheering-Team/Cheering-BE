@@ -20,6 +20,10 @@ public class ChatErrorHandler extends StompSubProtocolErrorHandler {
             return errorMessage("토큰이 만료되었습니다.");
         }
 
+        if("EXCEED".equals(ex.getMessage())) {
+            return errorMessage("최대인원을 초과하였습니다.");
+        }
+
         return super.handleClientMessageProcessingError(clientMessage, ex);
     }
 

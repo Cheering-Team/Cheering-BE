@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -88,9 +87,17 @@ public class ChatRoomService {
 
         List<Player> players = playerUsers.stream().map((PlayerUser::getPlayer)).toList();
 
+        // 공식은 모두
         List<ChatRoom> officialChatRooms = chatRoomRepository.findByPlayerInAndType(players, ChatRoomType.OFFICIAL).stream().sorted(Comparator.comparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
 
-        List<ChatRoom> publicChatRooms = chatRoomRepository.findByPlayerInAndType(players, ChatRoomType.PUBLIC).stream().sorted(Comparator.comparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
+        // 비공식은 내가 참여중인 채팅방만
+        List<ChatRoom> publicChatRooms = chatRoomRepository.findByPlayerInAndType(players, ChatRoomType.PUBLIC).stream()
+                .filter((chatRoom -> {
+                    PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(chatRoom.getPlayer().getId(), user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
+                    if(chatRoomSessions.get(chatRoom.getId()) == null) return false;
+                    return chatRoomSessions.get(chatRoom.getId()).values().stream().anyMatch(value -> value.equals(curPlayerUser.getId()));
+                }))
+                .sorted(Comparator.comparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
 
         List<ChatRoomResponse.ChatRoomDTO> officialChatRoomDTOs = officialChatRooms.stream().map((chatRoom -> {
             int count = 0;

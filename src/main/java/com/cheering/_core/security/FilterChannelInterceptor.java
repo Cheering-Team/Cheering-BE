@@ -1,7 +1,5 @@
 package com.cheering._core.security;
 
-import com.cheering._core.errors.CustomException;
-import com.cheering._core.errors.ExceptionCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.Ordered;
@@ -12,7 +10,6 @@ import org.springframework.messaging.MessageDeliveryException;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -38,7 +35,6 @@ public class FilterChannelInterceptor implements ChannelInterceptor {
                 Long userId = customUserDetails.getUser().getId();
 
                 headerAccessor.addNativeHeader("User", String.valueOf(userId));
-
             } catch(ExpiredJwtException e) {
                 throw new MessageDeliveryException("EXPIRED");
             }
