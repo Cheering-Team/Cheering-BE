@@ -1,15 +1,15 @@
-package com.cheering.chat.ChatRoom;
+package com.cheering.chat.chatRoom;
 
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -29,8 +29,8 @@ public class ChatRoomController {
 
     // 특정 선수 채팅방 목록 불러오기
     @GetMapping("/players/{playerId}/chatrooms")
-    public ResponseEntity<?> getChatRooms(@PathVariable("playerId") Long playerId) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 목록을 불러왔습니다.", chatRoomService.getChatRooms(playerId)));
+    public ResponseEntity<?> getChatRooms(@PathVariable("playerId") Long playerId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 목록을 불러왔습니다.", chatRoomService.getChatRooms(playerId, customUserDetails.getUser())));
     }
 
     // 내 참여중인 모든 채팅방 불러오기
@@ -44,5 +44,12 @@ public class ChatRoomController {
     @GetMapping("/chatrooms/{chatRoomId}")
     public ResponseEntity<?> getChatRoomById(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 정보를 불러왔습니다.", chatRoomService.getChatRoomById(chatRoomId, customUserDetails.getUser())));
+    }
+
+    // 채팅 불러오기
+    @GetMapping("/chatrooms/{chatRoomId}/chats")
+    public ResponseEntity<?> getChats(@PathVariable("chatRoomId") Long chatRoomId, @RequestParam int page, @RequestParam int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅을 불러왔습니다.", chatRoomService.getChats(chatRoomId, pageable)));
     }
 }

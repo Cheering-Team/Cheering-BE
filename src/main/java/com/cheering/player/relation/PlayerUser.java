@@ -1,6 +1,8 @@
 package com.cheering.player.relation;
 
-import com.cheering.chat.ChatRoom.ChatRoom;
+import com.cheering.chat.Chat;
+import com.cheering.chat.chatRoom.ChatRoom;
+import com.cheering.chat.session.ChatSession;
 import com.cheering.comment.Comment;
 import com.cheering.comment.reComment.ReComment;
 import com.cheering.notification.Notification;
@@ -78,6 +80,12 @@ public class PlayerUser {
 
     @OneToMany(mappedBy = "creator", cascade = CascadeType.REMOVE)
     private List<ChatRoom> chatRooms = new ArrayList<>();
+
+    @OneToMany(mappedBy = "writer", cascade = CascadeType.REMOVE)
+    private List<Chat> chats = new ArrayList<>();
+
+    @OneToMany(mappedBy = "playerUser", cascade = CascadeType.REMOVE)
+    private List<ChatSession> chatSessions = new ArrayList<>();
 
     @Builder
     public PlayerUser(Player player, User user, String nickname, String image) {

@@ -1,6 +1,6 @@
 package com.cheering.chat;
 
-import com.cheering.chat.ChatRoom.ChatRoomService;
+import com.cheering.chat.chatRoom.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;

@@ -18,9 +18,4 @@ public interface ReCommentRepository extends JpaRepository<ReComment, Long> {
 
     @Query("SELECT COUNT(re) FROM ReComment re WHERE re.comment.post.id = :postId AND re.isHide = false AND re.comment.isHide = false")
     Long countByPostId(@Param("postId") Long postId);
-
-    void deleteByPlayerUserIn(List<PlayerUser> playerUsers);
-    void deleteByPlayerUser(PlayerUser playerUser);
-    void deleteByCommentIn(List<Comment> commentList);
-    void deleteByComment(Comment comment);
 }

@@ -1,15 +1,13 @@
-package com.cheering.chat.ChatRoom;
+package com.cheering.chat.chatRoom;
 
+import com.cheering.chat.Chat;
+import com.cheering.chat.session.ChatSession;
 import com.cheering.player.Player;
 import com.cheering.player.relation.PlayerUser;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.web.socket.WebSocketSession;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "chat_room_tb")
@@ -45,6 +43,12 @@ public class ChatRoom {
     @ManyToOne
     @JoinColumn(name = "player_user_id")
     private PlayerUser creator;
+
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
+    private List<Chat> chats = new ArrayList<>();
+
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
+    private List<ChatSession> chatSessions = new ArrayList<>();
 
     @Builder
     public ChatRoom(Long chatRoomId, String name, String image, String description, Player player, Integer max, ChatRoomType type, PlayerUser creator) {

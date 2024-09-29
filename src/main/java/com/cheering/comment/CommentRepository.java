@@ -19,10 +19,5 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND c.isHide = false")
     Long countByPostId(@Param("postId") Long postId);
 
-    void deleteByPlayerUserIn(List<PlayerUser> playerUsers);
-    void deleteByPlayerUser(PlayerUser playerUser);
-
-    void deleteByPost(Post post);
-
     List<Comment> findByPost(Post post);
 }

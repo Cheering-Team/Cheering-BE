@@ -1,23 +1,32 @@
-package com.cheering.chat.ChatRoom;
+package com.cheering.chat.chatRoom;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.S3Util;
+import com.cheering.chat.Chat;
+import com.cheering.chat.ChatRepository;
 import com.cheering.chat.ChatRequest;
+import com.cheering.chat.ChatResponse;
+import com.cheering.chat.message.Message;
+import com.cheering.chat.message.MessageRepository;
+import com.cheering.chat.session.ChatSession;
+import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +34,11 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final PlayerRepository playerRepository;
     private final PlayerUserRepository playerUserRepository;
+    private final ChatRepository chatRepository;
+    private final MessageRepository messageRepository;
+    private final ChatSessionRepository chatSessionRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final S3Util s3Util;
-
-    final private Map<Long, Map<String, Long>> chatRoomSessions = new ConcurrentHashMap<>();
 
     public ChatRoomResponse.IdDTO createChatRoom(Long playerId, String name, String description, MultipartFile image, Integer max, User user) {
         Player player = playerRepository.findById(playerId).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
@@ -56,26 +66,22 @@ public class ChatRoomService {
         return new ChatRoomResponse.IdDTO(chatRoom.getId());
     }
 
-    public List<ChatRoomResponse.ChatRoomSectionDTO> getChatRooms(Long playerId) {
+    public List<ChatRoomResponse.ChatRoomSectionDTO> getChatRooms(Long playerId, User user) {
         Player player = playerRepository.findById(playerId).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
         List<ChatRoom> officialChatRooms = chatRoomRepository.findByPlayerAndType(player, ChatRoomType.OFFICIAL);
         List<ChatRoom> publicChatRooms = chatRoomRepository.findByPlayerAndType(player, ChatRoomType.PUBLIC);
 
         List <ChatRoomResponse.ChatRoomDTO> officialChatRoomDTOs = officialChatRooms.stream().map((chatRoom -> {
-            int count = 0;
-            if(chatRoomSessions.get(chatRoom.getId()) != null) {
-                count = chatRoomSessions.get(chatRoom.getId()).size();
-            }
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer());
+            int count = chatSessionRepository.countByChatRoomId(chatRoom.getId());
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer(), null);
         } )).toList();
 
         List <ChatRoomResponse.ChatRoomDTO> publicChatRoomDTOs =  publicChatRooms.stream().map((chatRoom -> {
-            int count = 0;
-            if(chatRoomSessions.get(chatRoom.getId()) != null) {
-                count = chatRoomSessions.get(chatRoom.getId()).size();
-            }
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer());
+            int count = chatSessionRepository.countByChatRoomId(chatRoom.getId());
+            Optional<ChatSession> chatSession = chatSessionRepository.findByChatRoomAndPlayerUser(chatRoom, curPlayerUser);
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer(), chatSession.isPresent());
         } )).toList();
 
         return List.of(new ChatRoomResponse.ChatRoomSectionDTO("official", officialChatRoomDTOs),
@@ -94,25 +100,18 @@ public class ChatRoomService {
         List<ChatRoom> publicChatRooms = chatRoomRepository.findByPlayerInAndType(players, ChatRoomType.PUBLIC).stream()
                 .filter((chatRoom -> {
                     PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(chatRoom.getPlayer().getId(), user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
-                    if(chatRoomSessions.get(chatRoom.getId()) == null) return false;
-                    return chatRoomSessions.get(chatRoom.getId()).values().stream().anyMatch(value -> value.equals(curPlayerUser.getId()));
+                    return chatSessionRepository.findByChatRoomAndPlayerUser(chatRoom, curPlayerUser).isPresent();
                 }))
                 .sorted(Comparator.comparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
 
         List<ChatRoomResponse.ChatRoomDTO> officialChatRoomDTOs = officialChatRooms.stream().map((chatRoom -> {
-            int count = 0;
-            if(chatRoomSessions.get(chatRoom.getId()) != null) {
-                count = chatRoomSessions.get(chatRoom.getId()).size();
-            }
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer());
+            int count = chatSessionRepository.countByChatRoomId(chatRoom.getId());
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer(), null);
         } )).toList();
 
         List<ChatRoomResponse.ChatRoomDTO> publicChatRoomDTOs = publicChatRooms.stream().map((chatRoom -> {
-            int count = 0;
-            if(chatRoomSessions.get(chatRoom.getId()) != null) {
-                count = chatRoomSessions.get(chatRoom.getId()).size();
-            }
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer());
+            int count = chatSessionRepository.countByChatRoomId(chatRoom.getId());
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatRoom.getPlayer(), true);
         } )).toList();
 
         return List.of(new ChatRoomResponse.ChatRoomSectionDTO("official", officialChatRoomDTOs),
@@ -125,10 +124,7 @@ public class ChatRoomService {
 
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(chatRoom.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
-        int count = 0;
-        if(chatRoomSessions.get(chatRoomId) != null) {
-            count = chatRoomSessions.get(chatRoomId).size();
-        }
+        int count = chatSessionRepository.countByChatRoomId(chatRoomId);
         if(chatRoom.getType().equals(ChatRoomType.OFFICIAL)) {
             return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curPlayerUser);
         } else {
@@ -136,15 +132,25 @@ public class ChatRoomService {
         }
     }
 
+    @Transactional
     public void addUserToRoom(Long chatRoomId, String sessionId, Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
 
         PlayerUser playerUser = playerUserRepository.findByPlayerIdAndUserId(chatRoom.getPlayer().getId(), userId).orElseThrow(()->new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
-        Map<String, Long> sessionMap = chatRoomSessions.computeIfAbsent(chatRoomId, k -> new ConcurrentHashMap<>());
+        Optional<ChatSession> chatSession = chatSessionRepository.findByChatRoomAndPlayerUser(chatRoom, playerUser);
 
-        sessionMap.entrySet().removeIf(entry -> entry.getValue().equals(playerUser.getId()));
-        sessionMap.put(sessionId, playerUser.getId());
+        if(chatSession.isEmpty()) {
+            ChatSession newChatSession = ChatSession.builder()
+                    .sessionId(sessionId)
+                    .chatRoom(chatRoom)
+                    .playerUser(playerUser)
+                    .build();
+            chatSessionRepository.save(newChatSession);
+        } else {
+            chatSession.get().setSessionId(sessionId);
+            chatSessionRepository.save(chatSession.get());
+        }
 
         broadcastUserCount(chatRoomId);
     }
@@ -152,29 +158,58 @@ public class ChatRoomService {
     public void sendMessage(ChatRequest.ChatRequestDTO chatDTO, String sessionId) {
         Long chatRoomId = chatDTO.chatRoomId();
 
-        Long playerUserId = chatRoomSessions.get(chatRoomId).get(sessionId);
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
 
-        PlayerUser playerUser = playerUserRepository.findById(playerUserId).orElseThrow(()-> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
+        ChatSession chatSession = chatSessionRepository.findByChatRoomAndSessionId(chatRoom, sessionId);
 
-        LocalDateTime createdAt = LocalDateTime.now();
+        PlayerUser curPlayerUser = chatSession.getPlayerUser();
 
-        simpMessagingTemplate.convertAndSend("/sub/chat/" + chatRoomId, new ChatResponse.ChatResponseDTO(chatDTO.message(), createdAt, playerUser));
-    }
+        LocalDateTime now = LocalDateTime.now();
 
-    public void removeUserFromRoom(Long chatRoomId, String sessionId) {
-        Map<String, Long> session = chatRoomSessions.get(chatRoomId);
-        if(session != null) {
-            session.remove(sessionId);
-            if(session.isEmpty()) {
-                chatRoomSessions.remove(chatRoomId);
+        // 비공식 채팅방만 채팅 저장
+        if(chatRoom.getType().equals(ChatRoomType.PUBLIC)){
+            Optional<Chat> chat = chatRepository.findByChatRoomAndWriterAndCreatedAtMinute(chatRoom.getId(), curPlayerUser.getId());
+            if(chat.isPresent()) {
+                Message message = Message.builder()
+                        .message(chatDTO.message())
+                        .chat(chat.get())
+                        .build();
+                messageRepository.save(message);
+            } else {
+                Chat newChat = Chat.builder()
+                        .chatRoom(chatRoom)
+                        .writer(curPlayerUser)
+                        .build();
+                chatRepository.save(newChat);
+
+                Message message = Message.builder()
+                        .message(chatDTO.message())
+                        .chat(newChat)
+                        .build();
+                messageRepository.save(message);
             }
         }
+        simpMessagingTemplate.convertAndSend("/sub/chat/" + chatRoomId, new ChatResponse.ChatResponseDTO(chatDTO.message(), now, curPlayerUser));
+    }
+
+    @Transactional
+    public void removeUserFromRoom(Long chatRoomId, String sessionId) {
+        chatSessionRepository.deleteByChatRoomIdAndSessionId(chatRoomId, sessionId);
 
         broadcastUserCount(chatRoomId);
     }
 
     private void broadcastUserCount(Long chatRoomId) {
-        int count = chatRoomSessions.getOrDefault(chatRoomId, new ConcurrentHashMap<>()).size();
+        int count = chatSessionRepository.countByChatRoomId(chatRoomId);
         simpMessagingTemplate.convertAndSend("/sub/" + chatRoomId + "/count", count);
+    }
+
+    public ChatResponse.ChatListDTO getChats(Long chatRoomId, Pageable pageable) {
+        Page<Chat> chats = chatRepository.findByChatRoomId(chatRoomId, pageable);
+
+        return new ChatResponse.ChatListDTO(chats, chats.getContent().stream().map((chat -> {
+            List<String> messages = messageRepository.findByChat(chat).stream().map((Message::getMessage)).toList();
+            return new ChatResponse.ChatDTO(messages, chat.getCreatedAt(), chat.getWriter());
+        })).toList());
     }
 }
