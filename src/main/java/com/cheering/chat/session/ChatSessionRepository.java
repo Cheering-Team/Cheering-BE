@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> {
@@ -21,4 +22,6 @@ public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> 
 
     @Query("SELECT c FROM ChatSession c WHERE c.chatRoom = :chatRoom AND c.sessionId = :sessionId")
     ChatSession findByChatRoomAndSessionId(@Param("chatRoom") ChatRoom chatRoom, @Param("sessionId") String sessionId);
+
+    List<ChatSession> findByChatRoom(ChatRoom chatRoom);
 }

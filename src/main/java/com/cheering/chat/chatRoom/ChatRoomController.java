@@ -52,4 +52,17 @@ public class ChatRoomController {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅을 불러왔습니다.", chatRoomService.getChats(chatRoomId, pageable)));
     }
+
+    // 참여자 불러오기
+    @GetMapping("/chatrooms/{chatRoomId}/participants")
+    public ResponseEntity<?> getParticipants(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "참여자 목록을 불러왔습니다.", chatRoomService.getParticipants(chatRoomId, customUserDetails.getUser())));
+    }
+
+    // 채팅방 삭제하기
+    @DeleteMapping("/chatrooms/{chatRoomId}")
+    public ResponseEntity<?> deleteChatRoom(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        chatRoomService.deleteChatRoom(chatRoomId, customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방을 삭제하였습니다.", null));
+    }
 }

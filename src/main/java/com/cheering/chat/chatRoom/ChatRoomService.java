@@ -15,6 +15,7 @@ import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.player.relation.PlayerUserResponse;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -211,5 +213,36 @@ public class ChatRoomService {
             List<String> messages = messageRepository.findByChat(chat).stream().map((Message::getMessage)).toList();
             return new ChatResponse.ChatDTO(messages, chat.getCreatedAt(), chat.getWriter());
         })).toList());
+    }
+
+    public List<PlayerUserResponse.PlayerUserDTO> getParticipants(Long chatRoomId, User user) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+        if(chatRoom.getType().equals(ChatRoomType.OFFICIAL) || chatRoom.getCreator() == null) {
+            return null;
+        }
+
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(chatRoom.getPlayer().getId(), user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
+        List<PlayerUser> playerUsers = chatSessionRepository.findByChatRoom(chatRoom).stream().map(ChatSession::getPlayerUser).toList();
+
+        List<PlayerUser> mutablePlayerUsers = new ArrayList<>(playerUsers);
+        mutablePlayerUsers.remove(chatRoom.getCreator());
+        mutablePlayerUsers.remove(curPlayerUser);
+
+        List<PlayerUser> sortedPlayerUsers = new ArrayList<>();
+        if(!chatRoom.getCreator().equals(curPlayerUser)) sortedPlayerUsers.add(curPlayerUser);
+
+        sortedPlayerUsers.addAll(mutablePlayerUsers);
+
+        return sortedPlayerUsers.stream().map((PlayerUserResponse.PlayerUserDTO::new)).toList();
+    }
+
+    @Transactional
+    public void deleteChatRoom(Long chatRoomId, User user) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(chatRoom.getPlayer().getId(), user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
+
+        if(chatRoom.getCreator().equals(curPlayerUser)) {
+            chatRoomRepository.deleteById(chatRoomId);
+        }
     }
 }
