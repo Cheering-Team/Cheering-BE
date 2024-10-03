@@ -19,6 +19,7 @@ import com.cheering.post.Like.LikeRepository;
 import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.PostImage.PostImageRepository;
 import com.cheering.post.PostImage.PostImageResponse;
+import com.cheering.post.PostImage.PostImageType;
 import com.cheering.post.Tag.Tag;
 import com.cheering.post.Tag.TagRepository;
 import com.cheering.post.relation.PostTag;
@@ -98,6 +99,7 @@ public class PostService {
                     String imageUrl = s3Util.upload(image);
                     int width;
                     int height;
+                    PostImageType type;
 
                     int lastDotIndex = image.getOriginalFilename().lastIndexOf(".");
                     if(lastDotIndex == -1) {
@@ -107,6 +109,7 @@ public class PostService {
                     String extension = image.getOriginalFilename().substring(lastDotIndex + 1).toLowerCase();
 
                     if(extension.equals("mov") || extension.equals("mp4")) {
+                        type = PostImageType.VIDEO;
                         File convFile = File.createTempFile("temp", image.getOriginalFilename());
                         try (FileOutputStream fos = new FileOutputStream(convFile)) {
                             fos.write(image.getBytes());
@@ -126,6 +129,7 @@ public class PostService {
                         }
 
                     } else {
+                        type = PostImageType.IMAGE;
                         BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
 
                         width = bufferedImage.getWidth();
@@ -137,6 +141,7 @@ public class PostService {
                             .width(width)
                             .height(height)
                             .post(post)
+                            .type(type)
                             .build();
 
                     postImageRepository.save(postImage);

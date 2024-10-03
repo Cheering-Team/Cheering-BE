@@ -17,22 +17,30 @@ public class PostImage {
     @Column(name = "postimage_id")
     private Long id;
 
+    @Column
     private String path;
 
+    @Column
     private int width;
-    
+
+    @Column
     private int height;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private PostImageType type;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
 
     @Builder
-    public PostImage(Long postImageId, String path, int width, int height, Post post) {
+    public PostImage(Long postImageId, String path, int width, int height, Post post, PostImageType type) {
         this.id = postImageId;
         this.path = path;
         this.width = width;
         this.height = height;
         this.post = post;
+        this.type = type;
     }
 }
