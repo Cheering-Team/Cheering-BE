@@ -56,7 +56,8 @@ public class S3Util {
         }
 
         String extension = filename.substring(lastDotIndex + 1).toLowerCase();
-        List<String> allowedExtensionList = Arrays.asList("jpg", "jpeg", "png", "gif", "heic");
+        System.out.println(extension);
+        List<String> allowedExtensionList = Arrays.asList("jpg", "jpeg", "png", "gif", "heic", "mov", "mp4");
 
         if(!allowedExtensionList.contains(extension)) {
             throw new CustomException(ExceptionCode.INVALID_FILE_EXTENSION);
@@ -73,7 +74,11 @@ public class S3Util {
         byte[] bytes = IOUtils.toByteArray(is);
 
         ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType("image/" + extension);
+        if(extension.equals("mov") || extension.equals("mp4")) {
+            metadata.setContentType("video/" + extension);
+        } else {
+            metadata.setContentType("image/" + extension);
+        }
         metadata.setContentLength(bytes.length);
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 

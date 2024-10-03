@@ -64,6 +64,7 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.25.1'
     runtimeOnly 'org.postgresql:postgresql'
     implementation 'org.flywaydb:flyway-core'
+    implementation 'org.jcodec:jcodec-javase:0.2.5'
 }
 
 

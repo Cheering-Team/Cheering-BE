@@ -10,7 +10,6 @@ import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.notification.Notification;
 import com.cheering.notification.NotificationRepository;
 import com.cheering.player.Player;
-import com.cheering.player.PlayerRepository;
 import com.cheering.player.PlayerResponse;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
@@ -32,6 +31,11 @@ import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
+import org.jcodec.api.FrameGrab;
+import org.jcodec.api.JCodecException;
+import org.jcodec.common.io.FileChannelWrapper;
+import org.jcodec.common.io.NIOUtils;
+import org.jcodec.common.model.Picture;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -40,6 +44,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 
@@ -90,10 +96,41 @@ public class PostService {
             images.forEach((image)->{
                 try {
                     String imageUrl = s3Util.upload(image);
-                    BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
+                    int width;
+                    int height;
 
-                    int width = bufferedImage.getWidth();
-                    int height = bufferedImage.getHeight();
+                    int lastDotIndex = image.getOriginalFilename().lastIndexOf(".");
+                    if(lastDotIndex == -1) {
+                        throw new CustomException(ExceptionCode.INVALID_FILE_EXTENSION);
+                    }
+
+                    String extension = image.getOriginalFilename().substring(lastDotIndex + 1).toLowerCase();
+
+                    if(extension.equals("mov") || extension.equals("mp4")) {
+                        File convFile = File.createTempFile("temp", image.getOriginalFilename());
+                        try (FileOutputStream fos = new FileOutputStream(convFile)) {
+                            fos.write(image.getBytes());
+                        }
+                        try (FileChannelWrapper ch = NIOUtils.readableChannel(convFile)) {
+                            FrameGrab grab = FrameGrab.createFrameGrab(ch);
+                            Picture picture = grab.getNativeFrame();
+
+                            width = picture.getWidth();
+                            height = picture.getHeight();
+                        } catch (JCodecException e) {
+                            throw new CustomException(ExceptionCode.IMAGE_UPLOAD_FAILED);
+                        } finally {
+                            if (convFile.exists()) {
+                                convFile.delete();
+                            }
+                        }
+
+                    } else {
+                        BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
+
+                        width = bufferedImage.getWidth();
+                        height = bufferedImage.getHeight();
+                    }
 
                     PostImage postImage = PostImage.builder()
                             .path(imageUrl)
@@ -294,6 +331,13 @@ public class PostService {
         if(!writer.equals(curPlayerUser)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);
         }
+
+        List<PostImage> postImages = postImageRepository.findByPostId(postId);
+
+        for(PostImage postImage : postImages) {
+            s3Util.deleteImageFromS3(postImage.getPath());
+        }
+
         // Comment
         List<Comment> commentList = commentRepository.findByPost(post);
 
