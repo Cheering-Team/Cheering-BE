@@ -56,8 +56,7 @@ public class S3Util {
         }
 
         String extension = filename.substring(lastDotIndex + 1).toLowerCase();
-        System.out.println(extension);
-        List<String> allowedExtensionList = Arrays.asList("jpg", "jpeg", "png", "gif", "heic", "mov", "mp4");
+        List<String> allowedExtensionList = Arrays.asList("jpg", "jpeg", "png", "gif", "heic", "mov", "mp4", "avi", "mkv");
 
         if(!allowedExtensionList.contains(extension)) {
             throw new CustomException(ExceptionCode.INVALID_FILE_EXTENSION);
@@ -66,7 +65,7 @@ public class S3Util {
 
     private String uploadImageToS3(MultipartFile image) throws IOException{
         String originalFilename = image.getOriginalFilename();
-        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
 
         String s3FileName = UUID.randomUUID().toString().substring(0, 10) + originalFilename;
 
@@ -74,7 +73,7 @@ public class S3Util {
         byte[] bytes = IOUtils.toByteArray(is);
 
         ObjectMetadata metadata = new ObjectMetadata();
-        if(extension.equals("mov") || extension.equals("mp4")) {
+        if(extension.equals("mov") || extension.equals("mp4") || extension.equals("avi") || extension.equals("mkv")) {
             metadata.setContentType("video/" + extension);
         } else {
             metadata.setContentType("image/" + extension);

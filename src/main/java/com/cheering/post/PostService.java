@@ -108,7 +108,7 @@ public class PostService {
 
                     String extension = image.getOriginalFilename().substring(lastDotIndex + 1).toLowerCase();
 
-                    if(extension.equals("mov") || extension.equals("mp4")) {
+                    if(extension.equals("mov") || extension.equals("mp4") || extension.equals("avi") || extension.equals("mkv")) {
                         type = PostImageType.VIDEO;
                         File convFile = File.createTempFile("temp", image.getOriginalFilename());
                         try (FileOutputStream fos = new FileOutputStream(convFile)) {
