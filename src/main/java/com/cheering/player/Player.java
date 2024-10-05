@@ -17,7 +17,7 @@ public class Player {
     @Column(length = 20, nullable = false)
     private String koreanName;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 40, nullable = false)
     private String englishName;
 
     @Column

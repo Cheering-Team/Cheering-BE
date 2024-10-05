@@ -23,8 +23,11 @@ public class Team {
     @Column(name = "team_id")
     private Long id;
 
-    @Column(length = 30, nullable = false)
-    private String name;
+    @Column(length = 15, nullable = false)
+    private String firstName;
+
+    @Column(length = 15)
+    private String secondName;
 
     @ManyToOne
     @JoinColumn(name = "league_id")
@@ -33,18 +36,15 @@ public class Team {
     @Column
     private String image;
 
-    @Column
-    private Long fanCount;
-
     @OneToOne(mappedBy = "team", cascade = CascadeType.ALL)
     private Player player;
 
     @Builder
-    public Team(Long teamId, String name, League league, String image, Long fanCount) {
+    public Team(Long teamId, String firstName, String secondName, League league, String image) {
         this.id = teamId;
-        this.name = name;
+        this.firstName = firstName;
+        this.secondName = secondName;
         this.league = league;
         this.image = image;
-        this.fanCount = fanCount;
     }
 }

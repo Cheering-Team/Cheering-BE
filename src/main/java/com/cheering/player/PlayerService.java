@@ -45,8 +45,8 @@ public class PlayerService {
             List<Team> teams = teamPlayerRepository.findByPlayerId(player.getId());
 
             List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map((team -> {
-                Player community = playerRepository.findByTeamId(team.getId());
-                return new TeamResponse.TeamDTO(team, null, community.getId());
+                Optional<Player> community = playerRepository.findByTeamId(team.getId());
+                return new TeamResponse.TeamDTO(team, null, community.map(Player::getId).orElse(null));
             })).toList();
 
             Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId());
@@ -70,10 +70,9 @@ public class PlayerService {
     @Transactional
     public PlayerResponse.PlayersOfTeamDTO getPlayersByTeam(Long teamId, User user) {
         List<Player> players = teamPlayerRepository.findByTeamId(teamId);
-        Player community = playerRepository.findByTeamId(teamId);
+        Optional<Player> community = playerRepository.findByTeamId(teamId);
 
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
-        Player teamCommunity = playerRepository.findByTeamId(team.getId());
         League league = team.getLeague();
         Sport sport = league.getSport();
 
@@ -88,7 +87,8 @@ public class PlayerService {
             }
 
         }).toList();
-        TeamResponse.TeamDTO teamDTO = new TeamResponse.TeamDTO(team, playerUserRepository.countByPlayerId(teamCommunity.getId()), community.getId());
+
+        TeamResponse.TeamDTO teamDTO = community.map(player -> new TeamResponse.TeamDTO(team, playerUserRepository.countByPlayerId(player.getId()), player.getId())).orElseGet(() -> new TeamResponse.TeamDTO(team, null, null));
 
         return new PlayerResponse.PlayersOfTeamDTO(sport, league, teamDTO, playerDTOS);
     }
@@ -103,8 +103,8 @@ public class PlayerService {
         List<Team> teams = teamPlayerRepository.findByPlayerId(playerId);
 
         List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map((team -> {
-            Player community = playerRepository.findByTeamId(team.getId());
-            return new TeamResponse.TeamDTO(team, null, community.getId());
+            Optional<Player> community = playerRepository.findByTeamId(team.getId());
+            return new TeamResponse.TeamDTO(team, null, community.map(Player::getId).orElse(null));
         })).toList();
 
         Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId());

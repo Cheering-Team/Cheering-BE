@@ -17,6 +17,7 @@ public enum ExceptionCode {
     DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "이미 존재하는 닉네임입니다."),
 
     // TEAM
+    LEAGUE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 리그를 찾을 수 없습니다."),
     TEAM_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 팀을 찾을 수 없습니다."),
 
     // PLAYER

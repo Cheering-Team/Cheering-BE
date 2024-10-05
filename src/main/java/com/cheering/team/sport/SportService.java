@@ -14,7 +14,7 @@ public class SportService {
 
     @Transactional
     public List<SportResponse.SportDTO> getSports() {
-        List<Sport> sports = sportRepository.findAll();
+        List<Sport> sports = sportRepository.findSportsInCustomOrder();
 
         return sports.stream().map(SportResponse.SportDTO::new).toList();
     }
