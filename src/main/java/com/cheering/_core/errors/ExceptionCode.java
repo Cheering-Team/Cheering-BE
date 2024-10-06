@@ -49,6 +49,9 @@ public enum ExceptionCode {
     // NOTICE
     NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 공지사항을 찾을 수 없습니다."),
 
+    // BADWORD
+    BADWORD_INCLUDED(HttpStatus.BAD_REQUEST, "부적절한 단어가 포함되어 있습니다."),
+
     // S3
     EMPTY_FILE(HttpStatus.BAD_REQUEST, "유효하지 않는 파일입니다."),
     INVALID_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "확장자가 유효하지 않습니다."),

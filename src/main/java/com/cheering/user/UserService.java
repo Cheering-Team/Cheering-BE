@@ -4,6 +4,7 @@ import com.cheering._core.errors.*;
 import com.cheering._core.security.JWTUtil;
 import com.cheering._core.util.RedisUtils;
 import com.cheering._core.util.SmsUtil;
+import com.cheering.badword.BadWordService;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
 
@@ -38,6 +39,7 @@ public class UserService {
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
+    private final BadWordService badWordService;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
     private final JWTUtil jwtUtil;
@@ -83,6 +85,10 @@ public class UserService {
 
     @Transactional
     public UserResponse.TokenDTO signUp(UserRequest.SignUpDTO requestDTO) {
+        if(badWordService.containsBadWords(requestDTO.nickname())) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+
         User user = User.builder()
                 .phone(requestDTO.phone())
                 .nickname(requestDTO.nickname())
@@ -130,6 +136,9 @@ public class UserService {
 
     @Transactional
     public void updateUserNickname(UserRequest.NicknameDTO requestDTO, User user) {
+        if(badWordService.containsBadWords(requestDTO.nickname())) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
         user.setNickname(requestDTO.nickname());
         userRepository.save(user);
     }

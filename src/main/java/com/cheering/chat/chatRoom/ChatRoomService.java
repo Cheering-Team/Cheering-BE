@@ -3,6 +3,7 @@ package com.cheering.chat.chatRoom;
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.S3Util;
+import com.cheering.badword.BadWordService;
 import com.cheering.chat.Chat;
 import com.cheering.chat.ChatRepository;
 import com.cheering.chat.ChatRequest;
@@ -40,9 +41,18 @@ public class ChatRoomService {
     private final MessageRepository messageRepository;
     private final ChatSessionRepository chatSessionRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final BadWordService badWordService;
     private final S3Util s3Util;
 
     public ChatRoomResponse.IdDTO createChatRoom(Long playerId, String name, String description, MultipartFile image, Integer max, User user) {
+        if(badWordService.containsBadWords(name)) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+
+        if(badWordService.containsBadWords(description)) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+
         Player player = playerRepository.findById(playerId).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
         PlayerUser curUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 

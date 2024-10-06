@@ -3,6 +3,7 @@ package com.cheering.post;
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.S3Util;
+import com.cheering.badword.BadWordService;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
@@ -66,11 +67,16 @@ public class PostService {
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
+    private final BadWordService badWordService;
     private final S3Util s3Util;
     private final FcmServiceImpl fcmService;
 
     @Transactional
     public PostResponse.PostIdDTO writePost(Long playerId, String content, List<MultipartFile> images, List<String> tags, User user) {
+        if(badWordService.containsBadWords(content)) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+
         PlayerUser playerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
         Post post = Post.builder()
@@ -274,6 +280,10 @@ public class PostService {
     // 게시글 수정
     @Transactional
     public void editPost(Long postId, String content, List<MultipartFile> images, List<String> tags, User user) {
+        if(badWordService.containsBadWords(content)) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         PlayerUser writer = post.getPlayerUser();

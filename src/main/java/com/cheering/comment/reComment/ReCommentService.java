@@ -1,6 +1,7 @@
 package com.cheering.comment.reComment;
 
 import com.cheering._core.errors.*;
+import com.cheering.badword.BadWordService;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
 import com.cheering.notification.Fcm.FcmServiceImpl;
@@ -29,10 +30,15 @@ public class ReCommentService {
     private final PlayerUserRepository playerUserRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
+    private final BadWordService badWordService;
     private final FcmServiceImpl fcmService;
 
     @Transactional
     public ReCommentResponse.ReCommentIdDTO writeReComment(Long commentId, ReCommentRequest.WriteReCommentDTO requestDTO, User user) {
+        if(badWordService.containsBadWords(requestDTO.content())) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+
         String content = requestDTO.content();
         Long toId = requestDTO.toId();
 

@@ -1,6 +1,7 @@
 package com.cheering.comment;
 
 import com.cheering._core.errors.*;
+import com.cheering.badword.BadWordService;
 import com.cheering.comment.reComment.ReComment;
 import com.cheering.comment.reComment.ReCommentRepository;
 import com.cheering.notification.Fcm.FcmServiceImpl;
@@ -34,11 +35,16 @@ public class CommentService {
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
+    private final BadWordService badWordService;
     private final FcmServiceImpl fcmService;
 
     // 댓글 작성
     @Transactional
     public CommentResponse.CommentIdDTO writeComment(Long postId, CommentRequest.WriteCommentDTO requestDTO, User user) {
+        if(badWordService.containsBadWords(requestDTO.content())) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+
         String content = requestDTO.content();
 
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));

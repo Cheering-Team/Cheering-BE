@@ -3,6 +3,7 @@ package com.cheering.player.relation;
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.S3Util;
+import com.cheering.badword.BadWordService;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
 import com.cheering.player.PlayerResponse;
@@ -50,6 +51,7 @@ public class PlayerUserService {
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
+    private final BadWordService badWordService;
     private final S3Util s3Util;
 
     public PlayerUserResponse.ProfileDTO getPlayerUserInfo(Long playerUserId, User user) {
@@ -119,6 +121,9 @@ public class PlayerUserService {
     }
 
     public void updatePlayerUserNickname(Long playerUserId, UserRequest.NicknameDTO requestDTO) {
+        if(badWordService.containsBadWords(requestDTO.nickname())) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
         String nickname = requestDTO.nickname();
 
         PlayerUser playerUser = playerUserRepository.findById(playerUserId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
