@@ -2,6 +2,7 @@ package com.cheering.player;
 
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
+import com.cheering.team.TeamRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,5 +45,12 @@ public class PlayerController {
     @GetMapping("/my/players")
     public ResponseEntity<?> getMyPlayers(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "내 선수 목록을 불러왔습니다.", playerService.getMyPlayers(userDetails.getUser())));
+    }
+
+    // 선수 등록
+    @PostMapping("/teams/{teamId}/players")
+    public ResponseEntity<?> registerPlayer(@PathVariable("teamId") Long teamId, @RequestBody PlayerRequest.RegisterPlayerDTO requestDTO){
+        playerService.registerPlayer(teamId, requestDTO);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "선수를 등록하였습니다.", null));
     }
 }

@@ -19,7 +19,7 @@ public class TeamService {
     private final PlayerRepository playerRepository;
 
     public List<TeamResponse.TeamNameDTO> getTeams(Long leagueId) {
-        List<Team> teams = teamRepository.findByLeagueId(leagueId);
+        List<Team> teams = teamRepository.findByLeagueIdOrderByFirstName(leagueId);
 
         return teams.stream().map(TeamResponse.TeamNameDTO::new).toList();
     }

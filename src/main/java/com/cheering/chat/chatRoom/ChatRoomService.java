@@ -245,4 +245,24 @@ public class ChatRoomService {
             chatRoomRepository.deleteById(chatRoomId);
         }
     }
+
+    public void autoCreateChatRooms() {
+        List<Player> players = playerRepository.findAllTeamIsNotNull();
+
+        for(Player player : players){
+            Optional<ChatRoom> chatRoom = chatRoomRepository.findByName(player.getKoreanName());
+
+            if(chatRoom.isEmpty()) {
+                ChatRoom newChatRoom = ChatRoom.builder()
+                        .player(player)
+                        .description(player.getKoreanName() + " 팬들끼리 응원해요!")
+                        .image(player.getImage())
+                        .name(player.getKoreanName())
+                        .type(ChatRoomType.OFFICIAL)
+                        .build();
+
+                chatRoomRepository.save(newChatRoom);
+            }
+        }
+    }
 }

@@ -15,4 +15,7 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
     List<Player> findByNameOrTeamName(@Param("name") String name);
 
     Optional<Player> findByTeamId(Long teamId);
+
+    @Query("SELECT p FROM Player p WHERE p.team IS NOT NULL")
+    List<Player> findAllTeamIsNotNull();
 }

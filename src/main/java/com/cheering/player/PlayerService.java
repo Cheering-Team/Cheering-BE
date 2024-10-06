@@ -11,6 +11,7 @@ import com.cheering.team.TeamRepository;
 import com.cheering.team.TeamResponse;
 import com.cheering.team.league.League;
 import com.cheering.team.league.LeagueRepository;
+import com.cheering.team.relation.TeamPlayer;
 import com.cheering.team.relation.TeamPlayerRepository;
 import com.cheering.team.sport.Sport;
 import com.cheering.team.sport.SportRepository;
@@ -154,5 +155,25 @@ public class PlayerService {
     public List<PlayerResponse.PlayerDTO> getMyPlayers(User user) {
         List<PlayerUser> playerUsers = playerUserRepository.findByUserId(user.getId()).stream().sorted(Comparator.comparing(playerUser -> playerUser.getPlayer().getTeam() != null ? 0 : 1)).toList();
         return playerUsers.stream().map((playerUser -> new PlayerResponse.PlayerDTO(playerUser.getPlayer(), new PlayerUserResponse.PlayerUserDTO(playerUser)))).toList();
+    }
+
+    public void registerPlayer(Long teamId, PlayerRequest.RegisterPlayerDTO requestDTO) {
+        Team team = teamRepository.findById(teamId).orElseThrow(()->new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+
+        Player player = Player.builder()
+                .koreanName(requestDTO.koreanName())
+                .englishName(requestDTO.englishName())
+                .image(requestDTO.image())
+                .backgroundImage(requestDTO.backgroundImage())
+                .build();
+
+        playerRepository.save(player);
+
+        TeamPlayer teamPlayer = TeamPlayer.builder()
+                .player(player)
+                .team(team)
+                .build();
+
+        teamPlayerRepository.save(teamPlayer);
     }
 }
