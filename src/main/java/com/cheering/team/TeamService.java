@@ -2,6 +2,9 @@ package com.cheering.team;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
+import com.cheering.chat.chatRoom.ChatRoom;
+import com.cheering.chat.chatRoom.ChatRoomRepository;
+import com.cheering.chat.chatRoom.ChatRoomType;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.team.league.League;
@@ -17,6 +20,7 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final LeagueRepository leagueRepository;
     private final PlayerRepository playerRepository;
+    private final ChatRoomRepository chatRoomRepository;
 
     public List<TeamResponse.TeamNameDTO> getTeams(Long leagueId) {
         List<Team> teams = teamRepository.findByLeagueIdOrderByFirstName(leagueId);
@@ -45,5 +49,15 @@ public class TeamService {
                 .build();
 
         playerRepository.save(teamCommunity);
+
+        ChatRoom newChatRoom = ChatRoom.builder()
+                .player(teamCommunity)
+                .name(teamCommunity.getKoreanName())
+                .description(teamCommunity.getKoreanName() + " 팬들끼리 응원해요!")
+                .type(ChatRoomType.OFFICIAL)
+                .image(teamCommunity.getImage())
+                .build();
+
+        chatRoomRepository.save(newChatRoom);
     }
 }

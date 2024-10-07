@@ -39,7 +39,7 @@ public class PlayerUser {
     private Player player;
 
     @ManyToOne
-    @JoinColumn(name = "uesr_id")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(length = 20, nullable = false, unique = true)

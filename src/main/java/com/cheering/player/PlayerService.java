@@ -4,6 +4,9 @@ import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.S3Util;
 import com.cheering.badword.BadWordService;
+import com.cheering.chat.chatRoom.ChatRoom;
+import com.cheering.chat.chatRoom.ChatRoomRepository;
+import com.cheering.chat.chatRoom.ChatRoomType;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.player.relation.PlayerUserResponse;
@@ -35,6 +38,7 @@ public class PlayerService {
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
     private final PlayerUserRepository playerUserRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final BadWordService badWordService;
     private final S3Util s3Util;
 
@@ -181,5 +185,15 @@ public class PlayerService {
                 .build();
 
         teamPlayerRepository.save(teamPlayer);
+
+        ChatRoom chatRoom = ChatRoom.builder()
+                .type(ChatRoomType.OFFICIAL)
+                .name(requestDTO.koreanName())
+                .image(requestDTO.image())
+                .description(player.getKoreanName() + " 팬들끼리 응원해요!")
+                .player(player)
+                .build();
+
+        chatRoomRepository.save(chatRoom);
     }
 }
