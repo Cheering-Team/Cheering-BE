@@ -169,13 +169,16 @@ public class PostService {
 
             List<Long> playerIds = playerUsers.stream().map((playerUser -> playerUser.getPlayer().getId())).toList();
 
-            postList = postRepository.findByPlayerIds(playerIds, pageable);
+            postList = postRepository.findByPlayerIds(playerIds, playerUsers, pageable);
         } else if(tagName.isEmpty()) {
-            postList = postRepository.findByPlayerId(playerId, pageable);
+            PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()-> new CustomException((ExceptionCode.CUR_PLAYER_USER_NOT_FOUND)));
+            postList = postRepository.findByPlayerId(playerId, curPlayerUser, pageable);
         } else if(tagName.equals("hot")) {
-            postList = postRepository.findHotPosts(playerId, pageable);
+            PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()-> new CustomException((ExceptionCode.CUR_PLAYER_USER_NOT_FOUND)));
+            postList = postRepository.findHotPosts(playerId, curPlayerUser, pageable);
         } else {
-            postList = postRepository.findByPlayerIdAndTagName(playerId, tagName, pageable);
+            PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()-> new CustomException((ExceptionCode.CUR_PLAYER_USER_NOT_FOUND)));
+            postList = postRepository.findByPlayerIdAndTagName(playerId, tagName, curPlayerUser, pageable);
         }
 
 
