@@ -24,4 +24,8 @@ public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> 
     ChatSession findByChatRoomAndSessionId(@Param("chatRoom") ChatRoom chatRoom, @Param("sessionId") String sessionId);
 
     List<ChatSession> findByChatRoom(ChatRoom chatRoom);
+
+    @Modifying
+    @Query("DELETE FROM ChatSession c WHERE c.chatRoom.creator = :creator AND c.playerUser = :curPlayerUser")
+    void deleteByChatRoomCreatorAndCurPlayerUser(@Param("creator") PlayerUser creator, @Param("curPlayerUser") PlayerUser curPlayerUser);
 }

@@ -25,6 +25,7 @@ import com.cheering.post.Tag.Tag;
 import com.cheering.post.Tag.TagRepository;
 import com.cheering.post.relation.PostTag;
 import com.cheering.post.relation.PostTagRepository;
+import com.cheering.report.block.BlockRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
@@ -67,6 +68,7 @@ public class PostService {
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
+    private final BlockRepository blockRepository;
     private final BadWordService badWordService;
     private final S3Util s3Util;
     private final FcmServiceImpl fcmService;
@@ -262,7 +264,7 @@ public class PostService {
 
             likeRepository.save(newLike);
 
-            if(!post.getPlayerUser().equals(curPlayerUser)){
+            if(!post.getPlayerUser().equals(curPlayerUser) && blockRepository.findByFromAndTo(post.getPlayerUser(), curPlayerUser).isEmpty()){
                 Notification notification = new Notification("LIKE", post.getPlayerUser(), curPlayerUser, post);
 
                 notificationRepository.save(notification);

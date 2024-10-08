@@ -19,8 +19,8 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
     @Query("SELECT cr FROM ChatRoom cr WHERE cr.player IN :players AND cr.type = 'OFFICIAL'")
     List<ChatRoom> findOfficialByPlayerIn(@Param("players") List<Player> players);
-    @Query("SELECT cr FROM ChatRoom cr WHERE cr.player IN :players AND cr.type = 'PUBLIC' AND cr.creator NOT IN (SELECT b.to FROM Block b WHERE b.from IN :playerUsers) ")
-    List<ChatRoom> findPublicByPlayerIn(@Param("players") List<Player> players, @Param("playerUsers") List<PlayerUser> playerUsers);
+    @Query("SELECT cr FROM ChatRoom cr WHERE cr.player IN :players AND cr.type = 'PUBLIC'")
+    List<ChatRoom> findPublicByPlayerIn(@Param("players") List<Player> players);
 
     Optional<ChatRoom> findByName(String koreanName);
 }

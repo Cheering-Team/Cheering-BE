@@ -12,6 +12,7 @@ import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.post.Post;
 import com.cheering.post.PostResponse;
+import com.cheering.report.block.BlockRepository;
 import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.user.User;
@@ -30,6 +31,7 @@ public class ReCommentService {
     private final PlayerUserRepository playerUserRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
+    private final BlockRepository blockRepository;
     private final BadWordService badWordService;
     private final FcmServiceImpl fcmService;
 
@@ -61,7 +63,7 @@ public class ReCommentService {
 
         reCommentRepository.save(reComment);
 
-        if(!toPlayerUser.equals(curPlayerUser)) {
+        if(!toPlayerUser.equals(curPlayerUser) && blockRepository.findByFromAndTo(toPlayerUser, curPlayerUser).isEmpty()) {
             Notification notification = new Notification("RECOMMENT", toPlayerUser, curPlayerUser, comment.getPost(), reComment);
             notificationRepository.save(notification);
             if(notification.getTo().getUser().getDeviceToken() != null) {

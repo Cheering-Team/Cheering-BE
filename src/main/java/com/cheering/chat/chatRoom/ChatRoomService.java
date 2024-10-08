@@ -109,7 +109,7 @@ public class ChatRoomService {
         List<ChatRoom> officialChatRooms = chatRoomRepository.findOfficialByPlayerIn(players).stream().sorted(Comparator.comparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
 
         // 비공식은 내가 참여중인 채팅방만
-        List<ChatRoom> publicChatRooms = chatRoomRepository.findPublicByPlayerIn(players, playerUsers).stream()
+        List<ChatRoom> publicChatRooms = chatRoomRepository.findPublicByPlayerIn(players).stream()
                 .filter((chatRoom -> {
                     PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(chatRoom.getPlayer().getId(), user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
                     return chatSessionRepository.findByChatRoomAndPlayerUser(chatRoom, curPlayerUser).isPresent();

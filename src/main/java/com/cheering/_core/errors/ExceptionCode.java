@@ -38,6 +38,7 @@ public enum ExceptionCode {
 
     // CHAT
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),
+    NOT_CHATROOM_MEMBER(HttpStatus.BAD_REQUEST, "더 이상 채팅방에 속해있지 않습니다."),
 
     // REPORT
     ALREADY_REPORT(HttpStatus.BAD_REQUEST, "이미 신고하였습니다."),
