@@ -13,7 +13,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND c.isHide = false AND c.id NOT IN (SELECT cr.comment.id FROM CommentReport cr WHERE cr.playerUser = :playerUser) ORDER BY c.createdAt ASC")
+    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND c.isHide = false AND c.id NOT IN (SELECT cr.comment.id FROM CommentReport cr WHERE cr.playerUser = :playerUser) AND c.playerUser NOT IN (SELECT b.to FROM Block b WHERE b.from = :playerUser) ORDER BY c.createdAt ASC")
     Page<Comment> findByPostId(@Param("postId") Long postId, @Param("playerUser") PlayerUser playerUser, Pageable pageable);
 
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND c.isHide = false")

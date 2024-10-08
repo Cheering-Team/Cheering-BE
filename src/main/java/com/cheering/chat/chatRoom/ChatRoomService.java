@@ -82,8 +82,8 @@ public class ChatRoomService {
         Player player = playerRepository.findById(playerId).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
-        List<ChatRoom> officialChatRooms = chatRoomRepository.findByPlayerAndType(player, ChatRoomType.OFFICIAL);
-        List<ChatRoom> publicChatRooms = chatRoomRepository.findByPlayerAndType(player, ChatRoomType.PUBLIC);
+        List<ChatRoom> officialChatRooms = chatRoomRepository.findOfficialByPlayer(player);
+        List<ChatRoom> publicChatRooms = chatRoomRepository.findPublicByPlayer(player, curPlayerUser);
 
         List <ChatRoomResponse.ChatRoomDTO> officialChatRoomDTOs = officialChatRooms.stream().map((chatRoom -> {
             int count = chatSessionRepository.countByChatRoomId(chatRoom.getId());
@@ -106,10 +106,10 @@ public class ChatRoomService {
         List<Player> players = playerUsers.stream().map((PlayerUser::getPlayer)).toList();
 
         // 공식은 모두
-        List<ChatRoom> officialChatRooms = chatRoomRepository.findByPlayerInAndType(players, ChatRoomType.OFFICIAL).stream().sorted(Comparator.comparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
+        List<ChatRoom> officialChatRooms = chatRoomRepository.findOfficialByPlayerIn(players).stream().sorted(Comparator.comparing(chatRoom -> chatRoom.getPlayer().getTeam() != null ? 0 : 1)).toList();
 
         // 비공식은 내가 참여중인 채팅방만
-        List<ChatRoom> publicChatRooms = chatRoomRepository.findByPlayerInAndType(players, ChatRoomType.PUBLIC).stream()
+        List<ChatRoom> publicChatRooms = chatRoomRepository.findPublicByPlayerIn(players, playerUsers).stream()
                 .filter((chatRoom -> {
                     PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(chatRoom.getPlayer().getId(), user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
                     return chatSessionRepository.findByChatRoomAndPlayerUser(chatRoom, curPlayerUser).isPresent();
