@@ -79,7 +79,7 @@ public class CommentService {
 
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(post.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
-        Page<Comment> commentList = commentRepository.findByPostId(postId, pageable);
+        Page<Comment> commentList = commentRepository.findByPostId(postId, curPlayerUser, pageable);
 
         List<CommentResponse.CommentDTO> commentDTOS = commentList.stream().map((comment -> {
             PlayerUser writer = comment.getPlayerUser();

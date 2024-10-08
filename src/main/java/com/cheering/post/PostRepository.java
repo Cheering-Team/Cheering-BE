@@ -2,6 +2,7 @@ package com.cheering.post;
 
 import java.util.List;
 
+import com.cheering.player.Player;
 import com.cheering.player.relation.PlayerUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,5 +28,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p JOIN PostTag pt ON p.id = pt.post.id JOIN Tag t ON pt.tag.id = t.id WHERE p.playerUser.player.id = :playerId AND p.isHide = false AND t.name = :tagName AND p.id NOT IN (SELECT pr.post.id FROM PostReport pr WHERE pr.playerUser = :playerUser) ORDER BY p.createdAt DESC")
     Page<Post> findByPlayerIdAndTagName(@Param("playerId") Long playerId, @Param("tagName") String tagName, @Param("playerUser") PlayerUser playerUser, Pageable pageable);
 
-    Page<Post> findByPlayerUser(PlayerUser playerUser,Pageable pageable);
+    @Query("SELECT p FROM Post p WHERE p.playerUser = :playerUser AND p.isHide = false AND p.id NOT IN (SELECT pr.post.id FROM PostReport pr WHERE pr.playerUser = :curPlayerUser) ORDER BY p.createdAt DESC")
+    Page<Post> findByPlayerUser(@Param("playerUser") PlayerUser playerUser, @Param("curPlayerUser") PlayerUser curPlayerUser, Pageable pageable);
 }

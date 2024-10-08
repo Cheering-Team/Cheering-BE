@@ -76,7 +76,7 @@ public class PlayerUserService {
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerUser.getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
         // 유저의 글 목록
-        Page<Post> postList = postRepository.findByPlayerUser(playerUser, pageable);
+        Page<Post> postList = postRepository.findByPlayerUser(playerUser, curPlayerUser, pageable);
 
         List<PostResponse.PostInfoWithPlayerDTO> postInfoDTOS = postList.stream().map((post -> {
             PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);

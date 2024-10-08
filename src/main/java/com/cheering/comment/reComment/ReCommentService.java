@@ -73,11 +73,11 @@ public class ReCommentService {
     }
 
     public ReCommentResponse.ReCommentListDTO getReComments(Long commentId, User user) {
-        List<ReComment> reCommentList = reCommentRepository.findByCommentId(commentId);
-
         Player player = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND)).getPlayerUser().getPlayer();
 
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+
+        List<ReComment> reCommentList = reCommentRepository.findByCommentId(commentId, curPlayerUser);
 
         List<ReCommentResponse.ReCommentDTO> reCommentDTOS = reCommentList.stream().map((reComment -> {
             PlayerUser writer = reComment.getPlayerUser();
