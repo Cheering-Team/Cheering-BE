@@ -6,10 +6,13 @@ import com.cheering.chat.session.ChatSession;
 import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.player.relation.PlayerUserResponse;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,5 +35,19 @@ public class BlockService {
 
         // 차단한 후 해당 유저가 만든 채팅방에서 자동으로 나가짐
         chatSessionRepository.deleteByChatRoomCreatorAndCurPlayerUser(to, from);
+    }
+
+    public List<PlayerUserResponse.PlayerUserDTO> getBlockedUsers(Long playerUserId) {
+        List<PlayerUser> playerUsers = blockRepository.findToByFromId(playerUserId);
+
+        return playerUsers.stream().map((PlayerUserResponse.PlayerUserDTO::new)).toList();
+    }
+
+    @Transactional
+    public void unblockUser(Long playerUserId, User user) {
+        PlayerUser playerUser = playerUserRepository.findById(playerUserId).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerUser.getPlayer().getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
+
+        blockRepository.deleteByFromAndTo(curPlayerUser, playerUser);
     }
 }

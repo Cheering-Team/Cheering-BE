@@ -9,6 +9,7 @@ import com.cheering.notification.Notification;
 import com.cheering.player.Player;
 import com.cheering.post.Like.Like;
 import com.cheering.post.Post;
+import com.cheering.report.block.Block;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.postReport.PostReport;
 import com.cheering.report.reCommentReport.ReCommentReport;
@@ -86,6 +87,12 @@ public class PlayerUser {
 
     @OneToMany(mappedBy = "playerUser", cascade = CascadeType.REMOVE)
     private List<ChatSession> chatSessions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "from", cascade = CascadeType.REMOVE)
+    private List<Block> blocksFrom = new ArrayList<>();
+
+    @OneToMany(mappedBy = "to", cascade = CascadeType.REMOVE)
+    private List<Block> blocksTo = new ArrayList<>();
 
     @Builder
     public PlayerUser(Player player, User user, String nickname, String image) {
