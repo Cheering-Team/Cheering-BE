@@ -98,13 +98,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().toString(), 1000 * 60 * 60 * 24L);
-        String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().toString(), 1000 * 60 * 60 * 24 * 365L);
-
-        redisUtils.deleteData(user.getId().toString());
-        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 365L);
-
-        return new UserResponse.TokenDTO(accessToken, refreshToken);
+        return issueToken(user);
     }
 
     @Transactional
@@ -122,13 +116,7 @@ public class UserService {
             throw new CustomException(ExceptionCode.INVALID_TOKEN);
         }
 
-        String accessToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24L);
-        refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24 * 30L);
-
-        redisUtils.deleteData(user.getId().toString());
-        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
-
-        return new UserResponse.TokenDTO(accessToken, refreshToken);
+        return issueToken(user);
     }
 
     public UserResponse.UserDTO getUserInfo(User user) {
@@ -180,20 +168,15 @@ public class UserService {
 
         if(optionalUser.isPresent()) {
             User user = optionalUser.get();
-            String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
-            String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
 
-            redisUtils.deleteData(user.getId().toString());
-            redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
-
-            return new UserResponse.TokenDTO(accessToken, refreshToken);
+            return issueToken(user);
         } else {
             return null;
         }
      }
 
     @Transactional
-    public Object signInWithNaver(String naverToken) {
+    public UserResponse.TokenDTO signInWithNaver(String naverToken) {
         RestTemplate restTemplate = new RestTemplate();
         String requestUrl = "https://openapi.naver.com/v1/nid/me";
 
@@ -205,48 +188,20 @@ public class UserService {
         ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
         Map<String, Object> successResponse = (Map<String, Object>) response.getBody().get("response");
         String naverId = successResponse.get("id").toString();
-        String mobile = successResponse.get("mobile").toString().replace("-", "");
-        String nickname = successResponse.get("nickname").toString();
 
-        Optional<User> optionalUser = userRepository.findByPhone(mobile);
+        Optional<User> optionalUser = userRepository.findByNaverId(naverId);
 
-        // 이미 가입된 번호일 때 연동
         if(optionalUser.isPresent()) {
-            if(optionalUser.get().getNaverId() != null && optionalUser.get().getNaverId().equals(naverId)) {
-                String accessToken = jwtUtil.createJwt(optionalUser.get().getPhone(), optionalUser.get().getRole().getValue(), 1000 * 60 * 60 * 24L);
-                String refreshToken = jwtUtil.createJwt(optionalUser.get().getPhone(), optionalUser.get().getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
+            User user = optionalUser.get();
 
-
-                redisUtils.deleteData(optionalUser.get().getId().toString());
-                redisUtils.setDataExpire(optionalUser.get().getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
-
-                return new UserResponse.TokenDTO(accessToken, refreshToken);
-            }
-            return new UserResponse.UserWithCreatedAtDTO(optionalUser.get());
+           return issueToken(user);
+        } else {
+            return null;
         }
-
-        User user = User.builder()
-                .nickname(nickname)
-                .phone(mobile)
-                .role(Role.ROLE_USER)
-                .naverId(naverId)
-                .build();
-
-        userRepository.save(user);
-
-        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
-        String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
-
-
-        redisUtils.deleteData(user.getId().toString());
-        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
-
-        // 가입되지 않은 번호일 때, 회원가입 후 자동 로그인
-        return new UserResponse.SignUpTokenDTO(accessToken, refreshToken);
     }
 
     @Transactional
-    public Object checkCodeKakao(String kakaoToken,UserRequest.CheckCodeDTO requestDTO) {
+    public Object checkCodeSocial(String socialToken, String type, UserRequest.CheckCodeDTO requestDTO) {
         String phone = requestDTO.phone();
         String code = requestDTO.code();
 
@@ -264,39 +219,56 @@ public class UserService {
 
         Optional<User> optionalUser = userRepository.findByPhone(phone);
 
-        RestTemplate restTemplate = new RestTemplate();
-        String requestUrl = "https://kapi.kakao.com/v2/user/me";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + kakaoToken);
-
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-        ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
-
-        String kakaoId = response.getBody().get("id").toString();
-        Map<String, Object> kakaoAccount = (Map<String, Object>) response.getBody().get("kakao_account");
-        String nickname = (String) ((Map<String, Object>) kakaoAccount.get("profile")).get("nickname");
-
         if(optionalUser.isPresent()) {
-           return new UserResponse.UserWithCreatedAtDTO(optionalUser.get());
+            return new UserResponse.UserWithCreatedAtDTO(optionalUser.get());
         }
 
-        User user = User.builder()
+        User user;
+
+        if(type.equals("kakao")) {
+            RestTemplate restTemplate = new RestTemplate();
+            String requestUrl = "https://kapi.kakao.com/v2/user/me";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer " + socialToken);
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
+
+            String kakaoId = response.getBody().get("id").toString();
+            Map<String, Object> kakaoAccount = (Map<String, Object>) response.getBody().get("kakao_account");
+            String nickname = (String) ((Map<String, Object>) kakaoAccount.get("profile")).get("nickname");
+
+            user = User.builder()
                     .nickname(nickname)
                     .phone(phone)
                     .role(Role.ROLE_USER)
                     .kakaoId(kakaoId)
                     .build();
+        } else {
+            RestTemplate restTemplate = new RestTemplate();
+            String requestUrl = "https://openapi.naver.com/v1/nid/me";
 
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer " + socialToken);
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
+            Map<String, Object> successResponse = (Map<String, Object>) response.getBody().get("response");
+            String naverId = successResponse.get("id").toString();
+            String nickname = successResponse.get("nickname").toString();
+
+            user = User.builder()
+                    .nickname(nickname)
+                    .phone(phone)
+                    .role(Role.ROLE_USER)
+                    .naverId(naverId)
+                    .build();
+        }
         userRepository.save(user);
 
-        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
-        String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
-
-        redisUtils.deleteData(user.getId().toString());
-        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
-
-        return new UserResponse.TokenDTO(accessToken, refreshToken);
+        return issueToken(user);
     }
 
     @Transactional
@@ -332,13 +304,7 @@ public class UserService {
             user.setNaverId(naverId);
         }
 
-        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
-        String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
-
-        redisUtils.deleteData(user.getId().toString());
-        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
-
-        return new UserResponse.TokenDTO(accessToken, refreshToken);
+        return issueToken(user);
     }
 
     @Transactional
@@ -355,5 +321,15 @@ public class UserService {
 
         curUser.setDeviceToken(null);
         userRepository.save(curUser);
+    }
+
+    private UserResponse.TokenDTO issueToken(User user) {
+        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
+        String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
+
+        redisUtils.deleteData(user.getId().toString());
+        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
+
+        return new UserResponse.TokenDTO(accessToken, refreshToken);
     }
 }

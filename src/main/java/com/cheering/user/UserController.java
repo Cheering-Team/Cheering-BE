@@ -78,19 +78,18 @@ public class UserController {
 
     @PostMapping("/signin/naver")
     public ResponseEntity<?> signInWithNaver(@RequestParam String accessToken) {
-        Object response = userService.signInWithNaver(accessToken);
-        if(response instanceof UserResponse.UserWithCreatedAtDTO) {
-            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"이미 가입된 유저입니다.", response));
-        } else if(response instanceof UserResponse.SignUpTokenDTO){
-            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"회원가입되었습니다.", response));
-        } else {
-            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"로그인되었습니다.", response));
+        UserResponse.TokenDTO tokenDTO = userService.signInWithNaver(accessToken);
+        if(tokenDTO == null) {
+            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "네이버 회원가입이 필요합니다.", null));
+        }
+        else {
+            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "로그인되었습니다.", tokenDTO));
         }
     }
 
-    @PostMapping("/phone/code/kakao")
-    public ResponseEntity<?> checkCodeKakao(@RequestParam String accessToken, @RequestBody UserRequest.CheckCodeDTO requestDTO) {
-        Object response = userService.checkCodeKakao(accessToken, requestDTO);
+    @PostMapping("/phone/code/social")
+    public ResponseEntity<?> checkCodeSocial(@RequestParam String accessToken, @RequestParam String type, @RequestBody UserRequest.CheckCodeDTO requestDTO) {
+        Object response = userService.checkCodeSocial(accessToken, type, requestDTO);
         if(response instanceof UserResponse.UserWithCreatedAtDTO) {
             return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"이미 가입된 유저입니다.", response));
         } else {
