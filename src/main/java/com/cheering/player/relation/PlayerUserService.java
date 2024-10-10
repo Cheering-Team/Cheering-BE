@@ -128,6 +128,10 @@ public class PlayerUserService {
 
         PlayerUser playerUser = playerUserRepository.findById(playerUserId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
+        if(playerUser.getPlayer().getKoreanName().equals(nickname) || playerUser.getPlayer().getEnglishName().equals(nickname)) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+
         Optional<PlayerUser> duplicatePlayerUser = playerUserRepository.findByPlayerIdAndNickname(playerUser.getPlayer().getId(), nickname);
 
         if(duplicatePlayerUser.isPresent()) {

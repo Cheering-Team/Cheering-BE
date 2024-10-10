@@ -144,6 +144,10 @@ public class PlayerService {
 
         Player player = playerRepository.findById(playerId).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
+        if(player.getKoreanName().equals(nickname) || player.getEnglishName().equals(nickname)) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+
         String imageUrl = "";
         if(image == null) {
             imageUrl = "https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-profile.jpg";
