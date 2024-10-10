@@ -41,6 +41,9 @@ public class User extends BaseTimeEntity {
     private String naverId;
 
     @Column
+    private String appleId;
+
+    @Column
     private String deviceToken;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
@@ -50,12 +53,13 @@ public class User extends BaseTimeEntity {
     private List<Apply> applies = new ArrayList<>();
 
     @Builder
-    public User(Long userId, String phone, String nickname, Role role, String kakaoId, String naverId) {
+    public User(Long userId, String phone, String nickname, Role role, String kakaoId, String naverId, String appleId) {
         this.id = userId;
         this.phone = phone;
         this.nickname = nickname;
         this.role = role;
         this.kakaoId = kakaoId;
         this.naverId = naverId;
+        this.appleId = appleId;
     }
 }

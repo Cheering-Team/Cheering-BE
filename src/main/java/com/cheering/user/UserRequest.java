@@ -20,6 +20,18 @@ public class UserRequest {
     ) { }
 
     public record IdDTO (
+            String accessToken,
             Long userId
+    ) { }
+
+    public record SocialTokenDTO (
+        String accessToken,
+        String name
+    ) { }
+
+    public record SocialCheckCodeDTO (
+            String accessToken,
+            String phone,
+            String code
     ) { }
 }

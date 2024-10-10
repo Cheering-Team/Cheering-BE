@@ -1,35 +1,28 @@
 package com.cheering.user;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.cheering._core.errors.*;
 import com.cheering._core.security.JWTUtil;
+import com.cheering._core.util.AppleUtil;
 import com.cheering._core.util.RedisUtils;
 import com.cheering._core.util.SmsUtil;
 import com.cheering.badword.BadWordService;
-import com.cheering.comment.CommentRepository;
-import com.cheering.comment.reComment.ReCommentRepository;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import com.cheering.player.relation.PlayerUser;
-import com.cheering.player.relation.PlayerUserRepository;
-import com.cheering.post.Like.LikeRepository;
-import com.cheering.post.Post;
-import com.cheering.post.PostImage.PostImageRepository;
-import com.cheering.post.PostRepository;
-import com.cheering.post.relation.PostTagRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
 import com.cheering.report.postReport.PostReportRepository;
 import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.report.reCommentReport.ReCommentReportRepository;
+import com.cheering.user.TempAppleUser.TempAppleUser;
+import com.cheering.user.TempAppleUser.TempAppleUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -39,10 +32,12 @@ public class UserService {
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
+    private final TempAppleUserRepository tempAppleUserRepository;
     private final BadWordService badWordService;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
     private final JWTUtil jwtUtil;
+    private final AppleUtil appleUtil;
 
     @Transactional
     public UserResponse.UserDTO sendSMS(UserRequest.SendSMSDTO requestDTO) {
@@ -111,7 +106,6 @@ public class UserService {
         String token = refreshToken.split(" ")[1];
 
         String phone = jwtUtil.getUsername(token);
-        String role = jwtUtil.getRole(token);
 
         User user = userRepository.findByPhone(phone).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
@@ -205,10 +199,32 @@ public class UserService {
         }
     }
 
+    public UserResponse.TokenDTO signInWithApple(UserRequest.SocialTokenDTO requestDTO) {
+        DecodedJWT decodedJWT = appleUtil.validateIdentityToken(requestDTO.accessToken());
+
+        String appleId = decodedJWT.getSubject();
+
+        Optional<User> optionalUser = userRepository.findByAppleId(appleId);
+
+        if(optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            return issueToken(user);
+        } else {
+            TempAppleUser tempAppleUser = TempAppleUser.builder()
+                    .appleId(appleId)
+                    .name(requestDTO.name())
+                    .build();
+
+            tempAppleUserRepository.save(tempAppleUser);
+            return null;
+        }
+    }
+
     @Transactional
-    public Object checkCodeSocial(String socialToken, String type, UserRequest.CheckCodeDTO requestDTO) {
+    public Object checkCodeSocial(String type, UserRequest.SocialCheckCodeDTO requestDTO) {
         String phone = requestDTO.phone();
         String code = requestDTO.code();
+        String socialToken = requestDTO.accessToken();
 
         String storedCode = redisUtils.getData(phone);
 
@@ -250,7 +266,7 @@ public class UserService {
                     .role(Role.ROLE_USER)
                     .kakaoId(kakaoId)
                     .build();
-        } else {
+        } else if(type.equals("naver")) {
             RestTemplate restTemplate = new RestTemplate();
             String requestUrl = "https://openapi.naver.com/v1/nid/me";
 
@@ -270,6 +286,19 @@ public class UserService {
                     .role(Role.ROLE_USER)
                     .naverId(naverId)
                     .build();
+        } else {
+            DecodedJWT decodedJWT = appleUtil.validateIdentityToken(socialToken);
+
+            String appleId = decodedJWT.getSubject();
+
+            TempAppleUser tempAppleUser = tempAppleUserRepository.findByAppleId(appleId);
+
+            user = User.builder()
+                    .nickname(tempAppleUser.getName())
+                    .phone(phone)
+                    .role(Role.ROLE_USER)
+                    .appleId(appleId)
+                    .build();
         }
         userRepository.save(user);
 
@@ -277,7 +306,8 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse.TokenDTO socialConnect(String token, String type, UserRequest.IdDTO requestDTO) {
+    public UserResponse.TokenDTO socialConnect(String type, UserRequest.IdDTO requestDTO) {
+        String token = requestDTO.accessToken();
         User user = userRepository.findById(requestDTO.userId()).orElseThrow(()->new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         if(type.equals("kakao")){
@@ -307,6 +337,12 @@ public class UserService {
             String naverId = successResponse.get("id").toString();
 
             user.setNaverId(naverId);
+        } else {
+            DecodedJWT decodedJWT = appleUtil.validateIdentityToken(token);
+
+            String appleId = decodedJWT.getSubject();
+
+            user.setAppleId(appleId);
         }
 
         return issueToken(user);
@@ -329,11 +365,11 @@ public class UserService {
     }
 
     private UserResponse.TokenDTO issueToken(User user) {
-        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24L);
-        String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L);
+        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L); // 일주일
+        String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 365L); // 1년
 
         redisUtils.deleteData(user.getId().toString());
-        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
+        redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 365L);
 
         return new UserResponse.TokenDTO(accessToken, refreshToken);
     }

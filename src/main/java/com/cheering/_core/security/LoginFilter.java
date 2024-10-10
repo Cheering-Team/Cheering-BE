@@ -61,10 +61,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String accessToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24L);
-        String refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24 * 30L);
+        String accessToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24 * 30L);
+        String refreshToken = jwtUtil.createJwt(phone, role, 1000 * 60 * 60 * 24 * 365L);
 
-        redisUtils.setDataExpire(customUserDetails.getUser().getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 30L);
+        redisUtils.setDataExpire(customUserDetails.getUser().getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 365L);
 
         Map<String, Object> responseData = new HashMap<>();
         Map<String, Object> responseResult = new HashMap<>();

@@ -66,8 +66,8 @@ public class UserController {
     }
 
     @PostMapping("/signin/kakao")
-    public ResponseEntity<?> signInWithKakao(@RequestParam String accessToken) {
-        UserResponse.TokenDTO tokenDTO = userService.signInWithKakao(accessToken);
+    public ResponseEntity<?> signInWithKakao(@RequestBody UserRequest.SocialTokenDTO requestDTO) {
+        UserResponse.TokenDTO tokenDTO = userService.signInWithKakao(requestDTO.accessToken());
         if(tokenDTO == null) {
             return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "카카오 회원가입이 필요합니다.", null));
         }
@@ -77,8 +77,8 @@ public class UserController {
     }
 
     @PostMapping("/signin/naver")
-    public ResponseEntity<?> signInWithNaver(@RequestParam String accessToken) {
-        UserResponse.TokenDTO tokenDTO = userService.signInWithNaver(accessToken);
+    public ResponseEntity<?> signInWithNaver(@RequestBody UserRequest.SocialTokenDTO requestDTO) {
+        UserResponse.TokenDTO tokenDTO = userService.signInWithNaver(requestDTO.accessToken());
         if(tokenDTO == null) {
             return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "네이버 회원가입이 필요합니다.", null));
         }
@@ -87,9 +87,20 @@ public class UserController {
         }
     }
 
+    @PostMapping("/signin/apple")
+    public ResponseEntity<?> signInWithApple(@RequestBody UserRequest.SocialTokenDTO requestDTO) {
+        UserResponse.TokenDTO tokenDTO = userService.signInWithApple(requestDTO);
+        if(tokenDTO == null) {
+            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "애플 회원가입이 필요합니다.", null));
+        }
+        else {
+            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "로그인되었습니다.", tokenDTO));
+        }
+    }
+
     @PostMapping("/phone/code/social")
-    public ResponseEntity<?> checkCodeSocial(@RequestParam String accessToken, @RequestParam String type, @RequestBody UserRequest.CheckCodeDTO requestDTO) {
-        Object response = userService.checkCodeSocial(accessToken, type, requestDTO);
+    public ResponseEntity<?> checkCodeSocial(@RequestParam String type, @RequestBody UserRequest.SocialCheckCodeDTO requestDTO) {
+        Object response = userService.checkCodeSocial(type, requestDTO);
         if(response instanceof UserResponse.UserWithCreatedAtDTO) {
             return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"이미 가입된 유저입니다.", response));
         } else {
@@ -98,8 +109,8 @@ public class UserController {
     }
 
     @PostMapping("/connect")
-    public ResponseEntity<?> socialConnect(@RequestParam String accessToken, @RequestParam String type, @RequestBody UserRequest.IdDTO requestDTO) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"계정이 연결되었습니다.", userService.socialConnect(accessToken, type, requestDTO)));
+    public ResponseEntity<?> socialConnect(@RequestParam String type, @RequestBody UserRequest.IdDTO requestDTO) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"계정이 연결되었습니다.", userService.socialConnect(type, requestDTO)));
     }
 
     @PostMapping("/fcm-token")
