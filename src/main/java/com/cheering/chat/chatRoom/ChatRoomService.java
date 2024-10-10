@@ -257,7 +257,7 @@ public class ChatRoomService {
     }
 
     public void autoCreateChatRooms() {
-        List<Player> players = playerRepository.findAllTeamIsNotNull();
+        List<Player> players = playerRepository.findAll();
 
         for(Player player : players){
             Optional<ChatRoom> chatRoom = chatRoomRepository.findByName(player.getKoreanName());
