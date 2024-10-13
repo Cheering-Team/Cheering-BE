@@ -14,7 +14,10 @@ public enum ExceptionCode {
     USER_FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없습니다."),
     USER_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않았습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 유효하지 않습니다."),
+    INVALID_PHONE(HttpStatus.BAD_REQUEST, "올바르지 않은 휴대폰 번호입니다."),
     DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "이미 존재하는 닉네임입니다."),
+    PLAYER_ACCOUNT_REGISTERED(HttpStatus.BAD_REQUEST, "선수 계정이 이미 등록되어있습니다."),
+    PLAYER_ACCOUNT_NOT_REGISTERED(HttpStatus.BAD_REQUEST, "선수 계정이 등록되어있지않습니다."),
 
     // TEAM
     LEAGUE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 리그를 찾을 수 없습니다."),

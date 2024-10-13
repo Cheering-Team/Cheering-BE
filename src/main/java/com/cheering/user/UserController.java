@@ -127,4 +127,15 @@ public class UserController {
         userService.deleteFCMToken(customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"FCM 토큰이 삭제되었습니다.", null));
     }
+
+    @PostMapping("/users/player-account/{playerId}")
+    public ResponseEntity<?> registerPlayerAccount(@PathVariable("playerId") Long playerId, @RequestBody UserRequest.SendSMSDTO requestDTO) {
+        userService.registerPlayerAccount(playerId, requestDTO);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "선수 계정을 등록하였습니다.", null));
+    }
+
+    @GetMapping("/users/player-account/{playerId}")
+    public ResponseEntity<?> getPlayerAccountInfo(@PathVariable("playerId") Long playerId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"선수 계정을 조회하였습니다.", userService.getPlayerAccountInfo(playerId, customUserDetails.getUser())));
+    }
 }

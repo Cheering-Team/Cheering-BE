@@ -1,6 +1,7 @@
 package com.cheering.player;
 
 import com.cheering.team.Team;
+import com.cheering.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name="player_tb")
 @Getter
+@Setter
 public class Player {
     @Id
     @GeneratedValue
@@ -29,6 +31,9 @@ public class Player {
     @OneToOne
     @JoinColumn(name = "team_id")
     private Team team;
+
+    @OneToOne(mappedBy = "player")
+    private User user;
 
     @Builder
     public Player(String koreanName, String englishName, String image, String backgroundImage, Team team) {

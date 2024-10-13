@@ -4,6 +4,7 @@ import static jakarta.persistence.FetchType.LAZY;
 
 import com.cheering.BaseTimeEntity;
 import com.cheering.notice.apply.Apply;
+import com.cheering.player.Player;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.post.Post;
 import jakarta.persistence.*;
@@ -46,6 +47,13 @@ public class User extends BaseTimeEntity {
     @Column
     private String deviceToken;
 
+    @OneToOne
+    @JoinColumn(name = "player_id")
+    private Player player;
+
+    @Column
+    private String password;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<PlayerUser> playerUsers = new ArrayList<>();
 
@@ -53,7 +61,7 @@ public class User extends BaseTimeEntity {
     private List<Apply> applies = new ArrayList<>();
 
     @Builder
-    public User(Long userId, String phone, String nickname, Role role, String kakaoId, String naverId, String appleId) {
+    public User(Long userId, String phone, String nickname, Role role, String kakaoId, String naverId, String appleId, Player player, String password) {
         this.id = userId;
         this.phone = phone;
         this.nickname = nickname;
@@ -61,5 +69,7 @@ public class User extends BaseTimeEntity {
         this.kakaoId = kakaoId;
         this.naverId = naverId;
         this.appleId = appleId;
+        this.player = player;
+        this.password = password;
     }
 }

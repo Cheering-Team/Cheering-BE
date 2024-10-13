@@ -101,7 +101,7 @@ public class PostService {
             });
         }
 
-        if(images != null ){
+        if(images != null){
             images.forEach((image)->{
                 try {
                     String imageUrl = s3Util.upload(image);

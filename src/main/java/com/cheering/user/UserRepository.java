@@ -1,5 +1,6 @@
 package com.cheering.user;
 
+import com.cheering.player.Player;
 import com.cheering.user.User;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByKakaoId(String kakaoId);
     Optional<User> findByNaverId(String naverId);
     Optional<User> findByAppleId(String appleId);
+
+    boolean existsByPhone(String phone);
+
+    boolean existsByPlayer(Player player);
+
+    Optional<User> findByPlayer(Player player);
 }

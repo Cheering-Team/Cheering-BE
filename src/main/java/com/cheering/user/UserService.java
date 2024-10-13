@@ -11,6 +11,10 @@ import com.cheering.badword.BadWordService;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
+
+import com.cheering.player.Player;
+import com.cheering.player.PlayerRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
@@ -21,6 +25,7 @@ import com.cheering.user.TempAppleUser.TempAppleUser;
 import com.cheering.user.TempAppleUser.TempAppleUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -33,11 +38,14 @@ public class UserService {
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final TempAppleUserRepository tempAppleUserRepository;
+    private final PlayerRepository playerRepository;
     private final BadWordService badWordService;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
     private final JWTUtil jwtUtil;
     private final AppleUtil appleUtil;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private static final String PHONE_REGEX = "^01[0-9]{1}[0-9]{3,4}[0-9]{4}$";
 
     @Transactional
     public UserResponse.UserDTO sendSMS(UserRequest.SendSMSDTO requestDTO) {
@@ -45,24 +53,28 @@ public class UserService {
 
         Optional<User> user = userRepository.findByPhone(phone);
 
-        boolean isUser = user.isPresent();
-
         String verificationCode;
+
+        // 선수 및 팀 계정
+        if(user.isPresent() && user.get().getPlayer() != null) {
+            return new UserResponse.UserDTO(user.get());
+        }
+
+        if(!phone.matches(PHONE_REGEX)) {
+            throw new CustomException(ExceptionCode.INVALID_PHONE);
+        }
 
         if(phone.equals("01062013110")) {
             verificationCode = "911911";
         } else {
             verificationCode = String.valueOf((int) (Math.random() * 900000) + 100000);
-            smsUtil.sendOne(phone, verificationCode);
+//            smsUtil.sendOne(phone, verificationCode);
+            System.out.println(verificationCode);
         }
 
         redisUtils.setDataExpire(phone, verificationCode, 60 * 5L);
 
-        if(isUser) {
-            return new UserResponse.UserDTO(user.get());
-        } else {
-            return null;
-        }
+        return user.map(UserResponse.UserDTO::new).orElse(null);
     }
 
     // 새로운 유저에 대한 인증코드 확인
@@ -372,5 +384,50 @@ public class UserService {
         redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 365L);
 
         return new UserResponse.TokenDTO(accessToken, refreshToken);
+    }
+
+    public void registerPlayerAccount(Long playerId, UserRequest.SendSMSDTO requestDTO) {
+        Player player = playerRepository.findById(playerId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+
+        if(userRepository.existsByPlayer(player)){
+            throw new CustomException(ExceptionCode.PLAYER_ACCOUNT_REGISTERED);
+        } else {
+            Random random = new Random();
+            String phone;
+
+            do {
+                phone = String.valueOf((long) 10000000000L + (long)(random.nextDouble() * 90000000000L));
+            } while (userRepository.existsByPhone(phone));
+
+            String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
+
+            User newUser = User.builder()
+                    .role(player.getTeam() == null ? Role.ROLE_PLAYER : Role.ROLE_TEAM)
+                    .phone(phone)
+                    .password(passwordEncoder.encode(code))
+                    .nickname(player.getKoreanName())
+                    .player(player)
+                    .build();
+
+            userRepository.save(newUser);
+
+            smsUtil.sendAccount(requestDTO.phone(), phone, code);
+        }
+    }
+
+    public UserRequest.SendSMSDTO getPlayerAccountInfo(Long playerId, User user) {
+        if(!user.getRole().equals(Role.ROLE_ADMIN)) {
+            throw new CustomException(ExceptionCode.USER_FORBIDDEN);
+        }
+
+        Player player = playerRepository.findById(playerId).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+
+        Optional<User> playerAccount = userRepository.findByPlayer(player);
+
+        if(playerAccount.isEmpty()) {
+            throw new CustomException(ExceptionCode.PLAYER_ACCOUNT_NOT_REGISTERED);
+        } else {
+            return new UserRequest.SendSMSDTO(user.getPhone());
+        }
     }
 }
