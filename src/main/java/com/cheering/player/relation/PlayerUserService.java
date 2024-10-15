@@ -147,6 +147,10 @@ public class PlayerUserService {
     public void deletePlayerUser(Long playerUserId) {
         PlayerUser playerUser = playerUserRepository.findById(playerUserId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
 
+        if(playerUser.getMyCommunity() != null) {
+            playerUser.getMyCommunity().setOwner(null);
+        }
+
         List<PostImage> postImages = postImageRepository.findByPlayerUser(playerUser);
 
         for(PostImage postImage : postImages) {

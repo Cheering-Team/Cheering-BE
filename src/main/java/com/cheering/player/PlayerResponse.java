@@ -8,28 +8,29 @@ import com.cheering.team.league.League;
 import com.cheering.team.sport.Sport;
 
 import java.util.List;
+import java.util.Optional;
 
 public class PlayerResponse {
-
-    public record PlayerNameDTO(String koreanName, String englishName) {
-        public PlayerNameDTO(Player player) {
-            this(player.getKoreanName(), player.getEnglishName());
-        }
-    }
-    public record PlayerDTO(Long id, String koreanName, String englishName, String image, String backgroundImage, Long fanCount, PlayerUserResponse.PlayerUserDTO user) {
+    public record PlayerDTO(Long id, String koreanName, String englishName, String image, String backgroundImage, Long fanCount, PlayerUserResponse.PlayerUserDTO user, Long officialChatRoomId, PlayerUserResponse.PlayerUserDTO owner) {
         public PlayerDTO(Player player, Long fanCount) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), fanCount, null);
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), fanCount, null, null, Optional.ofNullable(player.getOwner())
+                    .map(PlayerUserResponse.PlayerUserDTO::new)
+                    .orElse(null));
         }
         public PlayerDTO(Player player, Long fanCount, PlayerUserResponse.PlayerUserDTO playerUserDTO) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), fanCount, playerUserDTO);
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), fanCount, playerUserDTO, null, Optional.ofNullable(player.getOwner())
+                    .map(PlayerUserResponse.PlayerUserDTO::new)
+                    .orElse(null));
         }
 
-        public PlayerDTO(Player player, PlayerUserResponse.PlayerUserDTO playerUserDTO) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), null, playerUserDTO);
+        public PlayerDTO(Player player, PlayerUserResponse.PlayerUserDTO playerUserDTO, Long officialChatRoomId) {
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), null, playerUserDTO, officialChatRoomId, Optional.ofNullable(player.getOwner())
+                    .map(PlayerUserResponse.PlayerUserDTO::new)
+                    .orElse(null));
         }
 
         public PlayerDTO(Player player) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), null, null);
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(),player.getImage(), player.getBackgroundImage(), null, null, null, null);
         }
     }
 
@@ -39,17 +40,12 @@ public class PlayerResponse {
         }
     }
 
-    public record PlayerAndTeamsDTO(Long id, String koreanName, String englishName, String image, String backgroundImage, Long fanCount, PlayerUserResponse.PlayerUserDTO user, List<TeamResponse.TeamDTO> teams, String sportName, String leagueName) {
+    public record PlayerAndTeamsDTO(Long id, String koreanName, String englishName, String image, String backgroundImage, Long fanCount, PlayerUserResponse.PlayerUserDTO user, List<TeamResponse.TeamDTO> teams, String sportName, String leagueName, Boolean isOwner, PlayerUserResponse.PlayerUserDTO owner) {
 
-        public PlayerAndTeamsDTO(Player player, Long fanCount, List<TeamResponse.TeamDTO> teams) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, null, teams, null, null);
-        }
-        public PlayerAndTeamsDTO(Player player, Long fanCount, PlayerUserResponse.PlayerUserDTO playerUserDTO, List<TeamResponse.TeamDTO> teams) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, playerUserDTO, teams, null, null);
-        }
-
-        public PlayerAndTeamsDTO(Player player, Long fanCount, PlayerUserResponse.PlayerUserDTO playerUserDTO, String sportName, String leagueName) {
-            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, playerUserDTO, null, sportName, leagueName);
+        public PlayerAndTeamsDTO(Player player, Long fanCount, PlayerUserResponse.PlayerUserDTO playerUserDTO, List<TeamResponse.TeamDTO> teams, String sportName, String leagueName, Boolean isOwner) {
+            this(player.getId(), player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, playerUserDTO, teams, sportName, leagueName, isOwner, Optional.ofNullable(player.getOwner())
+                    .map(PlayerUserResponse.PlayerUserDTO::new)
+                    .orElse(null));
         }
     }
 }

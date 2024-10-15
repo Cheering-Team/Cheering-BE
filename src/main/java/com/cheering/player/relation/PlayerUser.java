@@ -49,6 +49,9 @@ public class PlayerUser {
     @Column
     private String image;
 
+    @OneToOne(mappedBy = "owner")
+    private Player myCommunity;
+
     @OneToMany(mappedBy = "playerUser", cascade = CascadeType.REMOVE)
     private List<Post> posts = new ArrayList<>();
 

@@ -15,6 +15,8 @@ import java.util.Random;
 
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
+import com.cheering.player.relation.PlayerUser;
+import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
@@ -37,6 +39,7 @@ public class UserService {
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
+    private final PlayerUserRepository playerUserRepository;
     private final TempAppleUserRepository tempAppleUserRepository;
     private final PlayerRepository playerRepository;
     private final BadWordService badWordService;
@@ -131,7 +134,16 @@ public class UserService {
     }
 
     public UserResponse.UserDTO getUserInfo(User user) {
-        return new UserResponse.UserDTO(user);
+        if(user.getRole().equals(Role.ROLE_USER) || user.getRole().equals(Role.ROLE_ADMIN)) {
+            return new UserResponse.UserDTO(user);
+        } else {
+            Player player = user.getPlayer();
+            Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerAndUser(player, user);
+
+            Long fanCount = playerUserRepository.countByPlayerId(player.getId());
+
+            return playerUser.map(value -> new UserResponse.UserDTO(user, player, value, fanCount)).orElseGet(() -> new UserResponse.UserDTO(user, player, fanCount));
+        }
     }
 
     @Transactional
@@ -415,7 +427,7 @@ public class UserService {
         }
     }
 
-    public UserRequest.SendSMSDTO getPlayerAccountInfo(Long playerId, User user) {
+    public UserRequest.SendSMSDTO getPlayerAccount(Long playerId, User user) {
         if(!user.getRole().equals(Role.ROLE_ADMIN)) {
             throw new CustomException(ExceptionCode.USER_FORBIDDEN);
         }
@@ -429,5 +441,19 @@ public class UserService {
         } else {
             return new UserRequest.SendSMSDTO(user.getPhone());
         }
+    }
+
+    @Transactional
+    public void reissuePlayerAccountPassword(Long playerId, UserRequest.SendSMSDTO requestDTO) {
+        Player player = playerRepository.findById(playerId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+
+        User user = userRepository.findByPlayer(player).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_ACCOUNT_NOT_REGISTERED));
+
+        Random random = new Random();
+        String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
+        user.setPassword(passwordEncoder.encode(code));
+        userRepository.save(user);
+
+        smsUtil.sendAccount(requestDTO.phone(), user.getPhone(), code);
     }
 }

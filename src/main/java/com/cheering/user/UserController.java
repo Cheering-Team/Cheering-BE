@@ -135,7 +135,13 @@ public class UserController {
     }
 
     @GetMapping("/users/player-account/{playerId}")
-    public ResponseEntity<?> getPlayerAccountInfo(@PathVariable("playerId") Long playerId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"선수 계정을 조회하였습니다.", userService.getPlayerAccountInfo(playerId, customUserDetails.getUser())));
+    public ResponseEntity<?> getPlayerAccount(@PathVariable("playerId") Long playerId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"선수 계정을 조회하였습니다.", userService.getPlayerAccount(playerId, customUserDetails.getUser())));
+    }
+
+    @PutMapping("/users/player-account/{playerId}")
+    public ResponseEntity<?> reissuePlayerAccountPassword(@PathVariable("playerId") Long playerId, @RequestBody UserRequest.SendSMSDTO requestDTO) {
+        userService.reissuePlayerAccountPassword(playerId, requestDTO);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "비밀번호를 재발급하였습니다.", null));
     }
 }

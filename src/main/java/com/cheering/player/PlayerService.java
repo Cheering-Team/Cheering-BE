@@ -19,15 +19,18 @@ import com.cheering.team.relation.TeamPlayer;
 import com.cheering.team.relation.TeamPlayerRepository;
 import com.cheering.team.sport.Sport;
 import com.cheering.team.sport.SportRepository;
+import com.cheering.user.Role;
 import com.cheering.user.User;
 import com.cheering.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -61,14 +64,14 @@ public class PlayerService {
             if(playerUser.isPresent()) {
                 PlayerUserResponse.PlayerUserDTO playerUserDTO = new PlayerUserResponse.PlayerUserDTO(playerUser.get());
                 if(player.getTeam() != null) {
-                    return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName());
+                    return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName(), Objects.equals(user.getPlayer(), player));
                 }
-                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, teamDTOS);
+                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, teamDTOS, null, null, Objects.equals(user.getPlayer(), player));
             } else {
                 if(player.getTeam() != null) {
-                    return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName());
+                    return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, null, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName(), Objects.equals(user.getPlayer(), player));
                 }
-                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, teamDTOS);
+                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, null, teamDTOS, null, null, Objects.equals(user.getPlayer(), player));
             }
         })).toList();
     }
@@ -119,19 +122,35 @@ public class PlayerService {
         if(playerUser.isPresent()) {
             PlayerUserResponse.PlayerUserDTO playerUserDTO = new PlayerUserResponse.PlayerUserDTO(playerUser.get());
             if(player.getTeam() != null) {
-                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName());
+                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName(), Objects.equals(user.getPlayer(), player));
             }
-            return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, teamDTOS);
+            return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, teamDTOS, null, null, Objects.equals(user.getPlayer(), player));
         } else {
             if(player.getTeam() != null) {
-                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName());
+                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, null, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName(), Objects.equals(user.getPlayer(), player));
             }
-            return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, teamDTOS);
+            return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, null, teamDTOS, null, null, Objects.equals(user.getPlayer(), player));
         }
     }
 
     @Transactional
     public void joinCommunity(Long playerId, String nickname, MultipartFile image, User user) {
+        Player player = playerRepository.findById(playerId).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+
+        if((user.getRole().equals(Role.ROLE_TEAM) || user.getRole().equals(Role.ROLE_PLAYER)) && user.getPlayer().getId().equals(playerId)) {
+            PlayerUser playerUser = PlayerUser.builder()
+                    .player(player)
+                    .user(user)
+                    .nickname(player.getKoreanName())
+                    .image(player.getImage())
+                    .build();
+
+            playerUserRepository.save(playerUser);
+            player.setOwner(playerUser);
+
+            return;
+        }
+
         Optional<PlayerUser> duplicatePlayerUser = playerUserRepository.findByPlayerIdAndNickname(playerId, nickname);
 
         if(duplicatePlayerUser.isPresent()) {
@@ -141,8 +160,6 @@ public class PlayerService {
         if(badWordService.containsBadWords(nickname)) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
-
-        Player player = playerRepository.findById(playerId).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
         if(player.getKoreanName().equals(nickname) || player.getEnglishName().equals(nickname)) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
@@ -168,7 +185,10 @@ public class PlayerService {
 
     public List<PlayerResponse.PlayerDTO> getMyPlayers(User user) {
         List<PlayerUser> playerUsers = playerUserRepository.findByUserId(user.getId()).stream().sorted(Comparator.comparing(playerUser -> playerUser.getPlayer().getTeam() != null ? 0 : 1)).toList();
-        return playerUsers.stream().map((playerUser -> new PlayerResponse.PlayerDTO(playerUser.getPlayer(), new PlayerUserResponse.PlayerUserDTO(playerUser)))).toList();
+        return playerUsers.stream().map((playerUser -> {
+            List<ChatRoom> chatRoom = chatRoomRepository.findOfficialByPlayer(playerUser.getPlayer());
+            return new PlayerResponse.PlayerDTO(playerUser.getPlayer(), new PlayerUserResponse.PlayerUserDTO(playerUser), chatRoom.get(0).getId());
+        })).toList();
     }
 
     public void registerPlayer(Long teamId, PlayerRequest.RegisterPlayerDTO requestDTO) {

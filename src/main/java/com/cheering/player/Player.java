@@ -1,5 +1,6 @@
 package com.cheering.player;
 
+import com.cheering.player.relation.PlayerUser;
 import com.cheering.team.Team;
 import com.cheering.user.User;
 import jakarta.persistence.*;
@@ -34,6 +35,10 @@ public class Player {
 
     @OneToOne(mappedBy = "player")
     private User user;
+
+    @OneToOne
+    @JoinColumn(name = "owner_id")
+    private PlayerUser owner;
 
     @Builder
     public Player(String koreanName, String englishName, String image, String backgroundImage, Team team) {

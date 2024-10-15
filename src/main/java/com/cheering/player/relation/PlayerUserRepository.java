@@ -1,6 +1,7 @@
 package com.cheering.player.relation;
 
 import com.cheering.player.Player;
+import com.cheering.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,6 +21,5 @@ public interface PlayerUserRepository extends JpaRepository<PlayerUser, Long> {
 
     @Query("SELECT pu FROM PlayerUser pu WHERE pu.user.id=:userId")
     List<PlayerUser> findByUserId(@Param("userId") Long userId);
-
-    void deleteByUserId(Long userId);
+    Optional<PlayerUser> findByPlayerAndUser(Player player, User user);
 }
