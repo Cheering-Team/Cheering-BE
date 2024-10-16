@@ -79,8 +79,6 @@ public class PlayerUserService {
         Page<Post> postList = postRepository.findByPlayerUser(playerUser, curPlayerUser, pageable);
 
         List<PostResponse.PostInfoWithPlayerDTO> postInfoDTOS = postList.stream().map((post -> {
-            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
-
             // 태그
             List<PostTag> postTags = postTagRepository.findByPostId(post.getId());
             List<String> tags = postTags.stream().map((postTag) -> {
@@ -100,7 +98,7 @@ public class PlayerUserService {
             List<PostImage> postImages = postImageRepository.findByPostId(post.getId());
             List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), new PlayerResponse.PlayerDTO(playerUser.getPlayer()), post.getContent(), post.getIsHide(), post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+            return new PostResponse.PostInfoWithPlayerDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curPlayerUser);
         })).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);

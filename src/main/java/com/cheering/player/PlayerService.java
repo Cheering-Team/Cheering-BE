@@ -45,7 +45,7 @@ public class PlayerService {
     private final BadWordService badWordService;
     private final S3Util s3Util;
 
-    public List<PlayerResponse.PlayerAndTeamsDTO> getPlayers(String name, User user) {
+    public List<PlayerResponse.PlayerDTO> getPlayers(String name, User user) {
         name = name.replace(" ", "");
         List<Player> players = playerRepository.findByNameOrTeamName(name).stream().sorted(Comparator.comparing(player -> player.getTeam() != null ? 0 : 1)).toList();
 
@@ -62,16 +62,15 @@ public class PlayerService {
             Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId());
 
             if(playerUser.isPresent()) {
-                PlayerUserResponse.PlayerUserDTO playerUserDTO = new PlayerUserResponse.PlayerUserDTO(playerUser.get());
                 if(player.getTeam() != null) {
-                    return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName(), Objects.equals(user.getPlayer(), player));
+                    return new PlayerResponse.PlayerDTO(player, fanCount, playerUser.get(), null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName(), Objects.equals(user.getPlayer(), player), null);
                 }
-                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, teamDTOS, null, null, Objects.equals(user.getPlayer(), player));
+                return new PlayerResponse.PlayerDTO(player, fanCount, playerUser.get(), teamDTOS, null, null, Objects.equals(user.getPlayer(), player), null);
             } else {
                 if(player.getTeam() != null) {
-                    return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, null, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName(), Objects.equals(user.getPlayer(), player));
+                    return new PlayerResponse.PlayerDTO(player, fanCount, null, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName(), Objects.equals(user.getPlayer(), player), null);
                 }
-                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, null, teamDTOS, null, null, Objects.equals(user.getPlayer(), player));
+                return new PlayerResponse.PlayerDTO(player, fanCount, null, teamDTOS, null, null, Objects.equals(user.getPlayer(), player), null);
             }
         })).toList();
     }
@@ -89,12 +88,7 @@ public class PlayerService {
         List<PlayerResponse.PlayerDTO> playerDTOS = players.stream().map((player)-> {
             long fanCount = playerUserRepository.countByPlayerId(player.getId());
             Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId());
-            if(playerUser.isPresent()) {
-                PlayerUserResponse.PlayerUserDTO playerUserDTO = new PlayerUserResponse.PlayerUserDTO(playerUser.get());
-                return new PlayerResponse.PlayerDTO(player, fanCount, playerUserDTO);
-            } else {
-                return new PlayerResponse.PlayerDTO(player, fanCount, null);
-            }
+            return playerUser.map(value -> new PlayerResponse.PlayerDTO(player, fanCount, value, null, null, null, null, null)).orElseGet(() -> new PlayerResponse.PlayerDTO(player, fanCount, null, null, null, null, null, null));
 
         }).toList();
 
@@ -105,7 +99,7 @@ public class PlayerService {
 
     // 해당 선수 커뮤니티 정보 및 가입 여부 불러오기
     @Transactional
-    public PlayerResponse.PlayerAndTeamsDTO getPlayerInfo(Long playerId, User user) {
+    public PlayerResponse.PlayerDTO getPlayerInfo(Long playerId, User user) {
         Player player = playerRepository.findById(playerId).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
         long fanCount = playerUserRepository.countByPlayerId(player.getId());
@@ -120,16 +114,15 @@ public class PlayerService {
         Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId());
 
         if(playerUser.isPresent()) {
-            PlayerUserResponse.PlayerUserDTO playerUserDTO = new PlayerUserResponse.PlayerUserDTO(playerUser.get());
             if(player.getTeam() != null) {
-                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName(), Objects.equals(user.getPlayer(), player));
+                return new PlayerResponse.PlayerDTO(player, fanCount, playerUser.get(), null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName(), Objects.equals(user.getPlayer(), player), null);
             }
-            return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, playerUserDTO, teamDTOS, null, null, Objects.equals(user.getPlayer(), player));
+            return new PlayerResponse.PlayerDTO(player, fanCount, playerUser.get(), teamDTOS, null, null, Objects.equals(user.getPlayer(), player), null);
         } else {
             if(player.getTeam() != null) {
-                return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, null, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName(), Objects.equals(user.getPlayer(), player));
+                return new PlayerResponse.PlayerDTO(player, fanCount, null, null, player.getTeam().getLeague().getSport().getName(), player.getTeam().getLeague().getName(), Objects.equals(user.getPlayer(), player), null);
             }
-            return new PlayerResponse.PlayerAndTeamsDTO(player, fanCount, null, teamDTOS, null, null, Objects.equals(user.getPlayer(), player));
+            return new PlayerResponse.PlayerDTO(player, fanCount, null, teamDTOS, null, null, Objects.equals(user.getPlayer(), player), null);
         }
     }
 
@@ -187,7 +180,7 @@ public class PlayerService {
         List<PlayerUser> playerUsers = playerUserRepository.findByUserId(user.getId()).stream().sorted(Comparator.comparing(playerUser -> playerUser.getPlayer().getTeam() != null ? 0 : 1)).toList();
         return playerUsers.stream().map((playerUser -> {
             List<ChatRoom> chatRoom = chatRoomRepository.findOfficialByPlayer(playerUser.getPlayer());
-            return new PlayerResponse.PlayerDTO(playerUser.getPlayer(), new PlayerUserResponse.PlayerUserDTO(playerUser), chatRoom.get(0).getId());
+            return new PlayerResponse.PlayerDTO(playerUser.getPlayer(), null, playerUser, null, null, null, user.getPlayer() != null ? user.getPlayer().getId().equals(playerUser.getPlayer().getId()) : null, chatRoom.get(0).getId());
         })).toList();
     }
 

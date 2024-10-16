@@ -11,6 +11,7 @@ import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.notification.Notification;
 import com.cheering.notification.NotificationRepository;
 import com.cheering.player.Player;
+import com.cheering.player.PlayerRepository;
 import com.cheering.player.PlayerResponse;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
@@ -50,6 +51,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @Service
@@ -68,6 +72,7 @@ public class PostService {
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
+    private final PlayerRepository playerRepository;
     private final BlockRepository blockRepository;
     private final BadWordService badWordService;
     private final S3Util s3Util;
@@ -83,6 +88,7 @@ public class PostService {
 
         Post post = Post.builder()
                 .content(content)
+                .type(PostType.FAN_POST)
                 .playerUser(playerUser)
                 .build();
 
@@ -161,7 +167,6 @@ public class PostService {
         return new PostResponse.PostIdDTO(post.getId());
     }
 
-
     // 게시글 목록 불러오기 (무한 스크롤)
     public PostResponse.PostListDTO getPosts(Long playerId, String tagName, Pageable pageable, User user) {
         Page<Post> postList;
@@ -186,9 +191,6 @@ public class PostService {
 
         List<PostResponse.PostInfoWithPlayerDTO> postInfoDTOS = postList.getContent().stream().map((post -> {
             PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(post.getPlayerUser().getPlayer().getId(), user.getId()).orElseThrow(()->new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
-            // 작성자
-            PlayerUser playerUser = post.getPlayerUser();
-            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
 
             // 태그
             List<PostTag> postTags = postTagRepository.findByPostId(post.getId());
@@ -206,7 +208,7 @@ public class PostService {
             List<PostImage> postImages = postImageRepository.findByPostId(post.getId());
             List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-            return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), new PlayerResponse.PlayerDTO(post.getPlayerUser().getPlayer()), post.getContent(), false, post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+            return new PostResponse.PostInfoWithPlayerDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curPlayerUser);
         })).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);
@@ -239,9 +241,7 @@ public class PostService {
 
         List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-        PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(playerUser);
-
-        return new PostResponse.PostInfoWithPlayerDTO(post.getId(), new PlayerUserResponse.PlayerUserDTO(curPlayerUser), new PlayerResponse.PlayerDTO(player), post.getContent(), false, post.getCreatedAt(), tags, like.isPresent(), likeCount, commentCount, imageDTOS, writerDTO);
+        return new PostResponse.PostInfoWithPlayerDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curPlayerUser);
 
     }
 
@@ -379,5 +379,58 @@ public class PostService {
 
         // Post
         postRepository.deleteById(postId);
+    }
+
+    // 데일리 작성
+    public void writeDaily(Long playerId, PostRequest.PostContentDTO requestDTO, User user) {
+        Player player = playerRepository.findById(playerId).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
+
+        if(!curPlayerUser.equals(player.getOwner())) {
+            throw new CustomException(ExceptionCode.NOT_OWNER);
+        }
+
+        Post daily = Post.builder()
+                .type(PostType.DAILY)
+                .content(requestDTO.content())
+                .playerUser(curPlayerUser)
+                .build();
+
+        postRepository.save(daily);
+    }
+
+    @Transactional
+    // 데일리 불러오기
+    public PostResponse.DailyListDTO getDailys(Long playerId, String dateString, User user) {
+        LocalDate date = LocalDate.parse(dateString);
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        Player player = playerRepository.findById(playerId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()->new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
+
+        List<Post> posts = postRepository.findDaily(player, PostType.DAILY, startOfDay, endOfDay);
+
+        return new PostResponse.DailyListDTO(posts.stream().map((post -> {
+            Long commentCount = commentRepository.countByPostId(post.getId());
+
+            return new PostResponse.PostInfoWithPlayerDTO(post, null, null, null, commentCount, null, curPlayerUser);})).toList(), player.getOwner().equals(curPlayerUser), new PlayerUserResponse.PlayerUserDTO(player.getOwner()));
+    }
+
+    // 데일리 수정
+    @Transactional
+    public void editDaily(Long dailyId, PostRequest.PostContentDTO requestDTO, User user) {
+        Post daily = postRepository.findById(dailyId).orElseThrow(()-> new CustomException(ExceptionCode.POST_NOT_FOUND));
+
+        daily.setContent(requestDTO.content());
+
+        postRepository.save(daily);
+    }
+
+    // 데일리 삭제
+    @Transactional
+    public void deleteDaily(Long dailyId) {
+        postRepository.deleteById(dailyId);
     }
 }

@@ -8,6 +8,7 @@ import com.cheering.post.Like.Like;
 import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.relation.PostTag;
 import com.cheering.report.postReport.PostReport;
+import com.cheering.user.Role;
 import jakarta.persistence.*;
 
 import lombok.*;
@@ -34,6 +35,10 @@ public class Post extends BaseTimeEntity {
     @Column
     private Boolean isHide = false;
 
+    @Column
+    @Enumerated(value = EnumType.STRING)
+    private PostType type;
+
     @ManyToOne
     @JoinColumn(name = "player_user_id")
     private PlayerUser playerUser;
@@ -57,9 +62,10 @@ public class Post extends BaseTimeEntity {
     private List<Notification> notifications = new ArrayList<>();
 
     @Builder
-    public Post(Long postId, String content, PlayerUser playerUser) {
+    public Post(Long postId, String content, PlayerUser playerUser, PostType type) {
         this.id = postId;
         this.content = content;
         this.playerUser = playerUser;
+        this.type = type;
     }
 }

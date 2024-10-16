@@ -14,8 +14,8 @@ public class CommentResponse {
         }
     }
 
-    public record CommentDTO (Long id, String content, LocalDateTime createdAt, Long reCount, PostResponse.WriterDTO writer, boolean isWriter) {
-        public CommentDTO(Comment comment, Long reCount, PostResponse.WriterDTO writer, boolean isWriter) {
+    public record CommentDTO (Long id, String content, LocalDateTime createdAt, Long reCount, PostResponse.WriterDTO writer, Boolean isWriter) {
+        public CommentDTO(Comment comment, Long reCount, PostResponse.WriterDTO writer, Boolean isWriter) {
             this(comment.getId(), comment.getContent(), comment.getCreatedAt(), reCount, writer, isWriter);
         }
     }

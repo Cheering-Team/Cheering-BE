@@ -14,11 +14,11 @@ public class UserResponse {
         }
 
         public UserDTO(User user, Player player, Long fanCount) {
-            this(user.getId(), user.getPhone(), user.getNickname(), user.getRole().toString(),  new PlayerResponse.PlayerDTO(player, fanCount));
+            this(user.getId(), user.getPhone(), user.getNickname(), user.getRole().toString(),  new PlayerResponse.PlayerDTO(player, fanCount, null, null, null, null, null, null));
         }
 
         public UserDTO(User user, Player player, PlayerUser playerUser, Long fanCount) {
-            this(user.getId(), user.getPhone(), user.getNickname(), user.getRole().toString(), new PlayerResponse.PlayerDTO(player, fanCount, new PlayerUserResponse.PlayerUserDTO(playerUser)));
+            this(user.getId(), user.getPhone(), user.getNickname(), user.getRole().toString(), new PlayerResponse.PlayerDTO(player, fanCount, playerUser, null, null, null, null, null));
         }
     }
 

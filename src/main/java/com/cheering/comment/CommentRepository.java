@@ -3,6 +3,7 @@ package com.cheering.comment;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.post.Post;
 import java.util.List;
+import java.util.Optional;
 
 import com.cheering.report.commentReport.CommentReport;
 import org.springframework.data.domain.Page;
@@ -20,4 +21,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Long countByPostId(@Param("postId") Long postId);
 
     List<Comment> findByPost(Post post);
+
+    @Query(value = "SELECT * FROM comment_tb WHERE post_id = :postId ORDER BY RANDOM() LIMIT 1", nativeQuery = true)
+    Optional<Comment> findRandomComment(@Param("postId") Long postId);
 }

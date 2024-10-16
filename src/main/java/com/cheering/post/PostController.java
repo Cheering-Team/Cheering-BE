@@ -13,7 +13,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,7 +41,7 @@ public class PostController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 목록을 불러왔습니다.", postService.getPosts(playerId, tag, pageable, customUserDetails.getUser())));
     }
 
-    // 게시글 불러오가
+    // 게시글 불러오기
     @GetMapping("/posts/{postId}")
     public ResponseEntity<?> getPostById(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글을 불러왔습니다.", postService.getPostById(postId, customUserDetails.getUser())));
@@ -69,5 +71,32 @@ public class PostController {
     public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId,  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         postService.deletePost(postId, customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글을 삭제하였습니다.", null));
+    }
+
+    // 데일리 작성
+    @PostMapping("/players/{playerId}/dailys")
+    public ResponseEntity<?> writeDaily(@PathVariable("playerId") Long playerId, @RequestBody PostRequest.PostContentDTO requestDTO, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        postService.writeDaily(playerId, requestDTO, customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "작성 완료", null));
+    }
+
+    // 특정 커뮤니티 특정 날짜 데일리 불러오기
+    @GetMapping("/players/{playerId}/dailys")
+    public ResponseEntity<?> getDailys(@PathVariable("playerId") Long playerId, @RequestParam("date") String dateString, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "데일리 목록을 불러왔습니다.", postService.getDailys(playerId, dateString, customUserDetails.getUser())));
+    }
+
+    // 데일리 수정
+    @PutMapping("/dailys/{dailyId}")
+    public ResponseEntity<?> editDaily(@PathVariable("dailyId") Long dailyId, @RequestBody PostRequest.PostContentDTO requestDTO, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        postService.editDaily(dailyId, requestDTO, customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "수정 완료", null));
+    }
+
+    // 데일리 삭제
+    @DeleteMapping("/dailys/{dailyId}")
+    public ResponseEntity<?> deleteDaily(@PathVariable("dailyId") Long dailyId) {
+        postService.deleteDaily(dailyId);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "삭제 완료", null));
     }
 }

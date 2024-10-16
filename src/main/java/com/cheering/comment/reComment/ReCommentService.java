@@ -83,9 +83,9 @@ public class ReCommentService {
 
         List<ReCommentResponse.ReCommentDTO> reCommentDTOS = reCommentList.stream().map((reComment -> {
             PlayerUser writer = reComment.getPlayerUser();
-            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(writer);
+            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(writer,  player.getOwner() != null && player.getOwner().equals(writer));
 
-            PostResponse.WriterDTO toDTO = new PostResponse.WriterDTO(reComment.getToPlayerUser());
+            PostResponse.WriterDTO toDTO = new PostResponse.WriterDTO(reComment.getToPlayerUser(), null);
 
             return new ReCommentResponse.ReCommentDTO(reComment, toDTO, writerDTO, writer.equals(curPlayerUser));
         })).toList();

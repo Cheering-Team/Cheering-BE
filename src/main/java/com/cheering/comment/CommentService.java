@@ -20,6 +20,8 @@ import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.user.User;
 
 import java.util.List;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -86,7 +88,7 @@ public class CommentService {
         List<CommentResponse.CommentDTO> commentDTOS = commentList.stream().map((comment -> {
             PlayerUser writer = comment.getPlayerUser();
             Long reCount = reCommentRepository.countByCommentId(comment.getId());
-            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(writer);
+            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(writer, curPlayerUser.getPlayer().getOwner() != null && curPlayerUser.getPlayer().getOwner().equals(writer));
             return new CommentResponse.CommentDTO(comment, reCount, writerDTO, writer.equals(curPlayerUser));
         })).toList();
 
@@ -117,4 +119,15 @@ public class CommentService {
 
         commentRepository.delete(comment);
     }
+
+    public CommentResponse.CommentDTO getRandomComment(Long postId, User user) {
+        Optional<Comment> comment = commentRepository.findRandomComment(postId);
+
+        if(comment.isEmpty()) return null;
+        else {
+            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(comment.get().getPlayerUser(), null);
+            return new CommentResponse.CommentDTO(comment.get(), null, writerDTO, null);
+        }
+    }
+
 }
