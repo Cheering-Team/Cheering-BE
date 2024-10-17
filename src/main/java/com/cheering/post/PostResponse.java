@@ -26,7 +26,11 @@ public class PostResponse {
 
     }
 
-    public record DailyListDTO(List<PostInfoWithPlayerDTO> dailys, Boolean isOwner, PlayerUserResponse.PlayerUserDTO owner) { }
+    public record DailyListDTO(List<PostInfoWithPlayerDTO> dailys, Boolean isOwner, PlayerUserResponse.PlayerUserDTO owner, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last) {
+        public DailyListDTO(Page<?> page, List<PostInfoWithPlayerDTO> dailys, Boolean isOwner, PlayerUserResponse.PlayerUserDTO owner) {
+            this(dailys, isOwner, owner, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast());
+        }
+    }
 
     public record WriterDTO (Long id, String nickname, String image, Boolean isOwner) {
         public WriterDTO(PlayerUser playerUser, Boolean isOwner) {

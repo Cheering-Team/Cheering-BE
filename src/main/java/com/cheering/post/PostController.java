@@ -82,8 +82,9 @@ public class PostController {
 
     // 특정 커뮤니티 특정 날짜 데일리 불러오기
     @GetMapping("/players/{playerId}/dailys")
-    public ResponseEntity<?> getDailys(@PathVariable("playerId") Long playerId, @RequestParam("date") String dateString, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "데일리 목록을 불러왔습니다.", postService.getDailys(playerId, dateString, customUserDetails.getUser())));
+    public ResponseEntity<?> getDailys(@PathVariable("playerId") Long playerId, @RequestParam("date") String dateString, @RequestParam int page, @RequestParam int size, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "데일리 목록을 불러왔습니다.", postService.getDailys(playerId, dateString, pageable, customUserDetails.getUser())));
     }
 
     // 데일리 수정

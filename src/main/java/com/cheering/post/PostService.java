@@ -12,7 +12,6 @@ import com.cheering.notification.Notification;
 import com.cheering.notification.NotificationRepository;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
-import com.cheering.player.PlayerResponse;
 import com.cheering.player.relation.PlayerUser;
 import com.cheering.player.relation.PlayerUserRepository;
 import com.cheering.player.relation.PlayerUserResponse;
@@ -54,9 +53,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -404,17 +401,23 @@ public class PostService {
 
     @Transactional
     // 데일리 불러오기
-    public PostResponse.DailyListDTO getDailys(Long playerId, String dateString, User user) {
-        LocalDate date = LocalDate.parse(dateString);
-        LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
-
+    public PostResponse.DailyListDTO getDailys(Long playerId, String dateString, Pageable pageable, User user) {
         Player player = playerRepository.findById(playerId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
         PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()->new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
 
-        List<Post> posts = postRepository.findDaily(player, PostType.DAILY, startOfDay, endOfDay);
+        Page<Post> posts;
 
-        return new PostResponse.DailyListDTO(posts.stream().map((post -> {
+        if(dateString.isEmpty()) {
+            posts = postRepository.findAllDaily(player, PostType.DAILY, pageable);
+        } else {
+            LocalDate date = LocalDate.parse(dateString);
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+            posts = postRepository.findDaily(player, PostType.DAILY, startOfDay, endOfDay, pageable);
+        }
+
+        return new PostResponse.DailyListDTO(posts, posts.stream().map((post -> {
             Long commentCount = commentRepository.countByPostId(post.getId());
 
             return new PostResponse.PostInfoWithPlayerDTO(post, null, null, null, commentCount, null, curPlayerUser);})).toList(), player.getOwner().equals(curPlayerUser), new PlayerUserResponse.PlayerUserDTO(player.getOwner()));
