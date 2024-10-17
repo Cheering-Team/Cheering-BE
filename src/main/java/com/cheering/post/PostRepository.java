@@ -1,5 +1,6 @@
 package com.cheering.post;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,6 +36,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.playerUser = :playerUser AND p.isHide = false AND p.id NOT IN (SELECT pr.post.id FROM PostReport pr WHERE pr.playerUser = :curPlayerUser) ORDER BY p.createdAt DESC")
     Page<Post> findByPlayerUser(@Param("playerUser") PlayerUser playerUser, @Param("curPlayerUser") PlayerUser curPlayerUser, Pageable pageable);
 
+    // 특정 날짜의 데일리 로드
     @Query("SELECT p FROM Post p WHERE p.playerUser.player = :player AND p.type = :type AND p.createdAt BETWEEN :startOfDay AND :endOfDay")
     List<Post> findDaily(@Param("player") Player player, @Param("type") PostType type, @Param("startOfDay") LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
+
+    // 특정 월 데일리 유무 로드
+    @Query("SELECT DISTINCT DATE(p.createdAt) FROM Post p WHERE p.playerUser.player = :player AND p.type = :type")
+    List<String> findDistinctDailyDates(@Param("player") Player player, @Param("type") PostType type);
 }

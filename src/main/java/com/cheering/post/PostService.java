@@ -54,7 +54,9 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -432,5 +434,11 @@ public class PostService {
     @Transactional
     public void deleteDaily(Long dailyId) {
         postRepository.deleteById(dailyId);
+    }
+
+    public List<String> getDailyExist(Long playerId) {
+        Player player = playerRepository.findById(playerId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+
+        return postRepository.findDistinctDailyDates(player, PostType.DAILY);
     }
 }

@@ -99,4 +99,10 @@ public class PostController {
         postService.deleteDaily(dailyId);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "삭제 완료", null));
     }
+
+    // 특정 달(month)에 데일리가 있는 날짜 반환
+    @GetMapping("/players/{playerId}/dailys/exist")
+    public ResponseEntity<?> getDailyExist(@PathVariable("playerId") Long playerId) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "데일리 유무 로드", postService.getDailyExist(playerId)));
+    }
 }
