@@ -3,20 +3,17 @@ package com.cheering.post;
 import com.cheering.BaseTimeEntity;
 import com.cheering.comment.Comment;
 import com.cheering.notification.Notification;
-import com.cheering.player.relation.PlayerUser;
+import com.cheering.community.relation.Fan;
 import com.cheering.post.Like.Like;
 import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.relation.PostTag;
 import com.cheering.report.postReport.PostReport;
-import com.cheering.user.Role;
 import jakarta.persistence.*;
 
 import lombok.*;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "post_tb")
@@ -29,43 +26,44 @@ public class Post extends BaseTimeEntity {
     @Column(name = "post_id")
     private Long id;
 
-    @Column(length = 1000)
-    private String content;
-
-    @Column
-    private Boolean isHide = false;
-
-    @Column
+    @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private PostType type;
 
-    @ManyToOne
-    @JoinColumn(name = "player_user_id")
-    private PlayerUser playerUser;
+    @Column(length = 1000)
+    private String content;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
-    private List<Like> likes = new ArrayList<>();
+    // 누적 신고 시, 일시 숨겨짐
+    @Column(nullable = false)
+    private Boolean isHide = false;
+
+    @ManyToOne
+    @JoinColumn(name = "writer_id", nullable = false)
+    private Fan writer;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
     private List<PostTag> postTags = new ArrayList<>();
-
-    @OneToMany(mappedBy = "post")
-    private List<PostReport> postReports = new ArrayList<>();
-
-    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
-    private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
     private List<PostImage> postImages = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    private List<Like> likes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post")
+    private List<PostReport> postReports = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
     private List<Notification> notifications = new ArrayList<>();
 
     @Builder
-    public Post(Long postId, String content, PlayerUser playerUser, PostType type) {
+    public Post(Long postId, String content, Fan writer, PostType type) {
         this.id = postId;
         this.content = content;
-        this.playerUser = playerUser;
+        this.writer = writer;
         this.type = type;
     }
 }

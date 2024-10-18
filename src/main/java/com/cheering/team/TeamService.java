@@ -5,8 +5,8 @@ import com.cheering._core.errors.ExceptionCode;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.chatRoom.ChatRoomRepository;
 import com.cheering.chat.chatRoom.ChatRoomType;
-import com.cheering.player.Player;
-import com.cheering.player.PlayerRepository;
+import com.cheering.community.Community;
+import com.cheering.community.CommunityRepository;
 import com.cheering.team.league.League;
 import com.cheering.team.league.LeagueRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.List;
 public class TeamService {
     private final TeamRepository teamRepository;
     private final LeagueRepository leagueRepository;
-    private final PlayerRepository playerRepository;
+    private final CommunityRepository communityRepository;
     private final ChatRoomRepository chatRoomRepository;
 
     public List<TeamResponse.TeamNameDTO> getTeams(Long leagueId) {
@@ -40,7 +40,7 @@ public class TeamService {
 
         teamRepository.save(team);
 
-        Player teamCommunity = Player.builder()
+        Community teamCommunity = Community.builder()
                 .koreanName(requestDTO.firstName() + " " + requestDTO.secondName())
                 .englishName(requestDTO.englishName())
                 .image(requestDTO.image())
@@ -48,10 +48,10 @@ public class TeamService {
                 .team(team)
                 .build();
 
-        playerRepository.save(teamCommunity);
+        communityRepository.save(teamCommunity);
 
         ChatRoom newChatRoom = ChatRoom.builder()
-                .player(teamCommunity)
+                .community(teamCommunity)
                 .name(teamCommunity.getKoreanName())
                 .description(teamCommunity.getKoreanName() + " 팬들끼리 응원해요!")
                 .type(ChatRoomType.OFFICIAL)

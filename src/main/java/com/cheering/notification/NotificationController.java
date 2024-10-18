@@ -23,7 +23,7 @@ public class NotificationController {
     @GetMapping("/notifications")
     public ResponseEntity<?> getNotifications(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림을 불러왔습니다.", notificationService.getNotifications(customUserDetails.getUser(), pageable)));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림 조회 완료", notificationService.getNotifications(customUserDetails.getUser(), pageable)));
     }
 
     // 안읽은 알림 여부 가져오기
@@ -32,12 +32,12 @@ public class NotificationController {
         if(customUserDetails == null){
             throw new CustomException(ExceptionCode.USER_NOT_FOUND);
         }
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림 여부를 확인했습니다.", notificationService.isUnread(customUserDetails.getUser())));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림 여부 조회", notificationService.isUnread(customUserDetails.getUser())));
     }
 
     @PutMapping("/notifications/{notificationId}")
     public ResponseEntity<?> readNotification(@PathVariable("notificationId") Long notificationId) {
         notificationService.readNotification(notificationId);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림을 읽었습니다.", null));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림 확인 완료.", null));
     }
 }

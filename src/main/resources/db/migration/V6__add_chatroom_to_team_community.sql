@@ -1,4 +1,0 @@
-INSERT INTO chat_room_tb (chat_room_id, name, image, description, player_id) VALUES
-                                                                   (3, '롯데 자이언츠', 'https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/lotte.png', '롯데 자이언츠 팬들끼리 응원해요!', 4),
-                                                                   (4, '한화 이글스', 'https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/hanwha.jpeg', '한화 이글스 팬들끼리 응원해요!', 5),
-                                                                    (5, '삼성 라이온즈', 'https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/samsung.jpeg', '삼성 라이온즈 팬들끼리 응원해요!', 6);

@@ -2,8 +2,8 @@ package com.cheering.chat.chatRoom;
 
 import com.cheering.chat.Chat;
 import com.cheering.chat.session.ChatSession;
-import com.cheering.player.Player;
-import com.cheering.player.relation.PlayerUser;
+import com.cheering.community.Community;
+import com.cheering.community.relation.Fan;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +20,10 @@ public class ChatRoom {
     @Column(name = "chat_room_id")
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private ChatRoomType type;
+
     @Column(nullable = false)
     private String name;
 
@@ -32,17 +36,13 @@ public class ChatRoom {
     @Column
     private Integer max;
 
-    @Enumerated(EnumType.STRING)
-    @Column
-    private ChatRoomType type;
+    @ManyToOne
+    @JoinColumn(name = "community_id", nullable = false)
+    private Community community;
 
     @ManyToOne
-    @JoinColumn(name = "player_id")
-    private Player player;
-
-    @ManyToOne
-    @JoinColumn(name = "player_user_id")
-    private PlayerUser creator;
+    @JoinColumn(name = "manager_id")
+    private Fan manager;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
     private List<Chat> chats = new ArrayList<>();
@@ -51,14 +51,14 @@ public class ChatRoom {
     private List<ChatSession> chatSessions = new ArrayList<>();
 
     @Builder
-    public ChatRoom(Long chatRoomId, String name, String image, String description, Player player, Integer max, ChatRoomType type, PlayerUser creator) {
+    public ChatRoom(Long chatRoomId, String name, String image, String description, Community community, Integer max, ChatRoomType type, Fan manager) {
         this.id = chatRoomId;
         this.name = name;
         this.image = image;
         this.description = description;
-        this.player = player;
+        this.community = community;
         this.max = max;
         this.type = type;
-        this.creator = creator;
+        this.manager = manager;
     }
 }

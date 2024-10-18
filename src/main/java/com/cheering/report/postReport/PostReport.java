@@ -1,7 +1,7 @@
 package com.cheering.report.postReport;
 
 import com.cheering.BaseTimeEntity;
-import com.cheering.player.relation.PlayerUser;
+import com.cheering.community.relation.Fan;
 import com.cheering.post.Post;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,7 +17,7 @@ public class PostReport extends BaseTimeEntity {
     @Column(name = "post_report_id")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private Long userId;
 
     @Column(length = 2000)
@@ -28,14 +28,14 @@ public class PostReport extends BaseTimeEntity {
     private Post post;
 
     @ManyToOne
-    @JoinColumn(name = "player_user_id")
-    private PlayerUser playerUser;
+    @JoinColumn(name = "writer_id")
+    private Fan writer;
 
     @Builder
-    public PostReport(Long reportId, Post post, PlayerUser playerUser, Long userId, String reportContent) {
+    public PostReport(Long reportId, Post post, Fan writer, Long userId, String reportContent) {
         this.id = reportId;
         this.post = post;
-        this.playerUser = playerUser;
+        this.writer = writer;
         this.userId = userId;
         this.reportContent = reportContent;
     }

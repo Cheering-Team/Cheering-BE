@@ -4,13 +4,14 @@ import com.cheering._core.errors.*;
 import com.cheering.badword.BadWordService;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
+import com.cheering.community.CommunityRepository;
 import com.cheering.notification.Fcm.FcmServiceImpl;
+import com.cheering.notification.NotificaitonType;
 import com.cheering.notification.Notification;
 import com.cheering.notification.NotificationRepository;
-import com.cheering.player.Player;
-import com.cheering.player.relation.PlayerUser;
-import com.cheering.player.relation.PlayerUserRepository;
-import com.cheering.post.Post;
+import com.cheering.community.Community;
+import com.cheering.community.relation.Fan;
+import com.cheering.community.relation.FanRepository;
 import com.cheering.post.PostResponse;
 import com.cheering.report.block.BlockRepository;
 import com.cheering.report.reCommentReport.ReCommentReport;
@@ -28,7 +29,8 @@ import java.util.List;
 public class ReCommentService {
     private final ReCommentRepository reCommentRepository;
     private final CommentRepository commentRepository;
-    private final PlayerUserRepository playerUserRepository;
+    private final FanRepository fanRepository;
+    private final CommunityRepository communityRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
     private final BlockRepository blockRepository;
@@ -46,28 +48,26 @@ public class ReCommentService {
 
         Comment comment = commentRepository.findById(commentId).orElseThrow(()->new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
-        Long playerId = comment.getPost().getPlayerUser().getPlayer().getId();
+        Community community = communityRepository.findById(comment.getPost().getWriter().getCommunity().getId()).orElseThrow(()-> new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
 
-        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(playerId, user.getId()).orElseThrow(()->new CustomException(ExceptionCode.CUR_PLAYER_USER_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
-        PlayerUser toPlayerUser = playerUserRepository.findById(toId).orElseThrow(()->new CustomException(ExceptionCode.COMMENT_WRITER_NOT_FOUND));
-
-
+        Fan toFan = fanRepository.findById(toId).orElseThrow(()->new CustomException(ExceptionCode.COMMENT_WRITER_NOT_FOUND));
 
         ReComment reComment = ReComment.builder()
                 .content(content)
                 .comment(comment)
-                .playerUser(curPlayerUser)
-                .toPlayerUser(toPlayerUser)
+                .writer(curFan)
+                .to(toFan)
                 .build();
 
         reCommentRepository.save(reComment);
 
-        if(!toPlayerUser.equals(curPlayerUser) && blockRepository.findByFromAndTo(toPlayerUser, curPlayerUser).isEmpty()) {
-            Notification notification = new Notification("RECOMMENT", toPlayerUser, curPlayerUser, comment.getPost(), reComment);
+        if(!toFan.equals(curFan) && blockRepository.findByFromAndTo(toFan, curFan).isEmpty()) {
+            Notification notification = new Notification(NotificaitonType.RECOMMNET, toFan, curFan, comment.getPost(), reComment);
             notificationRepository.save(notification);
             if(notification.getTo().getUser().getDeviceToken() != null) {
-                fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), curPlayerUser.getNickname(), "회원님의 댓글에 답글을 남겼습니다:\"" + reComment.getContent() + "\"", comment.getPost().getId(), notification.getId());
+                fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), curFan.getName(), "회원님의 댓글에 답글을 남겼습니다:\"" + reComment.getContent() + "\"", comment.getPost().getId(), notification.getId());
             }
         }
 
@@ -75,19 +75,17 @@ public class ReCommentService {
     }
 
     public ReCommentResponse.ReCommentListDTO getReComments(Long commentId, User user) {
-        Player player = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND)).getPlayerUser().getPlayer();
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
-        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(player.getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+        Community community = comment.getWriter().getCommunity();
 
-        List<ReComment> reCommentList = reCommentRepository.findByCommentId(commentId, curPlayerUser);
+        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        List<ReComment> reCommentList = reCommentRepository.findByComment(comment, curFan);
 
         List<ReCommentResponse.ReCommentDTO> reCommentDTOS = reCommentList.stream().map((reComment -> {
-            PlayerUser writer = reComment.getPlayerUser();
-            PostResponse.WriterDTO writerDTO = new PostResponse.WriterDTO(writer,  player.getOwner() != null && player.getOwner().equals(writer));
-
-            PostResponse.WriterDTO toDTO = new PostResponse.WriterDTO(reComment.getToPlayerUser(), null);
-
-            return new ReCommentResponse.ReCommentDTO(reComment, toDTO, writerDTO, writer.equals(curPlayerUser));
+            Fan writer = reComment.getWriter();
+            return new ReCommentResponse.ReCommentDTO(reComment, writer.equals(curFan));
         })).toList();
 
         return new ReCommentResponse.ReCommentListDTO(reCommentDTOS);
@@ -98,11 +96,11 @@ public class ReCommentService {
     public void deleteReComment(Long reCommentId, User user) {
         ReComment reComment = reCommentRepository.findById(reCommentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
-        PlayerUser writer = reComment.getPlayerUser();
+        Fan writer = reComment.getWriter();
 
-        PlayerUser curPlayerUser = playerUserRepository.findByPlayerIdAndUserId(writer.getPlayer().getId(), user.getId()).orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_USER_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        if(!writer.equals(curPlayerUser)) {
+        if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);
         }
 

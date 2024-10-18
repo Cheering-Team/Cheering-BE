@@ -18,15 +18,16 @@ public class Message extends BaseTimeEntity{
     @Column(name = "message_id")
     private Long id;
 
-    private String message;
+    @Column(nullable = false)
+    private String content;
 
     @ManyToOne
-    @JoinColumn(name = "chat_id")
+    @JoinColumn(name = "chat_id", nullable = false)
     private Chat chat;
 
     @Builder
-    public Message(String message, Chat chat) {
-        this.message = message;
+    public Message(String content, Chat chat) {
+        this.content = content;
         this.chat = chat;
     }
 }

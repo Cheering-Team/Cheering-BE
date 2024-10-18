@@ -14,23 +14,23 @@ import org.springframework.web.bind.annotation.*;
 public class BlockController {
     private final BlockService blockService;
 
-    // 유저 차단
-    @PostMapping("/blocks/{playerUserId}")
-    ResponseEntity<?> blockUser(@PathVariable("playerUserId") Long playerUserId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        blockService.blockUser(playerUserId, customUserDetails.getUser());
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "해당 유저를 차단했습니다.", null));
+    // 팬 차단
+    @PostMapping("/blocks/{fanId}")
+    ResponseEntity<?> blockFan(@PathVariable("fanId") Long fanId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        blockService.blockFan(fanId, customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "차단 완료", null));
     }
 
-    // 차단한 계정 목록 불러오기
-    @GetMapping("/blocks/{playerUserId}")
-    ResponseEntity<?> getBlockedUsers(@PathVariable("playerUserId") Long playerUserId) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "차단한 계정들을 불러왔습니다.", blockService.getBlockedUsers(playerUserId)));
+    // 차단한 팬 목록 조회
+    @GetMapping("/blocks/{fanId}")
+    ResponseEntity<?> getBlockedFans(@PathVariable("fanId") Long fanId) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "차단 목록 조회 완료", blockService.getBlockedFans(fanId)));
     }
 
     // 차단 해제
-    @DeleteMapping("/blocks/{playerUserId}")
-    ResponseEntity<?> unblockUser(@PathVariable("playerUserId") Long playerUserId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        blockService.unblockUser(playerUserId, customUserDetails.getUser());
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "차단을 해제했습니다.", null));
+    @DeleteMapping("/blocks/{fanId}")
+    ResponseEntity<?> unblockFan(@PathVariable("fanId") Long fanId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        blockService.unblockFan(fanId, customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "차단 해제 완료", null));
     }
 }

@@ -12,11 +12,11 @@ public class UserRequest {
 
     public record SignUpDTO (
             String phone,
-            String nickname
+            String name
     ) { }
 
-    public record NicknameDTO (
-            String nickname
+    public record NameDTO(
+            String name
     ) { }
 
     public record IdDTO (

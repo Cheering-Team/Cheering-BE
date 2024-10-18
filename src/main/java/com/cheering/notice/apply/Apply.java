@@ -33,8 +33,8 @@ public class Apply extends BaseTimeEntity {
     String image;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "writer_id", nullable = false)
+    private User writer;
 
     @Builder
     public Apply(String field1, String field2, String field3, String field4, String image) {

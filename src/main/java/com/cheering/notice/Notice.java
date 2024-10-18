@@ -13,13 +13,12 @@ public class Notice extends BaseTimeEntity {
     @Column(name = "notice_id")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String title;
+
+    @Column(length = 1000, nullable = false)
+    private String content;
 
     @Column
     private String image;
-
-    @Column(length = 1000)
-    private String content;
-
 }

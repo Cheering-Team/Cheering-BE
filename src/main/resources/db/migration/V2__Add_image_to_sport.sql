@@ -1,1 +1,0 @@
-ALTER TABLE sport_tb ADD COLUMN image VARCHAR(255);

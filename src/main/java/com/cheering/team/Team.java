@@ -1,17 +1,12 @@
 package com.cheering.team;
 
-import com.cheering.player.Player;
+import com.cheering.community.Community;
 import com.cheering.team.league.League;
-import com.cheering.team.relation.TeamPlayer;
-import com.cheering.team.sport.Sport;
-import com.cheering.user.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Entity
 @Table(name="team_tb")
@@ -29,15 +24,15 @@ public class Team {
     @Column(length = 15)
     private String secondName;
 
+    @Column
+    private String image;
+
     @ManyToOne
     @JoinColumn(name = "league_id")
     private League league;
 
-    @Column
-    private String image;
-
-    @OneToOne(mappedBy = "team", cascade = CascadeType.ALL)
-    private Player player;
+    @OneToOne(mappedBy = "team")
+    private Community community;
 
     @Builder
     public Team(Long teamId, String firstName, String secondName, League league, String image) {

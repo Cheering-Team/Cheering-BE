@@ -15,12 +15,12 @@ public class NoticeController {
     // 공지사항 목록 불러오기
     @GetMapping("/notices")
     public ResponseEntity<?> getNotices() {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "공지사항을 불러왔습니다.", noticeService.getNotices()));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "공지 목록 조회 완료", noticeService.getNotices()));
     }
 
     // 공지사항 불러오기
     @GetMapping("/notices/{noticeId}")
     public ResponseEntity<?> getNoticeById(@PathVariable("noticeId") Long noticeId) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "공지사항을 불러왔습니다.", noticeService.getNoticeById(noticeId)));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "공지 조회 완료", noticeService.getNoticeById(noticeId)));
     }
 }

@@ -1,30 +1,29 @@
 package com.cheering.user;
 
-import com.cheering.player.Player;
-import com.cheering.player.PlayerResponse;
-import com.cheering.player.relation.PlayerUser;
-import com.cheering.player.relation.PlayerUserResponse;
+import com.cheering.community.Community;
+import com.cheering.community.CommunityResponse;
+import com.cheering.community.relation.Fan;
 
 import java.time.LocalDateTime;
 
 public class UserResponse {
-    public record UserDTO(Long id, String phone, String nickname, String role, PlayerResponse.PlayerDTO player) {
+    public record UserDTO(Long id, String phone, String name, Role role, CommunityResponse.CommunityDTO community) {
         public UserDTO(User user) {
-            this(user.getId(), user.getPhone(), user.getNickname(), user.getRole().toString(), null);
+            this(user.getId(), user.getPhone(), user.getName(), user.getRole(), null);
         }
 
-        public UserDTO(User user, Player player, Long fanCount) {
-            this(user.getId(), user.getPhone(), user.getNickname(), user.getRole().toString(),  new PlayerResponse.PlayerDTO(player, fanCount, null, null, null, null, null, null));
+        public UserDTO(User user, Community community, Long fanCount) {
+            this(user.getId(), user.getPhone(), user.getName(), user.getRole(),  new CommunityResponse.CommunityDTO(community, fanCount, null, null, null, null, null, null));
         }
 
-        public UserDTO(User user, Player player, PlayerUser playerUser, Long fanCount) {
-            this(user.getId(), user.getPhone(), user.getNickname(), user.getRole().toString(), new PlayerResponse.PlayerDTO(player, fanCount, playerUser, null, null, null, null, null));
+        public UserDTO(User user, Community community, Fan fan, Long fanCount) {
+            this(user.getId(), user.getPhone(), user.getName(), user.getRole(), new CommunityResponse.CommunityDTO(community, fanCount, fan, null, null, null, null, null));
         }
     }
 
-    public record UserWithCreatedAtDTO(Long id, String phone, String nickname, LocalDateTime createdAt) {
+    public record UserWithCreatedAtDTO(Long id, String phone, String name, LocalDateTime createdAt) {
         public UserWithCreatedAtDTO(User user) {
-            this(user.getId(), user.getPhone(), user.getNickname(), user.getCreatedAt());
+            this(user.getId(), user.getPhone(), user.getName(), user.getCreatedAt());
         }
     }
 

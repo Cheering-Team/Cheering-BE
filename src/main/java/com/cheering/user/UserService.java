@@ -13,10 +13,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
-import com.cheering.player.Player;
-import com.cheering.player.PlayerRepository;
-import com.cheering.player.relation.PlayerUser;
-import com.cheering.player.relation.PlayerUserRepository;
+import com.cheering.community.Community;
+import com.cheering.community.CommunityRepository;
+import com.cheering.community.relation.Fan;
+import com.cheering.community.relation.FanRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
@@ -39,9 +39,9 @@ public class UserService {
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
-    private final PlayerUserRepository playerUserRepository;
+    private final FanRepository fanRepository;
     private final TempAppleUserRepository tempAppleUserRepository;
-    private final PlayerRepository playerRepository;
+    private final CommunityRepository communityRepository;
     private final BadWordService badWordService;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
@@ -59,7 +59,7 @@ public class UserService {
         String verificationCode;
 
         // 선수 및 팀 계정
-        if(user.isPresent() && user.get().getPlayer() != null) {
+        if(user.isPresent() && user.get().getCommunity() != null) {
             return new UserResponse.UserDTO(user.get());
         }
 
@@ -101,14 +101,14 @@ public class UserService {
 
     @Transactional
     public UserResponse.TokenDTO signUp(UserRequest.SignUpDTO requestDTO) {
-        if(badWordService.containsBadWords(requestDTO.nickname())) {
+        if(badWordService.containsBadWords(requestDTO.name())) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
 
         User user = User.builder()
                 .phone(requestDTO.phone())
-                .nickname(requestDTO.nickname())
-                .role(Role.ROLE_USER)
+                .name(requestDTO.name())
+                .role(Role.USER)
                 .build();
 
         userRepository.save(user);
@@ -134,40 +134,40 @@ public class UserService {
     }
 
     public UserResponse.UserDTO getUserInfo(User user) {
-        if(user.getRole().equals(Role.ROLE_USER) || user.getRole().equals(Role.ROLE_ADMIN)) {
+        if(user.getRole().equals(Role.USER) || user.getRole().equals(Role.ADMIN)) {
             return new UserResponse.UserDTO(user);
         } else {
-            Player player = user.getPlayer();
-            Optional<PlayerUser> playerUser = playerUserRepository.findByPlayerAndUser(player, user);
+            Community community = user.getCommunity();
+            Optional<Fan> playerUser = fanRepository.findByCommunityAndUser(community, user);
 
-            Long fanCount = playerUserRepository.countByPlayerId(player.getId());
+            Long fanCount = fanRepository.countByCommunity(community);
 
-            return playerUser.map(value -> new UserResponse.UserDTO(user, player, value, fanCount)).orElseGet(() -> new UserResponse.UserDTO(user, player, fanCount));
+            return playerUser.map(value -> new UserResponse.UserDTO(user, community, value, fanCount)).orElseGet(() -> new UserResponse.UserDTO(user, community, fanCount));
         }
     }
 
     @Transactional
-    public void updateUserNickname(UserRequest.NicknameDTO requestDTO, User user) {
-        if(badWordService.containsBadWords(requestDTO.nickname())) {
+    public void updateUserName(UserRequest.NameDTO requestDTO, User user) {
+        if(badWordService.containsBadWords(requestDTO.name())) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
-        user.setNickname(requestDTO.nickname());
+        user.setName(requestDTO.name());
         userRepository.save(user);
     }
 
     @Transactional
     public void deleteUser(User user) {
-        List<PostReport> postReports = postReportRepository.findByUserId(user.getId());
+        List<PostReport> postReports = postReportRepository.findByUser(user);
         for(PostReport postReport : postReports) {
             postReport.setPost(null);
         }
 
-        List<CommentReport> commentReports = commentReportRepository.findByUserId(user.getId());
+        List<CommentReport> commentReports = commentReportRepository.findByUser(user);
         for(CommentReport commentReport : commentReports) {
             commentReport.setComment(null);
         }
 
-        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByUserId(user.getId());
+        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByUser(user);
         for(ReCommentReport reCommentReport : reCommentReports) {
             reCommentReport.setReComment(null);
         }
@@ -282,12 +282,12 @@ public class UserService {
 
             String kakaoId = response.getBody().get("id").toString();
             Map<String, Object> kakaoAccount = (Map<String, Object>) response.getBody().get("kakao_account");
-            String nickname = (String) ((Map<String, Object>) kakaoAccount.get("profile")).get("nickname");
+            String nickname = (String) ((Map<String, Object>) kakaoAccount.get("profile")).get("name");
 
             user = User.builder()
-                    .nickname(nickname)
+                    .name(nickname)
                     .phone(phone)
-                    .role(Role.ROLE_USER)
+                    .role(Role.USER)
                     .kakaoId(kakaoId)
                     .build();
         } else if(type.equals("naver")) {
@@ -302,12 +302,12 @@ public class UserService {
             ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
             Map<String, Object> successResponse = (Map<String, Object>) response.getBody().get("response");
             String naverId = successResponse.get("id").toString();
-            String nickname = successResponse.get("nickname").toString();
+            String nickname = successResponse.get("name").toString();
 
             user = User.builder()
-                    .nickname(nickname)
+                    .name(nickname)
                     .phone(phone)
-                    .role(Role.ROLE_USER)
+                    .role(Role.USER)
                     .naverId(naverId)
                     .build();
         } else {
@@ -318,9 +318,9 @@ public class UserService {
             TempAppleUser tempAppleUser = tempAppleUserRepository.findByAppleId(appleId);
 
             user = User.builder()
-                    .nickname(tempAppleUser.getName())
+                    .name(tempAppleUser.getName())
                     .phone(phone)
-                    .role(Role.ROLE_USER)
+                    .role(Role.USER)
                     .appleId(appleId)
                     .build();
         }
@@ -398,11 +398,11 @@ public class UserService {
         return new UserResponse.TokenDTO(accessToken, refreshToken);
     }
 
-    public void registerPlayerAccount(Long playerId, UserRequest.SendSMSDTO requestDTO) {
-        Player player = playerRepository.findById(playerId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+    public void registerCommunityAccount(Long communityId, UserRequest.SendSMSDTO requestDTO) {
+        Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
 
-        if(userRepository.existsByPlayer(player)){
-            throw new CustomException(ExceptionCode.PLAYER_ACCOUNT_REGISTERED);
+        if(userRepository.existsByCommunity(community)){
+            throw new CustomException(ExceptionCode.ALREADY_MANAGER_ACCOUNT);
         } else {
             Random random = new Random();
             String phone;
@@ -414,11 +414,11 @@ public class UserService {
             String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
 
             User newUser = User.builder()
-                    .role(player.getTeam() == null ? Role.ROLE_PLAYER : Role.ROLE_TEAM)
+                    .role(community.getTeam() == null ? Role.PLAYER : Role.TEAM)
                     .phone(phone)
                     .password(passwordEncoder.encode(code))
-                    .nickname(player.getKoreanName())
-                    .player(player)
+                    .name(community.getKoreanName())
+                    .community(community)
                     .build();
 
             userRepository.save(newUser);
@@ -427,27 +427,27 @@ public class UserService {
         }
     }
 
-    public UserRequest.SendSMSDTO getPlayerAccount(Long playerId, User user) {
-        if(!user.getRole().equals(Role.ROLE_ADMIN)) {
+    public UserRequest.SendSMSDTO getManagerAccount(Long communityId, User user) {
+        if(!user.getRole().equals(Role.ADMIN)) {
             throw new CustomException(ExceptionCode.USER_FORBIDDEN);
         }
 
-        Player player = playerRepository.findById(playerId).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+        Community community = communityRepository.findById(communityId).orElseThrow(()-> new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
 
-        Optional<User> playerAccount = userRepository.findByPlayer(player);
+        Optional<User> playerAccount = userRepository.findByCommunity(community);
 
         if(playerAccount.isEmpty()) {
-            throw new CustomException(ExceptionCode.PLAYER_ACCOUNT_NOT_REGISTERED);
+            throw new CustomException(ExceptionCode.NOT_FOUND_MANAGER_ACCOUNT);
         } else {
             return new UserRequest.SendSMSDTO(user.getPhone());
         }
     }
 
     @Transactional
-    public void reissuePlayerAccountPassword(Long playerId, UserRequest.SendSMSDTO requestDTO) {
-        Player player = playerRepository.findById(playerId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+    public void reissueManagerAccountPassword(Long communityId, UserRequest.SendSMSDTO requestDTO) {
+        Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
 
-        User user = userRepository.findByPlayer(player).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_ACCOUNT_NOT_REGISTERED));
+        User user = userRepository.findByCommunity(community).orElseThrow(()-> new CustomException(ExceptionCode.NOT_FOUND_MANAGER_ACCOUNT));
 
         Random random = new Random();
         String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));

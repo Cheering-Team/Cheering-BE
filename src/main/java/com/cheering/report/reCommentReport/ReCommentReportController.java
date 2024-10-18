@@ -21,6 +21,6 @@ public class ReCommentReportController {
     @PostMapping("/reComments/{reCommentId}/reports")
     ResponseEntity<?> reportReComment (@PathVariable("reCommentId") Long reCommentId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         reCommentReportService.reportReComment(reCommentId, customUserDetails.getUser());
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "신고가 접수되었습니다.", null));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "신고 완료", null));
     }
 }

@@ -2,8 +2,8 @@ package com.cheering.report.reCommentReport;
 
 import com.cheering.comment.Comment;
 import com.cheering.comment.reComment.ReComment;
-import com.cheering.player.relation.PlayerUser;
-import com.cheering.report.commentReport.CommentReport;
+import com.cheering.community.relation.Fan;
+import com.cheering.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,23 +14,22 @@ import java.util.Optional;
 
 @Repository
 public interface ReCommentReportRepository extends JpaRepository<ReCommentReport, Long> {
-    @Query("select rr from ReCommentReport rr where rr.reComment.id=:reCommentId and rr.playerUser.id=:playerUserId")
-    Optional<ReCommentReport> findByReCommentIdAndPlayerUserId (@Param("reCommentId") Long reCommentId, @Param("playerUserId") Long playerUserId);
+    @Query("select rr from ReCommentReport rr where rr.reComment=:reComment and rr.writer=:writer")
+    Optional<ReCommentReport> findByReCommentAndWriter(@Param("reComment") ReComment reComment, @Param("writer") Fan writer);
 
-    @Query("SELECT COUNT(rr) FROM ReCommentReport rr WHERE rr.reComment.id = :reCommentId")
-    Long countByReCommentId(@Param("reCommentId") Long reCommentId);
+    Long countByReComment(ReComment reComment);
 
     List<ReCommentReport> findByReComment(ReComment reComment);
 
-    @Query("SELECT rr FROM ReCommentReport rr WHERE rr.reComment.comment.id=:commentId")
-    List<ReCommentReport> findByCommentId(@Param("commentId") Long commentId);
+    @Query("SELECT rr FROM ReCommentReport rr WHERE rr.reComment.comment=:comment")
+    List<ReCommentReport> findByComment(@Param("comment") Comment comment);
 
     @Query("SELECT rr FROM ReCommentReport rr WHERE rr.reComment.comment IN :comments")
     List<ReCommentReport> findByCommentIn(@Param("comments") List<Comment> commentList);
 
-    @Query("SELECT rr FROM ReCommentReport rr WHERE rr.reComment.playerUser=:playerUser")
-    List<ReCommentReport> findByWriter(@Param("playerUser") PlayerUser playerUser);
+    @Query("SELECT rr FROM ReCommentReport rr WHERE rr.reComment.writer=:writer")
+    List<ReCommentReport> findByWriter(@Param("writer") Fan fan);
 
-    @Query("SELECT rr FROM ReCommentReport rr WHERE rr.reComment.playerUser.user.id=:userId")
-    List<ReCommentReport> findByUserId(@Param("userId") Long id);
+    @Query("SELECT rr FROM ReCommentReport rr WHERE rr.reComment.writer.user=:user")
+    List<ReCommentReport> findByUser(@Param("user") User user);
 }

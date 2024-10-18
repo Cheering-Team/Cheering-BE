@@ -21,9 +21,7 @@ public class ApplyService {
     private final UserRepository userRepository;
     private final S3Util s3Util;
 
-    public void apply(String field1, String field2, String field3, String field4, MultipartFile image, User user) {
-        User curUser = userRepository.findById(user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.USER_NOT_FOUND));
-
+    public void apply(String field1, String field2, String field3, String field4, MultipartFile image) {
         String imageUrl = "";
 
         if(image != null) {

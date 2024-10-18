@@ -1,7 +1,5 @@
 package com.cheering._core.security;
 
-import com.cheering._core.errors.CustomException;
-import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -9,7 +7,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -27,7 +24,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(phone);
 
-        if(userDetails.getUser().getPlayer() != null && passwordEncoder.matches(code, userDetails.getUser().getPassword())) {
+        if(userDetails.getUser().getCommunity() != null && passwordEncoder.matches(code, userDetails.getUser().getPassword())) {
             return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         }
 

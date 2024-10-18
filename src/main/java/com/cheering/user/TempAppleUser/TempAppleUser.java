@@ -14,10 +14,10 @@ public class TempAppleUser {
     @Column(name = "temp_apple_user_id")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String appleId;
 
-    @Column
+    @Column(nullable = false)
     private String name;
 
     @Builder
