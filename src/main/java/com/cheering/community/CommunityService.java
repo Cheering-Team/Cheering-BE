@@ -72,25 +72,23 @@ public class CommunityService {
 
     // 특정 팀, 소속 선수 커뮤니티 조회
     @Transactional
-    public CommunityResponse.PlayersOfTeamDTO getCommunitiesByTeam(Long teamId, User user) {
+    public List<CommunityResponse.CommunityDTO> getCommunitiesByTeam(Long teamId, User user) {
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
 
         List<Community> communities = teamPlayerRepository.findByTeam(team);
-        Optional<Community> teamCommunity = communityRepository.findByTeam(team);
 
-        League league = team.getLeague();
-        Sport sport = league.getSport();
-
-        List<CommunityResponse.CommunityDTO> communityDTOS = communities.stream().map((community)-> {
+        return communities.stream().map((community)-> {
             long fanCount = fanRepository.countByCommunity(community);
             Optional<Fan> fan = fanRepository.findByCommunityAndUser(community, user);
-            return fan.map(value -> new CommunityResponse.CommunityDTO(community, fanCount, value, null, null, null, null, null)).orElseGet(() -> new CommunityResponse.CommunityDTO(community, fanCount, null, null, null, null, null, null));
+
+            List<Team> teams = teamPlayerRepository.findByCommunity(community);
+            List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map((playerTeam -> {
+                Optional<Community> playerTeamCommunity = communityRepository.findByTeam(playerTeam);
+                return new TeamResponse.TeamDTO(playerTeam, null, playerTeamCommunity.map(Community::getId).orElse(null));
+            })).toList();
+            return fan.map(value -> new CommunityResponse.CommunityDTO(community, fanCount, value, teamDTOS, null, null, null, null)).orElseGet(() -> new CommunityResponse.CommunityDTO(community, fanCount, null, teamDTOS, null, null, null, null));
 
         }).toList();
-
-        TeamResponse.TeamDTO teamDTO = teamCommunity.map(community -> new TeamResponse.TeamDTO(team, fanRepository.countByCommunity(community), community.getId())).orElseGet(() -> new TeamResponse.TeamDTO(team, null, null));
-
-        return new CommunityResponse.PlayersOfTeamDTO(sport, league, teamDTO, communityDTOS);
     }
 
     // 특정 커뮤니티 정보 조회
@@ -99,8 +97,8 @@ public class CommunityService {
         Community community = communityRepository.findById(communityId).orElseThrow(()-> new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
 
         long fanCount = fanRepository.countByCommunity(community);
-        List<Team> teams = teamPlayerRepository.findByCommunity(community);
 
+        List<Team> teams = teamPlayerRepository.findByCommunity(community);
         List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map((team -> {
             Optional<Community> teamCommunity = communityRepository.findByTeam(team);
             return new TeamResponse.TeamDTO(team, null, teamCommunity.map(Community::getId).orElse(null));
@@ -150,7 +148,11 @@ public class CommunityService {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
 
-        if(community.getKoreanName().equals(name) || community.getEnglishName().equals(name)) {
+        if(community.getKoreanName().equals(name)) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+
+        if(community.getEnglishName() != null && community.getEnglishName().equals(name)) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
 
@@ -163,7 +165,7 @@ public class CommunityService {
 
 
         Fan fan = Fan.builder()
-                .type(FanType.MANAGER)
+                .type(FanType.FAN)
                 .community(community)
                 .user(user)
                 .name(name)
@@ -173,12 +175,26 @@ public class CommunityService {
         fanRepository.save(fan);
     }
 
+    // 내가 가입한 커뮤니티 조회
     public List<CommunityResponse.CommunityDTO> getMyCommunities(User user) {
         List<Fan> fans = fanRepository.findByUser(user).stream().sorted(Comparator.comparing(fan -> fan.getCommunity().getTeam() != null ? 0 : 1)).toList();
 
         return fans.stream().map((fan -> {
-            List<ChatRoom> chatRoom = chatRoomRepository.findOfficialByCommunity(fan.getCommunity());
-            return new CommunityResponse.CommunityDTO(fan.getCommunity(), null, fan, null, null, null, user.getCommunity() != null ? user.getCommunity().getId().equals(fan.getCommunity().getId()) : null, chatRoom.get(0).getId());
+            Community community = fan.getCommunity();
+            List<ChatRoom> chatRoom = chatRoomRepository.findOfficialByCommunity(community);
+            long fanCount = fanRepository.countByCommunity(community);
+
+            List<Team> teams = teamPlayerRepository.findByCommunity(community);
+            List<TeamResponse.TeamDTO> teamDTOS = teams.stream().map((team -> {
+                Optional<Community> teamCommunity = communityRepository.findByTeam(team);
+                return new TeamResponse.TeamDTO(team, null, teamCommunity.map(Community::getId).orElse(null));
+            })).toList();
+
+            if(community.getTeam() == null) {
+                return new CommunityResponse.CommunityDTO(fan.getCommunity(), fanCount, fan, teamDTOS, null, null, user.getCommunity() != null ? user.getCommunity().getId().equals(fan.getCommunity().getId()) : null, chatRoom.get(0).getId());
+            } else {
+                return new CommunityResponse.CommunityDTO(fan.getCommunity(), fanCount, fan, teamDTOS, community.getTeam().getLeague().getSport().getName(), community.getTeam().getLeague().getName(), user.getCommunity() != null ? user.getCommunity().getId().equals(fan.getCommunity().getId()) : null, chatRoom.get(0).getId());
+            }
         })).toList();
     }
 
@@ -231,7 +247,7 @@ public class CommunityService {
                 ChatRoom chatRoom = ChatRoom.builder()
                         .type(ChatRoomType.OFFICIAL)
                         .name(community.getKoreanName())
-                        .name(team.getImage())
+                        .image(team.getImage())
                         .description(community.getKoreanName() + " 팬들끼리 응원해요!")
                         .community(community)
                         .build();

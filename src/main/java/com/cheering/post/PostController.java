@@ -33,9 +33,9 @@ public class PostController {
 
     // 커뮤니티 게시글 불러오기 (무한 스크롤) (id = 0 -> 내가 모든 커뮤니티 게시글)
     @GetMapping("/communities/{communityId}/posts")
-    public ResponseEntity<?> getPosts(@PathVariable("communityId") Long communityId, @RequestParam(required = false) String tag, @RequestParam int page, @RequestParam int size, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public ResponseEntity<?> getPosts(@PathVariable("communityId") Long communityId, @RequestParam String type, @RequestParam(required = false) String tag, @RequestParam int page, @RequestParam int size, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 목록 조회 완료", postService.getPosts(communityId, tag, pageable, customUserDetails.getUser())));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 목록 조회 완료", postService.getPosts(communityId, type, tag, pageable, customUserDetails.getUser())));
     }
 
     // 특정 게시글 조회

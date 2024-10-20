@@ -13,6 +13,7 @@ import com.cheering.community.relation.FanRepository;
 import com.cheering.post.Post;
 import com.cheering.post.PostRepository;
 import com.cheering.post.PostResponse;
+import com.cheering.post.PostType;
 import com.cheering.report.block.BlockRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
@@ -64,7 +65,7 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        if(!post.getWriter().equals(curFan) && blockRepository.findByFromAndTo(post.getWriter(), curFan).isEmpty()) {
+        if(!post.getWriter().equals(curFan) && blockRepository.findByFromAndTo(post.getWriter(), curFan).isEmpty() && !post.getType().equals(PostType.DAILY)) {
             Notification notification = new Notification(NotificaitonType.COMMENT, post.getWriter(), curFan, post, comment);
 
             notificationRepository.save(notification);

@@ -15,7 +15,12 @@ public class TeamController {
     private final TeamService teamService;
     @GetMapping("/leagues/{leagueId}/teams")
     public ResponseEntity<?> getTeams(@PathVariable("leagueId") Long leagueId){
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "팀 조회 완료.", teamService.getTeams(leagueId)));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "팀 목록 조회 완료", teamService.getTeams(leagueId)));
+    }
+
+    @GetMapping("teams/{teamId}")
+    public ResponseEntity<?> getTeamById(@PathVariable("teamId") Long teamId){
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "팀 조회 완료", teamService.getTeamById(teamId)));
     }
 
     @PostMapping("/leagues/{leagueId}/teams")

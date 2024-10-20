@@ -7,6 +7,7 @@ import com.cheering.badword.BadWordService;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
+import com.cheering.community.relation.FanType;
 import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.notification.NotificaitonType;
 import com.cheering.notification.Notification;
@@ -90,7 +91,7 @@ public class PostService {
 
         Post post = Post.builder()
                 .content(content)
-                .type(PostType.FAN_POST)
+                .type(writer.getType() == FanType.FAN ? PostType.FAN_POST : PostType.PLAYER_POST)
                 .writer(writer)
                 .build();
 
@@ -169,27 +170,27 @@ public class PostService {
         return new PostResponse.PostIdDTO(post.getId());
     }
 
-    // 커뮤니티 게시글 불러오기 (무한 스크롤) (id = 0 -> 내가 모든 커뮤니티 게시글)
-    public PostResponse.PostListDTO getPosts(Long communityId, String tagName, Pageable pageable, User user) {
+    // 커뮤니티 게시글 불러오기 (무한 스크롤) (id = 0 -> 모든 커뮤니티 게시글)
+    public PostResponse.PostListDTO getPosts(Long communityId, String type, String tagName, Pageable pageable, User user) {
         Page<Post> postList;
 
         if(communityId == 0) {
             List<Fan> fans = fanRepository.findByUser(user);
             List<Community> communities = fans.stream().map((Fan::getCommunity)).toList();
 
-            postList = postRepository.findByCommunities(communities, fans, pageable);
+            postList = postRepository.findByCommunities(communities, PostType.valueOf(type), fans, pageable);
         } else {
             Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
 
             if(tagName.isEmpty()) {
                 Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()-> new CustomException((ExceptionCode.CUR_FAN_NOT_FOUND)));
-                postList = postRepository.findByCommunity(community, curFan, pageable);
+                postList = postRepository.findByCommunity(community, PostType.valueOf(type), curFan, pageable);
             } else if(tagName.equals("hot")) {
                 Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()-> new CustomException((ExceptionCode.CUR_FAN_NOT_FOUND)));
-                postList = postRepository.findHotPosts(community, curFan, pageable);
+                postList = postRepository.findHotPosts(community, PostType.valueOf(type), curFan, pageable);
             } else {
                 Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()-> new CustomException((ExceptionCode.CUR_FAN_NOT_FOUND)));
-                postList = postRepository.findByCommunityAndTagName(community, tagName, curFan, pageable);
+                postList = postRepository.findByCommunityAndTagName(community, PostType.valueOf(type), tagName, curFan, pageable);
             }
         }
 

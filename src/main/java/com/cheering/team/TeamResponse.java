@@ -7,9 +7,9 @@ public class TeamResponse {
         }
     }
 
-    public record TeamNameDTO(Long id, String firstName, String secondName, String image) {
-        public TeamNameDTO(Team team) {
-            this(team.getId(), team.getFirstName(), team.getSecondName(), team.getImage());
+    public record TeamNameDTO(Long id, String firstName, String secondName, String image, Long fanCount, Long communityId) {
+        public TeamNameDTO(Team team, Long fanCount) {
+            this(team.getId(), team.getFirstName(), team.getSecondName(), team.getImage(), fanCount, team.getCommunity().getId());
         }
     }
 }

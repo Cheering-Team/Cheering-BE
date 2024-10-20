@@ -21,7 +21,7 @@ public class CommunityController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 검색 완료", communityService.getCommunities(name, userDetails.getUser())));
     }
 
-    // 특정 팀, 소속 선수 커뮤니티 조회
+    // 특정 팀 소속 커뮤니티 조회
     @GetMapping("/teams/{teamId}/communities")
     public ResponseEntity<?> getCommunitiesByTeam(@PathVariable("teamId") Long teamId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 조회 완료", communityService.getCommunitiesByTeam(teamId, userDetails.getUser())));

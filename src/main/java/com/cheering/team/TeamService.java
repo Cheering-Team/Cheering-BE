@@ -7,6 +7,7 @@ import com.cheering.chat.chatRoom.ChatRoomRepository;
 import com.cheering.chat.chatRoom.ChatRoomType;
 import com.cheering.community.Community;
 import com.cheering.community.CommunityRepository;
+import com.cheering.community.relation.FanRepository;
 import com.cheering.team.league.League;
 import com.cheering.team.league.LeagueRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +22,23 @@ public class TeamService {
     private final LeagueRepository leagueRepository;
     private final CommunityRepository communityRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final FanRepository fanRepository;
 
     public List<TeamResponse.TeamNameDTO> getTeams(Long leagueId) {
         List<Team> teams = teamRepository.findByLeagueIdOrderByFirstName(leagueId);
 
-        return teams.stream().map(TeamResponse.TeamNameDTO::new).toList();
+        return teams.stream().map((team -> {
+            Community community = team.getCommunity();
+            Long fanCount = fanRepository.countByCommunity(community);
+            return new TeamResponse.TeamNameDTO(team, fanCount);
+        })).toList();
+    }
+
+    public TeamResponse.TeamNameDTO getTeamById(Long teamId) {
+        Team team = teamRepository.findById(teamId).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+        Long fanCount = fanRepository.countByCommunity(team.getCommunity());
+
+        return new TeamResponse.TeamNameDTO(team, fanCount);
     }
 
     public void registerTeam(Long leagueId, TeamRequest.RegisterTeamDTO requestDTO) {

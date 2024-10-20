@@ -16,9 +16,4 @@ public interface CommunityRepository extends JpaRepository<Community, Long> {
     List<Community> findByNameOrTeamName(@Param("name") String name);
 
     Optional<Community> findByTeam(Team team);
-
-    @Query("SELECT c FROM Community c WHERE c.team IS NOT NULL")
-    List<Community> findAllTeamIsNotNull();
-
-
 }
