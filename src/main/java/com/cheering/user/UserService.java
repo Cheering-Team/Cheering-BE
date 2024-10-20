@@ -11,6 +11,12 @@ import com.cheering.badword.BadWordService;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
+
+import com.cheering.community.Community;
+import com.cheering.community.CommunityRepository;
+import com.cheering.community.relation.Fan;
+import com.cheering.community.relation.FanRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
@@ -21,6 +27,7 @@ import com.cheering.user.TempAppleUser.TempAppleUser;
 import com.cheering.user.TempAppleUser.TempAppleUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -32,12 +39,16 @@ public class UserService {
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
+    private final FanRepository fanRepository;
     private final TempAppleUserRepository tempAppleUserRepository;
+    private final CommunityRepository communityRepository;
     private final BadWordService badWordService;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
     private final JWTUtil jwtUtil;
     private final AppleUtil appleUtil;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private static final String PHONE_REGEX = "^01[0-9]{1}[0-9]{3,4}[0-9]{4}$";
 
     @Transactional
     public UserResponse.UserDTO sendSMS(UserRequest.SendSMSDTO requestDTO) {
@@ -45,24 +56,28 @@ public class UserService {
 
         Optional<User> user = userRepository.findByPhone(phone);
 
-        boolean isUser = user.isPresent();
-
         String verificationCode;
+
+        // 선수 및 팀 계정
+        if(user.isPresent() && user.get().getCommunity() != null) {
+            return new UserResponse.UserDTO(user.get());
+        }
+
+        if(!phone.matches(PHONE_REGEX)) {
+            throw new CustomException(ExceptionCode.INVALID_PHONE);
+        }
 
         if(phone.equals("01062013110")) {
             verificationCode = "911911";
         } else {
             verificationCode = String.valueOf((int) (Math.random() * 900000) + 100000);
-            smsUtil.sendOne(phone, verificationCode);
+//            smsUtil.sendOne(phone, verificationCode);
+            System.out.println(verificationCode);
         }
 
         redisUtils.setDataExpire(phone, verificationCode, 60 * 5L);
 
-        if(isUser) {
-            return new UserResponse.UserDTO(user.get());
-        } else {
-            return null;
-        }
+        return user.map(UserResponse.UserDTO::new).orElse(null);
     }
 
     // 새로운 유저에 대한 인증코드 확인
@@ -86,14 +101,14 @@ public class UserService {
 
     @Transactional
     public UserResponse.TokenDTO signUp(UserRequest.SignUpDTO requestDTO) {
-        if(badWordService.containsBadWords(requestDTO.nickname())) {
+        if(badWordService.containsBadWords(requestDTO.name())) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
 
         User user = User.builder()
                 .phone(requestDTO.phone())
-                .nickname(requestDTO.nickname())
-                .role(Role.ROLE_USER)
+                .name(requestDTO.name())
+                .role(Role.USER)
                 .build();
 
         userRepository.save(user);
@@ -119,31 +134,40 @@ public class UserService {
     }
 
     public UserResponse.UserDTO getUserInfo(User user) {
-        return new UserResponse.UserDTO(user);
+        if(user.getRole().equals(Role.USER) || user.getRole().equals(Role.ADMIN)) {
+            return new UserResponse.UserDTO(user);
+        } else {
+            Community community = user.getCommunity();
+            Optional<Fan> playerUser = fanRepository.findByCommunityAndUser(community, user);
+
+            Long fanCount = fanRepository.countByCommunity(community);
+
+            return playerUser.map(value -> new UserResponse.UserDTO(user, community, value, fanCount)).orElseGet(() -> new UserResponse.UserDTO(user, community, fanCount));
+        }
     }
 
     @Transactional
-    public void updateUserNickname(UserRequest.NicknameDTO requestDTO, User user) {
-        if(badWordService.containsBadWords(requestDTO.nickname())) {
+    public void updateUserName(UserRequest.NameDTO requestDTO, User user) {
+        if(badWordService.containsBadWords(requestDTO.name())) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
-        user.setNickname(requestDTO.nickname());
+        user.setName(requestDTO.name());
         userRepository.save(user);
     }
 
     @Transactional
     public void deleteUser(User user) {
-        List<PostReport> postReports = postReportRepository.findByUserId(user.getId());
+        List<PostReport> postReports = postReportRepository.findByUser(user);
         for(PostReport postReport : postReports) {
             postReport.setPost(null);
         }
 
-        List<CommentReport> commentReports = commentReportRepository.findByUserId(user.getId());
+        List<CommentReport> commentReports = commentReportRepository.findByUser(user);
         for(CommentReport commentReport : commentReports) {
             commentReport.setComment(null);
         }
 
-        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByUserId(user.getId());
+        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByUser(user);
         for(ReCommentReport reCommentReport : reCommentReports) {
             reCommentReport.setReComment(null);
         }
@@ -258,12 +282,12 @@ public class UserService {
 
             String kakaoId = response.getBody().get("id").toString();
             Map<String, Object> kakaoAccount = (Map<String, Object>) response.getBody().get("kakao_account");
-            String nickname = (String) ((Map<String, Object>) kakaoAccount.get("profile")).get("nickname");
+            String nickname = (String) ((Map<String, Object>) kakaoAccount.get("profile")).get("name");
 
             user = User.builder()
-                    .nickname(nickname)
+                    .name(nickname)
                     .phone(phone)
-                    .role(Role.ROLE_USER)
+                    .role(Role.USER)
                     .kakaoId(kakaoId)
                     .build();
         } else if(type.equals("naver")) {
@@ -278,12 +302,12 @@ public class UserService {
             ResponseEntity<Map> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, Map.class);
             Map<String, Object> successResponse = (Map<String, Object>) response.getBody().get("response");
             String naverId = successResponse.get("id").toString();
-            String nickname = successResponse.get("nickname").toString();
+            String nickname = successResponse.get("name").toString();
 
             user = User.builder()
-                    .nickname(nickname)
+                    .name(nickname)
                     .phone(phone)
-                    .role(Role.ROLE_USER)
+                    .role(Role.USER)
                     .naverId(naverId)
                     .build();
         } else {
@@ -294,9 +318,9 @@ public class UserService {
             TempAppleUser tempAppleUser = tempAppleUserRepository.findByAppleId(appleId);
 
             user = User.builder()
-                    .nickname(tempAppleUser.getName())
+                    .name(tempAppleUser.getName())
                     .phone(phone)
-                    .role(Role.ROLE_USER)
+                    .role(Role.USER)
                     .appleId(appleId)
                     .build();
         }
@@ -372,5 +396,64 @@ public class UserService {
         redisUtils.setDataExpire(user.getId().toString(), refreshToken, 1000 * 60 * 60 * 24 * 365L);
 
         return new UserResponse.TokenDTO(accessToken, refreshToken);
+    }
+
+    public void registerCommunityAccount(Long communityId, UserRequest.SendSMSDTO requestDTO) {
+        Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
+
+        if(userRepository.existsByCommunity(community)){
+            throw new CustomException(ExceptionCode.ALREADY_MANAGER_ACCOUNT);
+        } else {
+            Random random = new Random();
+            String phone;
+
+            do {
+                phone = String.valueOf((long) 10000000000L + (long)(random.nextDouble() * 90000000000L));
+            } while (userRepository.existsByPhone(phone));
+
+            String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
+
+            User newUser = User.builder()
+                    .role(community.getTeam() == null ? Role.PLAYER : Role.TEAM)
+                    .phone(phone)
+                    .password(passwordEncoder.encode(code))
+                    .name(community.getKoreanName())
+                    .community(community)
+                    .build();
+
+            userRepository.save(newUser);
+
+            smsUtil.sendAccount(requestDTO.phone(), phone, code);
+        }
+    }
+
+    public UserRequest.SendSMSDTO getManagerAccount(Long communityId, User user) {
+        if(!user.getRole().equals(Role.ADMIN)) {
+            throw new CustomException(ExceptionCode.USER_FORBIDDEN);
+        }
+
+        Community community = communityRepository.findById(communityId).orElseThrow(()-> new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
+
+        Optional<User> playerAccount = userRepository.findByCommunity(community);
+
+        if(playerAccount.isEmpty()) {
+            throw new CustomException(ExceptionCode.NOT_FOUND_MANAGER_ACCOUNT);
+        } else {
+            return new UserRequest.SendSMSDTO(user.getPhone());
+        }
+    }
+
+    @Transactional
+    public void reissueManagerAccountPassword(Long communityId, UserRequest.SendSMSDTO requestDTO) {
+        Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
+
+        User user = userRepository.findByCommunity(community).orElseThrow(()-> new CustomException(ExceptionCode.NOT_FOUND_MANAGER_ACCOUNT));
+
+        Random random = new Random();
+        String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
+        user.setPassword(passwordEncoder.encode(code));
+        userRepository.save(user);
+
+        smsUtil.sendAccount(requestDTO.phone(), user.getPhone(), code);
     }
 }

@@ -1,7 +1,8 @@
 package com.cheering.report.postReport;
 
-import com.cheering.player.relation.PlayerUser;
+import com.cheering.community.relation.Fan;
 import com.cheering.post.Post;
+import com.cheering.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,19 +13,16 @@ import java.util.Optional;
 
 @Repository
 public interface PostReportRepository extends JpaRepository<PostReport, Long> {
-    @Query("select pr from PostReport pr where pr.post.id=:postId and pr.playerUser.id=:playerUserId")
-    Optional<PostReport> findByPostIdAndPlayerUserId (@Param("postId") Long postId, @Param("playerUserId") Long playerUserId);
+    @Query("select pr from PostReport pr where pr.post=:post and pr.writer=:writer")
+    Optional<PostReport> findByPostAndWriter(@Param("post") Post post, @Param("writer") Fan writer);
 
-    @Query("SELECT COUNT(pr) FROM PostReport pr WHERE pr.post.id = :postId")
-    Long countByPostId(@Param("postId") Long postId);
+    Long countByPost(Post post);
 
     List<PostReport> findByPost(Post post);
 
-    void deleteByPlayerUser(PlayerUser playerUser);
+    @Query("SELECT pr FROM PostReport pr WHERE pr.post.writer=:writer")
+    List<PostReport> findByWriter(@Param("writer") Fan fan);
 
-    @Query("SELECT pr FROM PostReport pr WHERE pr.post.playerUser=:playerUser")
-    List<PostReport> findByPlayerUser(@Param("playerUser") PlayerUser playerUser);
-
-    @Query("SELECT pr FROM PostReport pr WHERE pr.post.playerUser.user.id=:userId")
-    List<PostReport> findByUserId(@Param("userId") Long id);
+    @Query("SELECT pr FROM PostReport pr WHERE pr.post.writer.user=:user")
+    List<PostReport> findByUser(@Param("user") User user);
 }

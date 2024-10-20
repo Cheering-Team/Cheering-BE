@@ -16,6 +16,6 @@ public class SportController {
 
     @GetMapping("/sports")
     public ResponseEntity<?> getSports() {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "종목들을 불러왔습니다.", sportService.getSports()));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "종목 조회 완료", sportService.getSports()));
     }
 }

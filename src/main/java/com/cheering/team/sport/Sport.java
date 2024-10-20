@@ -18,7 +18,7 @@ public class Sport {
     @Column(length = 20, nullable = false, unique = true)
     private String name;
 
-    @Column
+    @Column(nullable = false)
     private String image;
 
     @Builder

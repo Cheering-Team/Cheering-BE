@@ -1,7 +1,6 @@
 package com.cheering.report.block;
 
-import com.cheering.player.Player;
-import com.cheering.player.relation.PlayerUser;
+import com.cheering.community.relation.Fan;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,15 +19,15 @@ public class Block {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "from_id")
-    private PlayerUser from;
+    @JoinColumn(name = "from_id", nullable = false)
+    private Fan from;
 
     @ManyToOne
-    @JoinColumn(name = "to_id")
-    private PlayerUser to;
+    @JoinColumn(name = "to_id", nullable = false)
+    private Fan to;
 
     @Builder
-    public Block(PlayerUser from, PlayerUser to) {
+    public Block(Fan from, Fan to) {
         this.from = from;
         this.to = to;
     }

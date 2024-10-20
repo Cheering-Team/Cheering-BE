@@ -1,7 +1,7 @@
 package com.cheering.chat.session;
 
 import com.cheering.chat.chatRoom.ChatRoom;
-import com.cheering.player.relation.PlayerUser;
+import com.cheering.community.relation.Fan;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,6 +16,7 @@ public class ChatSession {
     @Column(name = "chat_session_id")
     private Long id;
 
+    @Column(nullable = false)
     private String sessionId;
 
     @ManyToOne
@@ -23,13 +24,13 @@ public class ChatSession {
     private ChatRoom chatRoom;
 
     @ManyToOne
-    @JoinColumn(name = "player_user_id")
-    private PlayerUser playerUser;
+    @JoinColumn(name = "fan_id")
+    private Fan fan;
 
     @Builder
-    public ChatSession(String sessionId, ChatRoom chatRoom, PlayerUser playerUser) {
+    public ChatSession(String sessionId, ChatRoom chatRoom, Fan fan) {
         this.sessionId = sessionId;
         this.chatRoom = chatRoom;
-        this.playerUser = playerUser;
+        this.fan = fan;
     }
 }

@@ -6,10 +6,10 @@
 //import com.cheering.comment.CommentRepository;
 //import com.cheering.comment.reComment.ReComment;
 //import com.cheering.comment.reComment.ReCommentRepository;
-//import com.cheering.player.Player;
-//import com.cheering.player.PlayerRepository;
-//import com.cheering.player.relation.PlayerUser;
-//import com.cheering.player.relation.PlayerUserRepository;
+//import com.cheering.community.Player;
+//import com.cheering.community.PlayerRepository;
+//import com.cheering.community.relation.PlayerUser;
+//import com.cheering.community.relation.PlayerUserRepository;
 //import com.cheering.post.Post;
 //import com.cheering.post.PostImage.PostImage;
 //import com.cheering.post.PostImage.PostImageRepository;
@@ -56,7 +56,7 @@
 //    public void run(ApplicationArguments args) throws Exception {
 //        User user1 = User.builder()
 //                .phone("01062013110")
-//                .nickname("준서")
+//                .name("준서")
 //                .role(Role.ROLE_USER)
 //                .build();
 //
@@ -64,7 +64,7 @@
 //
 //        User user2 = User.builder()
 //                .phone("01062013111")
-//                .nickname("준서2")
+//                .name("준서2")
 //                .role(Role.ROLE_USER)
 //                .build();
 //
@@ -169,7 +169,7 @@
 //                .name("황성빈")
 //                .image("https://file.giantsclub.com/upload2014/Player/50500_s.jpg")
 //                .description("황성빈 팬들끼리 응원해요!")
-//                .player(player1)
+//                .community(player1)
 //                .build();
 //
 //        chatRoomRepository.save(chatRoom1);
@@ -179,42 +179,42 @@
 //                .name("전준우")
 //                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%8C%E1%85%A5%E1%86%AB%E1%84%8C%E1%85%AE%E1%86%AB%E1%84%8B%E1%85%AE.jpeg")
 //                .description("전준우 팬들끼리 응원해요!")
-//                .player(player2)
+//                .community(player2)
 //                .build();
 //
 //        chatRoomRepository.save(chatRoom2);
 //
 //        TeamPlayer teamPlayer1 = TeamPlayer.builder()
 //                .team(lotte)
-//                .player(player1)
+//                .community(player1)
 //                .build();
 //
 //        TeamPlayer teamPlayer2 = TeamPlayer.builder()
 //                .team(lotte)
-//                .player(player2)
+//                .community(player2)
 //                .build();
 //
 //        TeamPlayer teamPlayer3 = TeamPlayer.builder()
 //                .team(hanwha)
-//                .player(player3)
+//                .community(player3)
 //                .build();
 //
 //        teamPlayerRepository.save(teamPlayer1);
 //        teamPlayerRepository.save(teamPlayer2);
 //        teamPlayerRepository.save(teamPlayer3);
 //
-//        PlayerUser playerUser = PlayerUser.builder()
-//                .player(player1)
+//        PlayerUser user = PlayerUser.builder()
+//                .community(player1)
 //                .user(user1)
-//                .nickname("황성빈짱")
+//                .name("황성빈짱")
 //                .build();
 //
-//        playerUserRepository.save(playerUser);
+//        playerUserRepository.save(user);
 //
 //        PlayerUser playerUser2 = PlayerUser.builder()
-//                .player(player1)
+//                .community(player1)
 //                .user(user2)
-//                .nickname("황성빈굿맨")
+//                .name("황성빈굿맨")
 //                .build();
 //
 //        playerUserRepository.save(playerUser2);
@@ -236,52 +236,52 @@
 //        tagRepository.save(tag3);
 //
 //        Post post1 = Post.builder()
-//                .playerUser(playerUser)
+//                .user(user)
 //                .content("1번 글")
 //                .build();
 //
 //        Post post2 = Post.builder()
-//                .playerUser(playerUser)
+//                .user(user)
 //                .content("2번 글")
 //                .build();
 //
 //        Post post3 = Post.builder()
-//                .playerUser(playerUser)
+//                .user(user)
 //                .content("3번 글")
 //                .build();
 //
 //        Post post4 = Post.builder()
-//                .playerUser(playerUser)
+//                .user(user)
 //                .content("4번 글")
 //                .build();
 //
 //        Post post5 = Post.builder()
-//                .playerUser(playerUser)
+//                .user(user)
 //                .content("5번 글")
 //                .build();
 //
 //        Post post6 = Post.builder()
-//                .playerUser(playerUser)
+//                .user(user)
 //                .content("6번 글")
 //                .build();
 //
 //        Post post7 = Post.builder()
-//                .playerUser(playerUser)
+//                .user(user)
 //                .content("7번 글")
 //                .build();
 //
 //        Post post8 = Post.builder()
-//                .playerUser(playerUser)
+//                .user(user)
 //                .content("8번 글")
 //                .build();
 //
 //        Post post9 = Post.builder()
-//                .playerUser(playerUser)
+//                .user(user)
 //                .content("9번 글")
 //                .build();
 //
 //        Post post10 = Post.builder()
-//                .playerUser(playerUser)
+//                .user(user)
 //                .content("황성빈 보고싶다")
 //                .build();
 //
@@ -323,7 +323,7 @@
 //        Comment comment1 = Comment.builder()
 //                .post(post10)
 //                .content("댓글1")
-//                .playerUser(playerUser)
+//                .user(user)
 //                .build();
 //
 //        commentRepository.save(comment1);
@@ -331,8 +331,8 @@
 //        ReComment reComment1 = ReComment.builder()
 //                .comment(comment1)
 //                .content("답글1")
-//                .playerUser(playerUser)
-//                .toPlayerUser(playerUser)
+//                .user(user)
+//                .toPlayerUser(user)
 //                .build();
 //
 //        reCommentRepository.save(reComment1);

@@ -2,7 +2,7 @@ package com.cheering.report.commentReport;
 
 import com.cheering.BaseTimeEntity;
 import com.cheering.comment.Comment;
-import com.cheering.player.relation.PlayerUser;
+import com.cheering.community.relation.Fan;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,7 +17,7 @@ public class CommentReport extends BaseTimeEntity {
     @Column(name = "comment_report_id")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private Long userId;
 
     @Column(length = 1000)
@@ -28,14 +28,14 @@ public class CommentReport extends BaseTimeEntity {
     private Comment comment;
 
     @ManyToOne
-    @JoinColumn(name = "player_user_id")
-    private PlayerUser playerUser;
+    @JoinColumn(name = "writer_id")
+    private Fan writer;
 
     @Builder
-    public CommentReport(Long reportId, Comment comment, PlayerUser playerUser, Long userId, String reportContent) {
+    public CommentReport(Long reportId, Comment comment, Fan writer, Long userId, String reportContent) {
         this.id = reportId;
         this.comment = comment;
-        this.playerUser = playerUser;
+        this.writer = writer;
         this.userId = userId;
         this.reportContent = reportContent;
     }

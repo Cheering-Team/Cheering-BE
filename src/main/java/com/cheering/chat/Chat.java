@@ -3,7 +3,7 @@ package com.cheering.chat;
 import com.cheering.BaseTimeEntity;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.message.Message;
-import com.cheering.player.relation.PlayerUser;
+import com.cheering.community.relation.Fan;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -24,18 +24,18 @@ public class Chat extends BaseTimeEntity{
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "chat_room_id")
+    @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
     @ManyToOne
-    @JoinColumn(name = "player_user_id")
-    private PlayerUser writer;
+    @JoinColumn(name = "writer_id", nullable = false)
+    private Fan writer;
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.REMOVE)
     private List<Message> messages = new ArrayList<>();
 
     @Builder
-    public Chat(ChatRoom chatRoom, PlayerUser writer) {
+    public Chat(ChatRoom chatRoom, Fan writer) {
         this.chatRoom = chatRoom;
         this.writer = writer;
     }

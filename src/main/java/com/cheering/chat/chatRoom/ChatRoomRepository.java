@@ -1,7 +1,7 @@
 package com.cheering.chat.chatRoom;
 
-import com.cheering.player.Player;
-import com.cheering.player.relation.PlayerUser;
+import com.cheering.community.Community;
+import com.cheering.community.relation.Fan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,16 +11,16 @@ import java.util.Optional;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
-    @Query("SELECT cr FROM ChatRoom cr WHERE cr.player = :player AND cr.type = 'OFFICIAL'")
-    List<ChatRoom> findOfficialByPlayer(@Param("player") Player player);
+    @Query("SELECT cr FROM ChatRoom cr WHERE cr.community = :community AND cr.type = 'OFFICIAL'")
+    List<ChatRoom> findOfficialByCommunity(@Param("community") Community community);
 
-    @Query("SELECT cr FROM ChatRoom cr WHERE cr.player = :player AND cr.type = 'PUBLIC' AND cr.creator NOT IN (SELECT b.to FROM Block b WHERE b.from = :playerUser)")
-    List<ChatRoom> findPublicByPlayer(@Param("player") Player player, @Param("playerUser")PlayerUser playerUser);
+    @Query("SELECT cr FROM ChatRoom cr WHERE cr.community = :community AND cr.type = 'PUBLIC' AND cr.manager NOT IN (SELECT b.to FROM Block b WHERE b.from = :fan)")
+    List<ChatRoom> findPublicByCommunity(@Param("community") Community community, @Param("fan") Fan fan);
 
-    @Query("SELECT cr FROM ChatRoom cr WHERE cr.player IN :players AND cr.type = 'OFFICIAL'")
-    List<ChatRoom> findOfficialByPlayerIn(@Param("players") List<Player> players);
-    @Query("SELECT cr FROM ChatRoom cr WHERE cr.player IN :players AND cr.type = 'PUBLIC'")
-    List<ChatRoom> findPublicByPlayerIn(@Param("players") List<Player> players);
+    @Query("SELECT cr FROM ChatRoom cr WHERE cr.community IN :communities AND cr.type = 'OFFICIAL'")
+    List<ChatRoom> findOfficialByCommunityIn(@Param("communities") List<Community> communities);
+    @Query("SELECT cr FROM ChatRoom cr WHERE cr.community IN :communities AND cr.type = 'PUBLIC'")
+    List<ChatRoom> findPublicByCommunityIn(@Param("communities") List<Community> communities);
 
     Optional<ChatRoom> findByName(String koreanName);
 }

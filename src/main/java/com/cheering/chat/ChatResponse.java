@@ -1,22 +1,22 @@
 package com.cheering.chat;
 
-import com.cheering.player.relation.PlayerUser;
-import com.cheering.player.relation.PlayerUserResponse;
+import com.cheering.community.relation.Fan;
+import com.cheering.community.relation.FanResponse;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class ChatResponse {
-    public record ChatDTO (List<String> messages, LocalDateTime createdAt, PlayerUserResponse.PlayerUserDTO sender) {
-        public ChatDTO (List<String> messages, LocalDateTime createdAt, PlayerUser sender) {
-            this(messages, createdAt, new PlayerUserResponse.PlayerUserDTO(sender));
+    public record ChatDTO (List<String> messages, LocalDateTime createdAt, FanResponse.FanDTO sender) {
+        public ChatDTO (List<String> messages, LocalDateTime createdAt, Fan sender) {
+            this(messages, createdAt, new FanResponse.FanDTO(sender));
         }
     }
 
-    public record ChatResponseDTO (String message, LocalDateTime createdAt, PlayerUserResponse.PlayerUserDTO sender) {
-        public ChatResponseDTO (String message, LocalDateTime createdAt, PlayerUser sender) {
-            this(message, createdAt, new PlayerUserResponse.PlayerUserDTO(sender));
+    public record ChatResponseDTO (String message, LocalDateTime createdAt, FanResponse.FanDTO sender) {
+        public ChatResponseDTO (String message, LocalDateTime createdAt, Fan sender) {
+            this(message, createdAt, new FanResponse.FanDTO(sender));
         }
     }
 

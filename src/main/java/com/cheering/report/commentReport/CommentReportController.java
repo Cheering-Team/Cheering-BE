@@ -21,6 +21,6 @@ public class CommentReportController {
     @PostMapping("/comments/{commentId}/reports")
     ResponseEntity<?> reportComment (@PathVariable("commentId") Long commentId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         commentReportService.reportComment(commentId, customUserDetails.getUser());
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "신고가 접수되었습니다.", null));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "신고 완료", null));
     }
 }

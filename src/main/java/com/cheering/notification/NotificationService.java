@@ -40,11 +40,11 @@ public class NotificationService {
             }
             return true;
         })).map((notification -> {
-            List<PostImage> postImages = postImageRepository.findByPostId(notification.getPost().getId());
-            if(notification.getType().equals("LIKE")) {
-                Long count = likeRepository.countByPostId(notification.getPost().getId());
+            List<PostImage> postImages = postImageRepository.findByPost(notification.getPost());
+            if(notification.getType().equals(NotificaitonType.LIKE)) {
+                Long count = likeRepository.countByPost(notification.getPost());
                 return postImages.isEmpty() ? new NotificationResponse.NotificationDTO(notification, count) : new NotificationResponse.NotificationDTO(notification, count, postImages.get(0));
-            } else if(notification.getType().equals("COMMENT")) {
+            } else if(notification.getType().equals(NotificaitonType.COMMENT)) {
                 return postImages.isEmpty() ? new NotificationResponse.NotificationDTO(notification, notification.getComment()) : new NotificationResponse.NotificationDTO(notification, notification.getComment(), postImages.get(0));
             } else {
                 return postImages.isEmpty() ? new NotificationResponse.NotificationDTO(notification, notification.getReComment()) : new NotificationResponse.NotificationDTO(notification, notification.getReComment(), postImages.get(0));

@@ -2,9 +2,8 @@ package com.cheering.notification;
 
 import com.cheering.comment.Comment;
 import com.cheering.comment.reComment.ReComment;
-import com.cheering.player.relation.PlayerUser;
+import com.cheering.community.relation.Fan;
 import com.cheering.post.Post;
-import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,13 +14,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     @Modifying
     @Query("DELETE FROM Notification n WHERE n.post = :post AND n.from = :from AND n.type = :type")
-    void deleteLikeByPostAndFrom(@Param("post") Post post, @Param("from") PlayerUser curPlayerUser, @Param("type") String type);
+    void deleteLikeByPostAndFrom(@Param("post") Post post, @Param("from") Fan curFan, @Param("type") String type);
 
 
     @Query("SELECT n FROM Notification n WHERE n.to.user = :user AND n.from NOT IN (SELECT b.to FROM Block b WHERE b.from.user = :user) ORDER BY n.createdAt DESC")

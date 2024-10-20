@@ -1,6 +1,6 @@
 package com.cheering.team.relation;
 
-import com.cheering.player.Player;
+import com.cheering.community.Community;
 import com.cheering.team.Team;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -17,16 +17,16 @@ public class TeamPlayer {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "team_id")
+    @JoinColumn(name = "team_id", nullable = false)
     private Team team;
 
     @ManyToOne
-    @JoinColumn(name = "player_id")
-    private Player player;
+    @JoinColumn(name = "player_id", nullable = false)
+    private Community community;
 
     @Builder
-    public TeamPlayer(Team team, Player player) {
+    public TeamPlayer(Team team, Community community) {
         this.team = team;
-        this.player = player;
+        this.community = community;
     }
 }

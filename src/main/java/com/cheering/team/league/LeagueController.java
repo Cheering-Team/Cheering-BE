@@ -17,6 +17,6 @@ public class LeagueController {
 
     @GetMapping("/sports/{sportId}/leagues")
     public ResponseEntity<?> getLeagues(@PathVariable("sportId") Long sportId){
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "리그들을 불러왔습니다.", leagueService.getLeagues(sportId)));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "리그 조회 완료", leagueService.getLeagues(sportId)));
     }
 }

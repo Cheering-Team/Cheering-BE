@@ -14,10 +14,14 @@ import lombok.NoArgsConstructor;
 public class PostImage {
     @Id
     @GeneratedValue
-    @Column(name = "postimage_id")
+    @Column(name = "post_image_id")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private PostImageType type;
+
+    @Column(nullable = false)
     private String path;
 
     @Column
@@ -25,10 +29,6 @@ public class PostImage {
 
     @Column
     private int height;
-
-    @Enumerated(EnumType.STRING)
-    @Column
-    private PostImageType type;
 
     @ManyToOne
     @JoinColumn(name = "post_id")

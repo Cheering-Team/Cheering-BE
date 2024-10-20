@@ -1,0 +1,176 @@
+package com.cheering.community.relation;
+
+import com.cheering._core.errors.CustomException;
+import com.cheering._core.errors.ExceptionCode;
+import com.cheering._core.util.S3Util;
+import com.cheering.badword.BadWordService;
+import com.cheering.comment.CommentRepository;
+import com.cheering.comment.reComment.ReCommentRepository;
+import com.cheering.community.CommunityResponse;
+import com.cheering.post.Like.Like;
+import com.cheering.post.Like.LikeRepository;
+import com.cheering.post.Post;
+import com.cheering.post.PostImage.PostImage;
+import com.cheering.post.PostImage.PostImageRepository;
+import com.cheering.post.PostImage.PostImageResponse;
+import com.cheering.post.PostRepository;
+import com.cheering.post.PostResponse;
+import com.cheering.post.Tag.Tag;
+import com.cheering.post.Tag.TagRepository;
+import com.cheering.post.relation.PostTag;
+import com.cheering.post.relation.PostTagRepository;
+import com.cheering.report.commentReport.CommentReport;
+import com.cheering.report.commentReport.CommentReportRepository;
+import com.cheering.report.postReport.PostReport;
+import com.cheering.report.postReport.PostReportRepository;
+import com.cheering.report.reCommentReport.ReCommentReport;
+import com.cheering.report.reCommentReport.ReCommentReportRepository;
+import com.cheering.user.User;
+import com.cheering.user.UserRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class FanService {
+    private final FanRepository fanRepository;
+    private final PostRepository postRepository;
+    private final PostTagRepository postTagRepository;
+    private final TagRepository tagRepository;
+    private final LikeRepository likeRepository;
+    private final CommentRepository commentRepository;
+    private final ReCommentRepository reCommentRepository;
+    private final PostImageRepository postImageRepository;
+    private final PostReportRepository postReportRepository;
+    private final CommentReportRepository commentReportRepository;
+    private final ReCommentReportRepository reCommentReportRepository;
+    private final BadWordService badWordService;
+    private final S3Util s3Util;
+
+    public FanResponse.ProfileDTO getFanInfo(Long fanId, User user) {
+        // 유저
+        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        // 현 접속자
+        Fan curFan = fanRepository.findByCommunityAndUser(fan.getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        FanResponse.FanDTO fanDTO = new FanResponse.FanDTO(fan);
+
+        CommunityResponse.CommunityDTO communityDTO = new CommunityResponse.CommunityDTO(fan.getCommunity());
+
+        return new FanResponse.ProfileDTO(fanDTO, fan.equals(curFan), communityDTO);
+    }
+
+    public PostResponse.PostListDTO getFanPosts(Long fanId, Pageable pageable, User user) {
+        // 유저
+        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        // 현재 접속 유저
+        Fan curFan = fanRepository.findByCommunityAndUser(fan.getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        // 유저의 글 목록
+        Page<Post> postList = postRepository.findByFan(fan, curFan, pageable);
+
+        List<PostResponse.PostInfoWithPlayerDTO> postInfoDTOS = postList.stream().map((post -> {
+            // 태그
+            List<PostTag> postTags = postTagRepository.findByPost(post);
+            List<String> tags = postTags.stream().map((postTag) -> {
+                Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
+
+                return tag.getName();
+            }).toList();
+
+            // 좋아요
+            Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
+            Long likeCount = likeRepository.countByPost(post);
+
+            // 댓글
+            Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
+
+            // 이미지
+            List<PostImage> postImages = postImageRepository.findByPost(post);
+            List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
+
+            return new PostResponse.PostInfoWithPlayerDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan);
+        })).toList();
+
+        return new PostResponse.PostListDTO(postList, postInfoDTOS);
+    }
+
+    @Transactional
+    public void updateFanImage(Long fanId, MultipartFile image) {
+        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        String imageUrl = "";
+        if(image == null) {
+            imageUrl = "https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-profile.jpg";
+        } else {
+            imageUrl = s3Util.upload(image);
+        }
+
+        fan.setImage(imageUrl);
+        fanRepository.save(fan);
+    }
+
+    public void updateFanName(Long fanId, UserRequest.NameDTO requestDTO) {
+        if(badWordService.containsBadWords(requestDTO.name())) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+        String name = requestDTO.name();
+
+        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        if(fan.getCommunity().getKoreanName().equals(name) || fan.getCommunity().getEnglishName().equals(name)) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+
+        Optional<Fan> duplicateNameFan = fanRepository.findByCommunityAndName(fan.getCommunity(), name);
+
+        if(duplicateNameFan.isPresent()) {
+            throw new CustomException(ExceptionCode.DUPLICATE_NAME);
+        }
+
+        fan.setName(requestDTO.name());
+        fanRepository.save(fan);
+    }
+
+    // 커뮤니티 탈퇴
+    @Transactional
+    public void deleteFan(Long fanId) {
+        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        if(fan.getMyCommunity() != null) {
+            fan.getMyCommunity().setManager(null);
+        }
+
+        List<PostImage> postImages = postImageRepository.findByFan(fan);
+
+        for(PostImage postImage : postImages) {
+            s3Util.deleteImageFromS3(postImage.getPath());
+        }
+
+        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByWriter(fan);
+        for(ReCommentReport reCommentReport : reCommentReports) {
+            reCommentReport.setReComment(null);
+        }
+
+        List<CommentReport> commentReports = commentReportRepository.findByWriter(fan);
+        for(CommentReport commentReport : commentReports) {
+            commentReport.setComment(null);
+        }
+
+        List<PostReport> postReports = postReportRepository.findByWriter(fan);
+        for(PostReport postReport : postReports) {
+            postReport.setPost(null);
+        }
+
+        fanRepository.delete(fan);
+    }
+}

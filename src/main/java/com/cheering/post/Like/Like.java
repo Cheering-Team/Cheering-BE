@@ -1,7 +1,6 @@
 package com.cheering.post.Like;
 
-import com.cheering.player.Player;
-import com.cheering.player.relation.PlayerUser;
+import com.cheering.community.relation.Fan;
 import com.cheering.post.Post;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -20,17 +19,17 @@ public class Like {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "player_user_id")
-    private PlayerUser playerUser;
+    @JoinColumn(name = "fan_id", nullable = false)
+    private Fan fan;
 
     @ManyToOne
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
     @Builder
-    public Like(Long likeId, PlayerUser playerUser, Post post) {
+    public Like(Long likeId, Fan fan, Post post) {
         this.id = likeId;
-        this.playerUser = playerUser;
+        this.fan = fan;
         this.post = post;
     }
 

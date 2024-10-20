@@ -12,11 +12,11 @@ import lombok.RequiredArgsConstructor;
 @NoArgsConstructor
 public class BadWord {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue()
     @Column(name = "badword_id")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String word;
 
     @Builder
