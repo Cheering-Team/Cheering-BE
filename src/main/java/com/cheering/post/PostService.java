@@ -41,6 +41,7 @@ import org.jcodec.api.JCodecException;
 import org.jcodec.common.io.FileChannelWrapper;
 import org.jcodec.common.io.NIOUtils;
 import org.jcodec.common.model.Picture;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -80,14 +81,14 @@ public class PostService {
     private final FcmServiceImpl fcmService;
 
     @Transactional
-    public PostResponse.PostIdDTO writePost(Long communityId, String content, List<MultipartFile> images, List<String> tags, User user) {
+    public PostResponse.PostIdDTO writePost(Long communityId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, List<String> tags, User user) {
         if(badWordService.containsBadWords(content)) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
 
         Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
 
-        Fan writer = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()-> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan writer = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Post post = Post.builder()
                 .content(content)
@@ -110,62 +111,26 @@ public class PostService {
             });
         }
 
-        if(images != null){
-            images.forEach((image)->{
-                try {
-                    String imageUrl = s3Util.upload(image);
-                    int width;
-                    int height;
-                    PostImageType type;
+        if(images != null) {
+            for(int i=0; i<images.size(); i++) {
+                MultipartFile image = images.get(i);
+                Integer width = widthDatas.get(i);
+                Integer height = heightDatas.get(i);
 
-                    int lastDotIndex = image.getOriginalFilename().lastIndexOf(".");
-                    if(lastDotIndex == -1) {
-                        throw new CustomException(ExceptionCode.INVALID_FILE_EXTENSION);
-                    }
+                String imageUrl = s3Util.upload(image);
 
-                    String extension = image.getOriginalFilename().substring(lastDotIndex + 1).toLowerCase();
+                PostImageType type = getPostImageType(image);
 
-                    if(extension.equals("mov") || extension.equals("mp4") || extension.equals("avi") || extension.equals("mkv")) {
-                        type = PostImageType.VIDEO;
-                        File convFile = File.createTempFile("temp", image.getOriginalFilename());
-                        try (FileOutputStream fos = new FileOutputStream(convFile)) {
-                            fos.write(image.getBytes());
-                        }
-                        try (FileChannelWrapper ch = NIOUtils.readableChannel(convFile)) {
-                            FrameGrab grab = FrameGrab.createFrameGrab(ch);
-                            Picture picture = grab.getNativeFrame();
+                PostImage postImage = PostImage.builder()
+                        .path(imageUrl)
+                        .width(width)
+                        .height(height)
+                        .post(post)
+                        .type(type)
+                        .build();
 
-                            width = picture.getWidth();
-                            height = picture.getHeight();
-                        } catch (JCodecException e) {
-                            throw new CustomException(ExceptionCode.IMAGE_UPLOAD_FAILED);
-                        } finally {
-                            if (convFile.exists()) {
-                                convFile.delete();
-                            }
-                        }
-
-                    } else {
-                        type = PostImageType.IMAGE;
-                        BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
-
-                        width = bufferedImage.getWidth();
-                        height = bufferedImage.getHeight();
-                    }
-
-                    PostImage postImage = PostImage.builder()
-                            .path(imageUrl)
-                            .width(width)
-                            .height(height)
-                            .post(post)
-                            .type(type)
-                            .build();
-
-                    postImageRepository.save(postImage);
-                } catch (IOException e) {
-                    throw new CustomException(ExceptionCode.IMAGE_UPLOAD_FAILED);
-                }
-            });
+                postImageRepository.save(postImage);
+            }
         }
         return new PostResponse.PostIdDTO(post.getId());
     }
@@ -226,7 +191,7 @@ public class PostService {
         Fan writer = post.getWriter();
         Community community = writer.getCommunity();
 
-        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
         Long likeCount = likeRepository.countByPost(post);
@@ -288,7 +253,7 @@ public class PostService {
 
     // 게시글 수정
     @Transactional
-    public void editPost(Long postId, String content, List<MultipartFile> images, List<String> tags, User user) {
+    public void editPost(Long postId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, List<String> tags, User user) {
         if(badWordService.containsBadWords(content)) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
@@ -320,28 +285,33 @@ public class PostService {
             });
         }
 
-        postImageRepository.deleteByPost(post);
-        if(images != null ){
-            images.forEach((image)->{
-                try {
-                    String imageUrl = s3Util.upload(image);
-                    BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
+        List<PostImage> postImages = postImageRepository.findByPost(post);
 
-                    int width = bufferedImage.getWidth();
-                    int height = bufferedImage.getHeight();
+        for(PostImage postImage : postImages) {
+            s3Util.deleteImageFromS3(postImage.getPath());
+            postImageRepository.delete(postImage);
+        }
 
-                    PostImage postImage = PostImage.builder()
-                            .path(imageUrl)
-                            .width(width)
-                            .height(height)
-                            .post(post)
-                            .build();
+        if(images != null) {
+            for(int i=0; i<images.size(); i++) {
+                MultipartFile image = images.get(i);
+                Integer width = widthDatas.get(i);
+                Integer height = heightDatas.get(i);
 
-                    postImageRepository.save(postImage);
-                } catch (IOException e) {
-                    throw new CustomException(ExceptionCode.IMAGE_UPLOAD_FAILED);
-                }
-            });
+                String imageUrl = s3Util.upload(image);
+
+                PostImageType type = getPostImageType(image);
+
+                PostImage postImage = PostImage.builder()
+                        .path(imageUrl)
+                        .width(width)
+                        .height(height)
+                        .post(post)
+                        .type(type)
+                        .build();
+
+                postImageRepository.save(postImage);
+            }
         }
     }
 
@@ -449,5 +419,23 @@ public class PostService {
         Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
 
         return postRepository.findDistinctDailyDates(community, PostType.DAILY);
+    }
+
+    @NotNull
+    private static PostImageType getPostImageType(MultipartFile image) {
+        PostImageType type;
+
+        int lastDotIndex = image.getOriginalFilename().lastIndexOf(".");
+        if(lastDotIndex == -1) {
+            throw new CustomException(ExceptionCode.INVALID_FILE_EXTENSION);
+        }
+        String extension = image.getOriginalFilename().substring(lastDotIndex + 1).toLowerCase();
+
+        if(extension.equals("mov") || extension.equals("mp4") || extension.equals("avi") || extension.equals("mkv")) {
+            type = PostImageType.VIDEO;
+        } else {
+            type = PostImageType.IMAGE;
+        }
+        return type;
     }
 }

@@ -54,6 +54,10 @@ public class UserService {
     public UserResponse.UserDTO sendSMS(UserRequest.SendSMSDTO requestDTO) {
         String phone = requestDTO.phone();
 
+        if(phone.equals("01011111111")) {
+            throw new CustomException(ExceptionCode.INVALID_PHONE);
+        }
+
         Optional<User> user = userRepository.findByPhone(phone);
 
         String verificationCode;
@@ -194,7 +198,7 @@ public class UserService {
 
             return issueToken(user);
         } else {
-            return null;
+            throw new CustomException(ExceptionCode.NEED_SIGNUP);
         }
      }
 
@@ -219,7 +223,7 @@ public class UserService {
 
            return issueToken(user);
         } else {
-            return null;
+            throw new CustomException(ExceptionCode.NEED_SIGNUP);
         }
     }
 
@@ -240,7 +244,8 @@ public class UserService {
                     .build();
 
             tempAppleUserRepository.save(tempAppleUser);
-            return null;
+
+            throw new CustomException(ExceptionCode.NEED_SIGNUP);
         }
     }
 

@@ -26,9 +26,11 @@ public class PostController {
     public ResponseEntity<?> writePost(@PathVariable("communityId") Long communityId,
                                        @RequestParam(value = "content", required = false) String content,
                                        @RequestParam(value = "images", required = false) List<MultipartFile> images,
+                                       @RequestParam(value = "widthDatas", required = false) List<Integer> widthDatas,
+                                       @RequestParam(value = "heightDatas", required = false) List<Integer> heightDatas,
                                        @RequestParam(value = "tags", required = false) List<String> tags,
                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 작성 완료", postService.writePost(communityId, content, images, tags, customUserDetails.getUser())));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 작성 완료", postService.writePost(communityId, content, images, widthDatas, heightDatas, tags, customUserDetails.getUser())));
     }
 
     // 커뮤니티 게시글 불러오기 (무한 스크롤) (id = 0 -> 내가 모든 커뮤니티 게시글)
@@ -48,7 +50,6 @@ public class PostController {
     @PostMapping("/posts/{postId}/likes")
     public ResponseEntity<?> toggleLike(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         boolean isLike = postService.toggleLike(postId, customUserDetails.getUser());
-
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, isLike ? "좋아요 완료" : "좋아요 취소", null));
     }
 
@@ -57,9 +58,11 @@ public class PostController {
     public ResponseEntity<?> editPost(@PathVariable("postId") Long postId,
                                       @RequestParam(value = "content", required = false) String content,
                                       @RequestParam(value = "images", required = false) List<MultipartFile> images,
+                                      @RequestParam(value = "widthDatas", required = false) List<Integer> widthDatas,
+                                      @RequestParam(value = "heightDatas", required = false) List<Integer> heightDatas,
                                       @RequestParam(value = "tags", required = false) List<String> tags,
                                       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        postService.editPost(postId, content, images, tags, customUserDetails.getUser());
+        postService.editPost(postId, content, images, widthDatas, heightDatas, tags, customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 수정 완료", null));
     }
 

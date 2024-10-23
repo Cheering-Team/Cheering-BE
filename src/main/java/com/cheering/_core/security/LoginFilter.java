@@ -90,7 +90,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         responseData.put("message", failed.getMessage());
         responseData.put("result", null);
-        responseData.put("code", 400);
+        if(failed.getMessage().equals("인증코드가 만료되었습니다.")) {
+            responseData.put("code", 2002);
+        } else {
+            responseData.put("code", 2003);
+        }
 
         response.setContentType("applicaton/json");
         response.setCharacterEncoding("UTF-8");

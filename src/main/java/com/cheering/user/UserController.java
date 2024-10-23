@@ -67,34 +67,19 @@ public class UserController {
     @PostMapping("/signin/kakao")
     public ResponseEntity<?> signInWithKakao(@RequestBody UserRequest.SocialTokenDTO requestDTO) {
         UserResponse.TokenDTO tokenDTO = userService.signInWithKakao(requestDTO.accessToken());
-        if(tokenDTO == null) {
-            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "회원가입 필요", null));
-        }
-        else {
-            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "로그인 완료", tokenDTO));
-        }
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "로그인 완료", tokenDTO));
     }
 
     @PostMapping("/signin/naver")
     public ResponseEntity<?> signInWithNaver(@RequestBody UserRequest.SocialTokenDTO requestDTO) {
         UserResponse.TokenDTO tokenDTO = userService.signInWithNaver(requestDTO.accessToken());
-        if(tokenDTO == null) {
-            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "회원가입 필요", null));
-        }
-        else {
-            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "로그인 완료", tokenDTO));
-        }
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "로그인 완료", tokenDTO));
     }
 
     @PostMapping("/signin/apple")
     public ResponseEntity<?> signInWithApple(@RequestBody UserRequest.SocialTokenDTO requestDTO) {
         UserResponse.TokenDTO tokenDTO = userService.signInWithApple(requestDTO);
-        if(tokenDTO == null) {
-            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "회원가입 필요", null));
-        }
-        else {
-            return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "로그인 완료", tokenDTO));
-        }
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "로그인 완료", tokenDTO));
     }
 
     @PostMapping("/phone/code/social")

@@ -106,7 +106,7 @@ public class FanService {
 
     @Transactional
     public void updateFanImage(Long fanId, MultipartFile image) {
-        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         String imageUrl = "";
         if(image == null) {
@@ -125,7 +125,7 @@ public class FanService {
         }
         String name = requestDTO.name();
 
-        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(fan.getCommunity().getKoreanName().equals(name) || fan.getCommunity().getEnglishName().equals(name)) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
@@ -144,7 +144,7 @@ public class FanService {
     // 커뮤니티 탈퇴
     @Transactional
     public void deleteFan(Long fanId) {
-        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(fan.getMyCommunity() != null) {
             fan.getMyCommunity().setManager(null);

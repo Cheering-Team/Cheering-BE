@@ -21,7 +21,7 @@ public class PostImage {
     @Enumerated(EnumType.STRING)
     private PostImageType type;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String path;
 
     @Column

@@ -19,9 +19,9 @@ public class PostResponse {
         }
     }
 
-    public record PostListDTO(List<PostInfoWithPlayerDTO> posts, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last) {
+    public record PostListDTO(List<PostInfoWithPlayerDTO> posts, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
         public PostListDTO(Page<?> page, List<PostInfoWithPlayerDTO> posts) {
-            this(posts, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast());
+            this(posts, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
         }
 
     }

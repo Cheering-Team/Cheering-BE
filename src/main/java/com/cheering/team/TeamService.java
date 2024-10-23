@@ -36,6 +36,7 @@ public class TeamService {
 
     public TeamResponse.TeamNameDTO getTeamById(Long teamId) {
         Team team = teamRepository.findById(teamId).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+
         Long fanCount = fanRepository.countByCommunity(team.getCommunity());
 
         return new TeamResponse.TeamNameDTO(team, fanCount);

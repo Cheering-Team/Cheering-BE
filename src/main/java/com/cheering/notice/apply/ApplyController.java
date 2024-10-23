@@ -16,8 +16,8 @@ public class ApplyController {
     private final ApplyService applyService;
 
     @PostMapping("/applies")
-    public ResponseEntity<?> apply(@RequestParam(value = "field1", required = false) String field1, @RequestParam(value = "field2", required = false) String field2, @RequestParam(value = "field3", required = false) String field3, @RequestParam(value = "field4", required = false) String field4, @RequestParam(value = "image", required = false) MultipartFile image) {
-        applyService.apply(field1, field2, field3, field4, image);
+    public ResponseEntity<?> apply(@RequestParam(value = "field1", required = false) String field1, @RequestParam(value = "field2", required = false) String field2, @RequestParam(value = "field3", required = false) String field3, @RequestParam(value = "field4", required = false) String field4, @RequestParam(value = "image", required = false) MultipartFile image, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        applyService.apply(field1, field2, field3, field4, image, userDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "신청 완료", null));
     }
 }

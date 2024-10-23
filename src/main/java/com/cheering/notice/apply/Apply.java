@@ -37,7 +37,8 @@ public class Apply extends BaseTimeEntity {
     private User writer;
 
     @Builder
-    public Apply(String field1, String field2, String field3, String field4, String image) {
+    public Apply(String field1, String field2, String field3, String field4, String image, User writer) {
+        this.writer = writer;
         this.field1 = field1;
         this.field2 = field2;
         this.field3 = field3;

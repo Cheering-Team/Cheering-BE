@@ -42,7 +42,7 @@ public class Fan {
     @Column(length = 20, nullable = false, unique = true)
     private String name;
 
-    @Column
+    @Column(length = 1000)
     private String image;
 
     @ManyToOne

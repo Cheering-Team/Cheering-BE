@@ -23,6 +23,7 @@ public class TeamController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "팀 조회 완료", teamService.getTeamById(teamId)));
     }
 
+    // (팀 등록)
     @PostMapping("/leagues/{leagueId}/teams")
     public ResponseEntity<?> registerTeam(@PathVariable("leagueId") Long leagueId, @RequestBody TeamRequest.RegisterTeamDTO requestDTO){
         teamService.registerTeam(leagueId, requestDTO);
