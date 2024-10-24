@@ -6,6 +6,7 @@ import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
 import com.cheering.community.relation.Fan;
 import com.cheering.community.relation.FanRepository;
+import com.cheering.post.PostRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,11 +19,14 @@ import java.util.Optional;
 public class CommentReportService {
     private final CommentReportRepository commentReportRepository;
     private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
     private final FanRepository fanRepository;
 
     // 댓글 신고
     @Transactional
-    public void reportComment(Long commentId, User user) {
+    public void reportComment(Long postId, Long commentId, User user) {
+        postRepository.findById(postId).orElseThrow(()-> new CustomException(ExceptionCode.POST_NOT_FOUND));
+
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
         Fan curFan = fanRepository.findByCommunityAndUser(comment.getWriter().getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
@@ -30,7 +34,7 @@ public class CommentReportService {
         Optional<CommentReport> commentReport = commentReportRepository.findByCommentAndWriter(comment, curFan);
 
         if(commentReport.isPresent()) {
-            throw new CustomException(ExceptionCode.ALREADY_REPORT);
+            return;
         }
 
         CommentReport newCommentReport = CommentReport.builder()

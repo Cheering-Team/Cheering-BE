@@ -49,8 +49,8 @@ public class PostController {
     // 좋아요 토글
     @PostMapping("/posts/{postId}/likes")
     public ResponseEntity<?> toggleLike(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        boolean isLike = postService.toggleLike(postId, customUserDetails.getUser());
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, isLike ? "좋아요 완료" : "좋아요 취소", null));
+        PostResponse.LikeResponseDTO likeResponseDTO = postService.toggleLike(postId,customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, likeResponseDTO.isLike() ? "좋아요 완료" : "좋아요 취소", likeResponseDTO));
     }
 
     // 게시글 수정

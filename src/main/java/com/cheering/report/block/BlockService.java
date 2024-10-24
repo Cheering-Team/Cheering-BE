@@ -37,15 +37,15 @@ public class BlockService {
     }
 
     public List<FanResponse.FanDTO> getBlockedFans(Long fanId) {
-        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
         List<Fan> fans = blockRepository.findToByFrom(fan);
 
         return fans.stream().map((FanResponse.FanDTO::new)).toList();
     }
 
     @Transactional
-    public void unblockFan(Long playerUserId, User user) {
-        Fan fan = fanRepository.findById(playerUserId).orElseThrow(()-> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+    public void unblockFan(Long fanId, User user) {
+        Fan fan = fanRepository.findById(fanId).orElseThrow(()-> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
         Fan curFan = fanRepository.findByCommunityAndUser(fan.getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 

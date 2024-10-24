@@ -35,6 +35,7 @@ public class NotificationController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림 여부 조회", notificationService.isUnread(customUserDetails.getUser())));
     }
 
+    // 알림 읽기
     @PutMapping("/notifications/{notificationId}")
     public ResponseEntity<?> readNotification(@PathVariable("notificationId") Long notificationId) {
         notificationService.readNotification(notificationId);

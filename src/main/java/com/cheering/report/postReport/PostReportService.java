@@ -30,7 +30,7 @@ public class PostReportService {
         Optional<PostReport> report = postReportRepository.findByPostAndWriter(post, curFan);
 
         if(report.isPresent()) {
-            throw new CustomException(ExceptionCode.ALREADY_REPORT);
+            return;
         }
 
         PostReport newPostReport = PostReport.builder()

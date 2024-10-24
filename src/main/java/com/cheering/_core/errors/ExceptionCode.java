@@ -19,18 +19,17 @@ public enum ExceptionCode {
     FAN_NOT_FOUND(404, "존재하지 않는 팬"),
     CUR_FAN_NOT_FOUND(404, "커뮤니티로부터 제재"),
     POST_NOT_FOUND(404, "존재하지 않는 게시글"),
+    COMMENT_NOT_FOUND(404, "존재하지 않는 댓글"),
+    NOTIFICATION_NOT_FOUND(404, "존재하지 않는 알림"),
+    CHATROOM_NOT_FOUND(404, "존재하지 않는 채팅방"),
+    NOTICE_NOT_FOUND(404, "존재하지 않는 공지사항"),
 
     // USER
     USER_NOT_FOUND(200, "해당 사용자를 찾을 수 없습니다."),
-
-
     USER_FORBIDDEN(403, "유저 권한 없음"),
     USER_UNAUTHORIZED(401, "인증되지 않았습니다."),
     INVALID_TOKEN(401, "토큰이 유효하지 않습니다."),
-
-
     ALREADY_MANAGER_ACCOUNT(200, "이미 존재하는 매니저 계정"),
-
 
     // TEAM
     LEAGUE_NOT_FOUND(404, "존재하지 않는 리그"),
@@ -39,36 +38,23 @@ public enum ExceptionCode {
     // PLAYER
     COMMUNITY_NOT_FOUND(404, "존재하지 않는 커뮤니티"),
 
-
     NOT_OWNER(200, "선수 본인이 아닙니다."),
 
     // POST
-
     NOT_WRITER(200, "해당 글의 작성자가 아닙니다."),
 
     // TAG
     TAG_NOT_FOUND(404, "존재하지 않는 태그"),
 
     // COMMENT
-    COMMENT_NOT_FOUND(404, "존재하지 않는 댓글입니다."),
     COMMENT_WRITER_NOT_FOUND(200, "존재하지 않는 댓글 작성자"),
 
     // CHAT
-    CHATROOM_NOT_FOUND(404, "존재하지 않는 채팅방"),
     NOT_CHATROOM_MEMBER(200, "더 이상 채팅방에 속해있지 않습니다."),
 
     // REPORT
     ALREADY_REPORT(200, "이미 신고하였습니다."),
     REPORTED_POST(200, "신고 누적된 게시글이므로 수정 및 삭제가 불가합니다."),
-
-    // NOTIFICATION
-    NOTIFICATION_NOT_FOUND(404, "해당 알림을 찾을 수 없습니다."),
-
-    // NOTICE
-    NOTICE_NOT_FOUND(404, "해당 공지사항을 찾을 수 없습니다."),
-
-    // BADWORD
-
 
     // S3
     EMPTY_FILE(200, "유효하지 않는 파일입니다."),

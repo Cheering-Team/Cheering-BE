@@ -6,6 +6,7 @@ import com.cheering.comment.reComment.ReComment;
 import com.cheering.comment.reComment.ReCommentRepository;
 import com.cheering.community.relation.Fan;
 import com.cheering.community.relation.FanRepository;
+import com.cheering.post.PostRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,20 +18,23 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReCommentReportService {
     private final ReCommentReportRepository reCommentReportRepository;
+    private final PostRepository postRepository;
     private final ReCommentRepository reCommentRepository;
     private final FanRepository fanRepository;
 
     // 답글 신고
     @Transactional
-    public void reportReComment(Long reCommentId, User user) {
+    public void reportReComment(Long postId, Long reCommentId, User user) {
+        postRepository.findById(postId).orElseThrow(()-> new CustomException(ExceptionCode.POST_NOT_FOUND));
+
         ReComment reComment = reCommentRepository.findById(reCommentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityAndUser(reComment.getWriter().getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityAndUser(reComment.getWriter().getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Optional<ReCommentReport> reCommentReport = reCommentReportRepository.findByReCommentAndWriter(reComment, curFan);
 
         if(reCommentReport.isPresent()) {
-            throw new CustomException(ExceptionCode.ALREADY_REPORT);
+            return;
         }
 
         ReCommentReport newReCommentReport = ReCommentReport.builder()

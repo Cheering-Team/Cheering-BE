@@ -18,9 +18,9 @@ public class ReCommentReportController {
     private final ReCommentReportService reCommentReportService;
 
     // 답글 신고
-    @PostMapping("/reComments/{reCommentId}/reports")
-    ResponseEntity<?> reportReComment (@PathVariable("reCommentId") Long reCommentId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        reCommentReportService.reportReComment(reCommentId, customUserDetails.getUser());
+    @PostMapping("posts/{postId}/reComments/{reCommentId}/reports")
+    ResponseEntity<?> reportReComment (@PathVariable("postId") Long postId, @PathVariable("reCommentId") Long reCommentId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        reCommentReportService.reportReComment(postId, reCommentId, customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "신고 완료", null));
     }
 }

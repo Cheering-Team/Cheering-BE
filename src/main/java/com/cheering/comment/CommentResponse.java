@@ -9,9 +9,9 @@ import org.springframework.data.domain.Page;
 public class CommentResponse {
     public record CommentIdDTO (Long id) { }
 
-    public record CommentListDTO (List<CommentDTO> comments, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last) {
+    public record CommentListDTO (List<CommentDTO> comments, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
         public CommentListDTO(Page<?> page, List<CommentDTO> comments) {
-            this(comments, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast());
+            this(comments, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
         }
     }
 

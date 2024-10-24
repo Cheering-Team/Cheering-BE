@@ -216,12 +216,12 @@ public class PostService {
 
     @Transactional
     // 게시글 좋아요
-    public boolean toggleLike(Long postId, User user) {
+    public PostResponse.LikeResponseDTO toggleLike(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         Community community = post.getWriter().getCommunity();
 
-        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
 
@@ -233,6 +233,8 @@ public class PostService {
 
             likeRepository.save(newLike);
 
+            Long likeCount = likeRepository.countByPost(post);
+
             if(!post.getWriter().equals(curFan) && blockRepository.findByFromAndTo(post.getWriter(), curFan).isEmpty()){
                 Notification notification = new Notification(NotificaitonType.LIKE, post.getWriter(), curFan, post);
 
@@ -241,13 +243,15 @@ public class PostService {
                     fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), curFan.getName(), "회원님의 게시글을 좋아합니다.", postId, notification.getId());
                 }
             }
-            return true;
+            return new PostResponse.LikeResponseDTO(true, likeCount);
         } else {
             if(!post.getWriter().equals(curFan)) {
                 notificationRepository.deleteLikeByPostAndFrom(post, curFan, "LIKE");
             }
             likeRepository.delete(like.get());
-            return false;
+            Long likeCount = likeRepository.countByPost(post);
+
+            return new PostResponse.LikeResponseDTO(false, likeCount);
         }
     }
 
@@ -261,7 +265,7 @@ public class PostService {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         Fan writer = post.getWriter();
-        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);
@@ -321,7 +325,7 @@ public class PostService {
         Post post = postRepository.findById(postId).orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         Fan writer = post.getWriter();
-        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);

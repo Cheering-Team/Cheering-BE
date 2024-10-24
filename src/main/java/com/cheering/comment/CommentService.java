@@ -21,6 +21,8 @@ import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.user.User;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,13 +49,13 @@ public class CommentService {
     // 댓글 작성
     @Transactional
     public CommentResponse.CommentIdDTO writeComment(Long postId, CommentRequest.WriteCommentDTO requestDTO, User user) {
+        Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
+
         if(badWordService.containsBadWords(requestDTO.content())) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
 
         String content = requestDTO.content();
-
-        Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         Fan curFan = fanRepository.findByCommunityAndUser(post.getWriter().getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
@@ -82,17 +84,31 @@ public class CommentService {
     public CommentResponse.CommentListDTO getComments(Long postId, Pageable pageable, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityAndUser(post.getWriter().getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityAndUser(post.getWriter().getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Page<Comment> commentList = commentRepository.findByPost(post, curFan, pageable);
 
-        List<CommentResponse.CommentDTO> commentDTOS = commentList.stream().map((comment -> {
+        List<CommentResponse.CommentDTO> myComments = new ArrayList<>();
+        List<CommentResponse.CommentDTO> otherComments = new ArrayList<>();
+
+        for (Comment comment : commentList) {
             Fan writer = comment.getWriter();
             Long reCount = reCommentRepository.countByCommentId(comment.getId());
-            return new CommentResponse.CommentDTO(comment, reCount, writer.equals(curFan));
-        })).toList();
+            CommentResponse.CommentDTO commentDTO = new CommentResponse.CommentDTO(comment, reCount, writer.equals(curFan));
 
-        return new CommentResponse.CommentListDTO(commentList, commentDTOS);
+            if (writer.equals(curFan)) {
+                myComments.add(commentDTO);
+            } else {
+                otherComments.add(commentDTO);
+            }
+        }
+        Collections.reverse(myComments);
+
+        List<CommentResponse.CommentDTO> combinedComments = new ArrayList<>();
+        combinedComments.addAll(myComments);
+        combinedComments.addAll(otherComments);
+
+        return new CommentResponse.CommentListDTO(commentList, combinedComments);
     }
 
     @Transactional
@@ -101,7 +117,7 @@ public class CommentService {
 
         Fan writer = comment.getWriter();
 
-        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);

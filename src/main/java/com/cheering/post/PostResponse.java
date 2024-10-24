@@ -26,9 +26,11 @@ public class PostResponse {
 
     }
 
-    public record DailyListDTO(List<PostInfoWithPlayerDTO> dailys, Boolean isManager, FanResponse.FanDTO manager, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last) {
+    public record DailyListDTO(List<PostInfoWithPlayerDTO> dailys, Boolean isManager, FanResponse.FanDTO manager, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
         public DailyListDTO(Page<?> page, List<PostInfoWithPlayerDTO> dailys, Boolean isManager, FanResponse.FanDTO manager) {
-            this(dailys, isManager, manager, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast());
+            this(dailys, isManager, manager, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
         }
     }
+
+    public record LikeResponseDTO(Boolean isLike, Long likeCount) { }
 }

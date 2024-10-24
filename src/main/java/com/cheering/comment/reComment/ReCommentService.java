@@ -12,7 +12,8 @@ import com.cheering.notification.NotificationRepository;
 import com.cheering.community.Community;
 import com.cheering.community.relation.Fan;
 import com.cheering.community.relation.FanRepository;
-import com.cheering.post.PostResponse;
+import com.cheering.post.Post;
+import com.cheering.post.PostRepository;
 import com.cheering.report.block.BlockRepository;
 import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.report.reCommentReport.ReCommentReportRepository;
@@ -31,6 +32,7 @@ public class ReCommentService {
     private final CommentRepository commentRepository;
     private final FanRepository fanRepository;
     private final CommunityRepository communityRepository;
+    private final PostRepository postRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
     private final BlockRepository blockRepository;
@@ -38,15 +40,17 @@ public class ReCommentService {
     private final FcmServiceImpl fcmService;
 
     @Transactional
-    public ReCommentResponse.ReCommentIdDTO writeReComment(Long commentId, ReCommentRequest.WriteReCommentDTO requestDTO, User user) {
-        if(badWordService.containsBadWords(requestDTO.content())) {
-            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
-        }
-
+    public ReCommentResponse.ReCommentIdDTO writeReComment(Long postId, Long commentId, ReCommentRequest.WriteReCommentDTO requestDTO, User user) {
         String content = requestDTO.content();
         Long toId = requestDTO.toId();
 
+        postRepository.findById(postId).orElseThrow(()-> new CustomException(ExceptionCode.POST_NOT_FOUND));
+
         Comment comment = commentRepository.findById(commentId).orElseThrow(()->new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
+
+        if(badWordService.containsBadWords(requestDTO.content())) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
 
         Community community = communityRepository.findById(comment.getPost().getWriter().getCommunity().getId()).orElseThrow(()-> new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
 
@@ -74,21 +78,19 @@ public class ReCommentService {
         return new ReCommentResponse.ReCommentIdDTO(reComment.getId());
     }
 
-    public ReCommentResponse.ReCommentListDTO getReComments(Long commentId, User user) {
+    public List<ReCommentResponse.ReCommentDTO> getReComments(Long commentId, User user) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
         Community community = comment.getWriter().getCommunity();
 
-        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         List<ReComment> reCommentList = reCommentRepository.findByComment(comment, curFan);
 
-        List<ReCommentResponse.ReCommentDTO> reCommentDTOS = reCommentList.stream().map((reComment -> {
+        return reCommentList.stream().map((reComment -> {
             Fan writer = reComment.getWriter();
             return new ReCommentResponse.ReCommentDTO(reComment, writer.equals(curFan));
         })).toList();
-
-        return new ReCommentResponse.ReCommentListDTO(reCommentDTOS);
     }
 
     // 답글 삭제
@@ -98,7 +100,7 @@ public class ReCommentService {
 
         Fan writer = reComment.getWriter();
 
-        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);

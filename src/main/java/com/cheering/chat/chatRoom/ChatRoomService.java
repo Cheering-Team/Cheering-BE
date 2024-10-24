@@ -53,9 +53,8 @@ public class ChatRoomService {
         if(badWordService.containsBadWords(description)) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
-
         Community community = communityRepository.findById(communityId).orElseThrow(()-> new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-        Fan curUser = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()-> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+        Fan curUser = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         String imageUrl = "";
         if(image == null) {
