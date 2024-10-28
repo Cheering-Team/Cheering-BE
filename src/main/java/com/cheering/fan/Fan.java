@@ -38,7 +38,7 @@ public class Fan {
     @Enumerated(value = EnumType.STRING)
     private CommunityType type;
 
-    @Column(length = 20, nullable = false, unique = true)
+    @Column(length = 20, nullable = false)
     private String name;
 
     @Column(length = 2000)

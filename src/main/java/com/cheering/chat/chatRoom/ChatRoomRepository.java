@@ -21,4 +21,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     List<ChatRoom> findOfficialByCommunityIdsIn(@Param("communityIds") List<Long> communityIds);
     @Query("SELECT cr FROM ChatRoom cr WHERE cr.communityId IN :communityIds AND cr.type = 'PUBLIC'")
     List<ChatRoom> findPublicByCommunityIdsIn(@Param("communityIds") List<Long> communityIds);
+
+    Optional<ChatRoom> findByCommunityId(Long id);
 }

@@ -270,23 +270,24 @@ public class ChatRoomService {
         }
     }
 
-//    public void autoCreateChatRooms() {
-//        List<Player> communities = playerRepository.findAll();
-//
-//        for(Player player : communities){
-//            Optional<ChatRoom> chatRoom = chatRoomRepository.findByName(player.getKoreanName());
-//
-//            if(chatRoom.isEmpty()) {
-//                ChatRoom newChatRoom = ChatRoom.builder()
-//                        .community(player)
-//                        .description(player.getKoreanName() + " 팬들끼리 응원해요!")
-//                        .image(player.getImage())
-//                        .name(player.getKoreanName())
-//                        .type(ChatRoomType.OFFICIAL)
-//                        .build();
-//
-//                chatRoomRepository.save(newChatRoom);
-//            }
-//        }
-//    }
+    public void autoCreateChatRooms() {
+        List<Team> communities = teamRepository.findAll();
+
+        for(Team community : communities){
+            Optional<ChatRoom> chatRoom = chatRoomRepository.findByCommunityId(community.getId());
+
+            if(chatRoom.isEmpty()) {
+                ChatRoom newChatRoom = ChatRoom.builder()
+                        .communityId(community.getId())
+                        .description(community.getKoreanName() + " 팬들끼리 응원해요!")
+                        .image(community.getImage())
+                        .name(community.getKoreanName())
+                        .type(ChatRoomType.OFFICIAL)
+                        .communityType(CommunityType.TEAM)
+                        .build();
+
+                chatRoomRepository.save(newChatRoom);
+            }
+        }
+    }
 }
