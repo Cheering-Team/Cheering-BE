@@ -56,7 +56,10 @@ public class S3Util {
         }
 
         String extension = filename.substring(lastDotIndex + 1).toLowerCase();
-        List<String> allowedExtensionList = Arrays.asList("jpg", "jpeg", "png", "gif", "heic", "mov", "mp4", "avi", "mkv");
+        List<String> allowedExtensionList = Arrays.asList(
+                "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "webp", "heic", "heif", "svg",
+                "mp4", "mov", "avi", "mkv", "wmv", "flv", "webm", "mpeg", "mpg", "3gp", "m4v"
+        );
 
         if(!allowedExtensionList.contains(extension)) {
             throw new CustomException(ExceptionCode.INVALID_FILE_EXTENSION);
@@ -73,10 +76,12 @@ public class S3Util {
         byte[] bytes = IOUtils.toByteArray(is);
 
         ObjectMetadata metadata = new ObjectMetadata();
-        if(extension.equals("mov") || extension.equals("mp4") || extension.equals("avi") || extension.equals("mkv")) {
-            metadata.setContentType("video/" + extension);
+        if (extension.equals("mov") || extension.equals("mp4") || extension.equals("avi") || extension.equals("mkv") ||
+                extension.equals("wmv") || extension.equals("flv") || extension.equals("webm") || extension.equals("mpeg") ||
+                extension.equals("mpg") || extension.equals("3gp") || extension.equals("m4v")) {
+            metadata.setContentType("video/" + getVideoMimeType(extension));
         } else {
-            metadata.setContentType("image/" + extension);
+            metadata.setContentType("image/" + getImageMimeType(extension));
         }
         metadata.setContentLength(bytes.length);
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
@@ -111,6 +116,59 @@ public class S3Util {
             return decodingKey.substring(1);
         } catch(MalformedURLException e) {
             throw new CustomException(ExceptionCode.IMAGE_DELETE_FAILED);
+        }
+    }
+
+    private String getVideoMimeType(String extension) {
+        switch (extension) {
+            case "mp4":
+            case "m4v":
+                return "mp4";
+            case "mov":
+                return "quicktime";
+            case "avi":
+                return "x-msvideo";
+            case "mkv":
+                return "x-matroska";
+            case "wmv":
+                return "x-ms-wmv";
+            case "flv":
+                return "x-flv";
+            case "webm":
+                return "webm";
+            case "mpeg":
+            case "mpg":
+                return "mpeg";
+            case "3gp":
+                return "3gpp";
+            default:
+                return "mp4"; // 기본값
+        }
+    }
+
+    private String getImageMimeType(String extension) {
+        switch (extension) {
+            case "jpg":
+            case "jpeg":
+                return "jpeg";
+            case "png":
+                return "png";
+            case "gif":
+                return "gif";
+            case "bmp":
+                return "bmp";
+            case "tif":
+            case "tiff":
+                return "tiff";
+            case "webp":
+                return "webp";
+            case "heic":
+            case "heif":
+                return "heic";
+            case "svg":
+                return "svg+xml";
+            default:
+                return "jpeg"; // 기본값
         }
     }
 }

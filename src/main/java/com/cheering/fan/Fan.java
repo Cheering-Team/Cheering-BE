@@ -1,4 +1,4 @@
-package com.cheering.community.relation;
+package com.cheering.fan;
 
 import com.cheering.chat.Chat;
 import com.cheering.chat.chatRoom.ChatRoom;
@@ -6,7 +6,6 @@ import com.cheering.chat.session.ChatSession;
 import com.cheering.comment.Comment;
 import com.cheering.comment.reComment.ReComment;
 import com.cheering.notification.Notification;
-import com.cheering.community.Community;
 import com.cheering.post.Like.Like;
 import com.cheering.post.Post;
 import com.cheering.report.block.Block;
@@ -37,24 +36,20 @@ public class Fan {
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
-    private FanType type;
+    private CommunityType type;
 
     @Column(length = 20, nullable = false, unique = true)
     private String name;
 
-    @Column(length = 1000)
+    @Column(length = 2000)
     private String image;
+
+    @Column(nullable = false)
+    private Long communityId;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "community_id", nullable = false)
-    private Community community;
-
-    @OneToOne(mappedBy = "manager")
-    private Community myCommunity;
 
     @OneToMany(mappedBy = "writer", cascade = CascadeType.REMOVE)
     private List<Post> posts = new ArrayList<>();
@@ -102,11 +97,11 @@ public class Fan {
     private List<Notification> notificationsFrom = new ArrayList<>();
 
     @Builder
-    public Fan(Community community, FanType type, User user, String name, String image) {
-        this.community = community;
+    public Fan(CommunityType type, String name, String image, Long communityId, User user) {
         this.type = type;
-        this.user = user;
         this.name = name;
         this.image = image;
+        this.communityId = communityId;
+        this.user = user;
     }
 }

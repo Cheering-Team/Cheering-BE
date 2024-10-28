@@ -1,6 +1,6 @@
 package com.cheering.post.Like;
 
-import com.cheering.community.relation.Fan;
+import com.cheering.fan.Fan;
 import com.cheering.post.Post;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

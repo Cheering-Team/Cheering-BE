@@ -1,7 +1,7 @@
 package com.cheering.report.commentReport;
 
 import com.cheering.comment.Comment;
-import com.cheering.community.relation.Fan;
+import com.cheering.fan.Fan;
 import com.cheering.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -4,8 +4,8 @@ import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering.comment.reComment.ReComment;
 import com.cheering.comment.reComment.ReCommentRepository;
-import com.cheering.community.relation.Fan;
-import com.cheering.community.relation.FanRepository;
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanRepository;
 import com.cheering.post.PostRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ public class ReCommentReportService {
 
         ReComment reComment = reCommentRepository.findById(reCommentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityAndUser(reComment.getWriter().getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(reComment.getWriter().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Optional<ReCommentReport> reCommentReport = reCommentReportRepository.findByReCommentAndWriter(reComment, curFan);
 

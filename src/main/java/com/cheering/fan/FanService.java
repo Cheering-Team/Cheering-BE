@@ -1,4 +1,4 @@
-package com.cheering.community.relation;
+package com.cheering.fan;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
@@ -6,7 +6,8 @@ import com.cheering._core.util.S3Util;
 import com.cheering.badword.BadWordService;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
-import com.cheering.community.CommunityResponse;
+import com.cheering.player.Player;
+import com.cheering.player.PlayerRepository;
 import com.cheering.post.Like.Like;
 import com.cheering.post.Like.LikeRepository;
 import com.cheering.post.Post;
@@ -25,6 +26,8 @@ import com.cheering.report.postReport.PostReport;
 import com.cheering.report.postReport.PostReportRepository;
 import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.report.reCommentReport.ReCommentReportRepository;
+import com.cheering.team.Team;
+import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
 import com.cheering.user.UserRequest;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +44,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class FanService {
     private final FanRepository fanRepository;
+    private final PlayerRepository playerRepository;
+    private final TeamRepository teamRepository;
     private final PostRepository postRepository;
     private final PostTagRepository postTagRepository;
     private final TagRepository tagRepository;
@@ -59,13 +64,19 @@ public class FanService {
         Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
         // 현 접속자
-        Fan curFan = fanRepository.findByCommunityAndUser(fan.getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(fan.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         FanResponse.FanDTO fanDTO = new FanResponse.FanDTO(fan);
 
-        CommunityResponse.CommunityDTO communityDTO = new CommunityResponse.CommunityDTO(fan.getCommunity());
+        if(curFan.getType().equals(CommunityType.TEAM)) {
+            Team team = teamRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
 
-        return new FanResponse.ProfileDTO(fanDTO, fan.equals(curFan), communityDTO);
+            return new FanResponse.ProfileDTO(fanDTO, fan.equals(curFan), team.getKoreanName(), team.getEnglishName());
+        } else {
+            Player player = playerRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+
+            return new FanResponse.ProfileDTO(fanDTO, fan.equals(curFan), player.getKoreanName(), player.getEnglishName());
+        }
     }
 
     public PostResponse.PostListDTO getFanPosts(Long fanId, Pageable pageable, User user) {
@@ -73,13 +84,12 @@ public class FanService {
         Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
         // 현재 접속 유저
-        Fan curFan = fanRepository.findByCommunityAndUser(fan.getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(fan.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         // 유저의 글 목록
         Page<Post> postList = postRepository.findByFan(fan, curFan, pageable);
 
-        List<PostResponse.PostInfoWithPlayerDTO> postInfoDTOS = postList.stream().map((post -> {
-            // 태그
+        List<PostResponse.PostInfoWithCommunityDTO> postInfoDTOS = postList.stream().map((post -> {
             List<PostTag> postTags = postTagRepository.findByPost(post);
             List<String> tags = postTags.stream().map((postTag) -> {
                 Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
@@ -87,18 +97,15 @@ public class FanService {
                 return tag.getName();
             }).toList();
 
-            // 좋아요
-            Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
-            Long likeCount = likeRepository.countByPost(post);
-
-            // 댓글
-            Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
-
-            // 이미지
             List<PostImage> postImages = postImageRepository.findByPost(post);
             List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-            return new PostResponse.PostInfoWithPlayerDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan);
+            Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
+            Long likeCount = likeRepository.countByPost(post);
+
+            Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
+
+            return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan);
         })).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);
@@ -127,11 +134,19 @@ public class FanService {
 
         Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
-        if(fan.getCommunity().getKoreanName().equals(name) || fan.getCommunity().getEnglishName().equals(name)) {
-            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        if(fan.getType().equals(CommunityType.TEAM)) {
+            Team team = teamRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+            if(team.getKoreanName().equals(name)) {
+                throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+            }
+        } else {
+            Player player = playerRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+            if(player.getKoreanName().equals(name)) {
+                throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+            }
         }
 
-        Optional<Fan> duplicateNameFan = fanRepository.findByCommunityAndName(fan.getCommunity(), name);
+        Optional<Fan> duplicateNameFan = fanRepository.findByCommunityIdAndName(fan.getCommunityId(), name);
 
         if(duplicateNameFan.isPresent()) {
             throw new CustomException(ExceptionCode.DUPLICATE_NAME);
@@ -145,10 +160,6 @@ public class FanService {
     @Transactional
     public void deleteFan(Long fanId) {
         Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-
-        if(fan.getMyCommunity() != null) {
-            fan.getMyCommunity().setManager(null);
-        }
 
         List<PostImage> postImages = postImageRepository.findByFan(fan);
 

@@ -4,15 +4,14 @@ import com.cheering._core.errors.*;
 import com.cheering.badword.BadWordService;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
-import com.cheering.community.CommunityRepository;
+import com.cheering.player.PlayerRepository;
 import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.notification.NotificaitonType;
 import com.cheering.notification.Notification;
 import com.cheering.notification.NotificationRepository;
-import com.cheering.community.Community;
-import com.cheering.community.relation.Fan;
-import com.cheering.community.relation.FanRepository;
-import com.cheering.post.Post;
+import com.cheering.player.Player;
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanRepository;
 import com.cheering.post.PostRepository;
 import com.cheering.report.block.BlockRepository;
 import com.cheering.report.reCommentReport.ReCommentReport;
@@ -31,7 +30,7 @@ public class ReCommentService {
     private final ReCommentRepository reCommentRepository;
     private final CommentRepository commentRepository;
     private final FanRepository fanRepository;
-    private final CommunityRepository communityRepository;
+    private final PlayerRepository playerRepository;
     private final PostRepository postRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
@@ -52,9 +51,7 @@ public class ReCommentService {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
 
-        Community community = communityRepository.findById(comment.getPost().getWriter().getCommunity().getId()).orElseThrow(()-> new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-
-        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(comment.getWriter().getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Fan toFan = fanRepository.findById(toId).orElseThrow(()->new CustomException(ExceptionCode.COMMENT_WRITER_NOT_FOUND));
 
@@ -81,9 +78,7 @@ public class ReCommentService {
     public List<ReCommentResponse.ReCommentDTO> getReComments(Long commentId, User user) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
-        Community community = comment.getWriter().getCommunity();
-
-        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(comment.getWriter().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         List<ReComment> reCommentList = reCommentRepository.findByComment(comment, curFan);
 
@@ -100,7 +95,7 @@ public class ReCommentService {
 
         Fan writer = reComment.getWriter();
 
-        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(writer.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);

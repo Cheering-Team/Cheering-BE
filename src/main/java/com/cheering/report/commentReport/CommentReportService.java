@@ -4,8 +4,8 @@ import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
-import com.cheering.community.relation.Fan;
-import com.cheering.community.relation.FanRepository;
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanRepository;
 import com.cheering.post.PostRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ public class CommentReportService {
 
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityAndUser(comment.getWriter().getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(comment.getWriter().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Optional<CommentReport> commentReport = commentReportRepository.findByCommentAndWriter(comment, curFan);
 

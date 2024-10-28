@@ -3,7 +3,7 @@ package com.cheering.chat;
 import com.cheering.BaseTimeEntity;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.message.Message;
-import com.cheering.community.relation.Fan;
+import com.cheering.fan.Fan;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

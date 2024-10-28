@@ -13,10 +13,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
-import com.cheering.community.Community;
-import com.cheering.community.CommunityRepository;
-import com.cheering.community.relation.Fan;
-import com.cheering.community.relation.FanRepository;
+import com.cheering.player.Player;
+import com.cheering.player.PlayerRepository;
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
@@ -41,7 +41,7 @@ public class UserService {
     private final ReCommentReportRepository reCommentReportRepository;
     private final FanRepository fanRepository;
     private final TempAppleUserRepository tempAppleUserRepository;
-    private final CommunityRepository communityRepository;
+    private final PlayerRepository playerRepository;
     private final BadWordService badWordService;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
@@ -54,18 +54,9 @@ public class UserService {
     public UserResponse.UserDTO sendSMS(UserRequest.SendSMSDTO requestDTO) {
         String phone = requestDTO.phone();
 
-        if(phone.equals("01011111111")) {
-            throw new CustomException(ExceptionCode.INVALID_PHONE);
-        }
-
         Optional<User> user = userRepository.findByPhone(phone);
 
         String verificationCode;
-
-        // 선수 및 팀 계정
-        if(user.isPresent() && user.get().getCommunity() != null) {
-            return new UserResponse.UserDTO(user.get());
-        }
 
         if(!phone.matches(PHONE_REGEX)) {
             throw new CustomException(ExceptionCode.INVALID_PHONE);
@@ -138,16 +129,7 @@ public class UserService {
     }
 
     public UserResponse.UserDTO getUserInfo(User user) {
-        if(user.getRole().equals(Role.USER) || user.getRole().equals(Role.ADMIN)) {
             return new UserResponse.UserDTO(user);
-        } else {
-            Community community = user.getCommunity();
-            Optional<Fan> playerUser = fanRepository.findByCommunityAndUser(community, user);
-
-            Long fanCount = fanRepository.countByCommunity(community);
-
-            return playerUser.map(value -> new UserResponse.UserDTO(user, community, value, fanCount)).orElseGet(() -> new UserResponse.UserDTO(user, community, fanCount));
-        }
     }
 
     @Transactional
@@ -403,62 +385,62 @@ public class UserService {
         return new UserResponse.TokenDTO(accessToken, refreshToken);
     }
 
-    public void registerCommunityAccount(Long communityId, UserRequest.SendSMSDTO requestDTO) {
-        Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-
-        if(userRepository.existsByCommunity(community)){
-            throw new CustomException(ExceptionCode.ALREADY_MANAGER_ACCOUNT);
-        } else {
-            Random random = new Random();
-            String phone;
-
-            do {
-                phone = String.valueOf((long) 10000000000L + (long)(random.nextDouble() * 90000000000L));
-            } while (userRepository.existsByPhone(phone));
-
-            String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
-
-            User newUser = User.builder()
-                    .role(community.getTeam() == null ? Role.PLAYER : Role.TEAM)
-                    .phone(phone)
-                    .password(passwordEncoder.encode(code))
-                    .name(community.getKoreanName())
-                    .community(community)
-                    .build();
-
-            userRepository.save(newUser);
-
-            smsUtil.sendAccount(requestDTO.phone(), phone, code);
-        }
-    }
-
-    public UserRequest.SendSMSDTO getManagerAccount(Long communityId, User user) {
-        if(!user.getRole().equals(Role.ADMIN)) {
-            throw new CustomException(ExceptionCode.USER_FORBIDDEN);
-        }
-
-        Community community = communityRepository.findById(communityId).orElseThrow(()-> new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-
-        Optional<User> playerAccount = userRepository.findByCommunity(community);
-
-        if(playerAccount.isEmpty()) {
-            throw new CustomException(ExceptionCode.NOT_FOUND_MANAGER_ACCOUNT);
-        } else {
-            return new UserRequest.SendSMSDTO(user.getPhone());
-        }
-    }
-
-    @Transactional
-    public void reissueManagerAccountPassword(Long communityId, UserRequest.SendSMSDTO requestDTO) {
-        Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-
-        User user = userRepository.findByCommunity(community).orElseThrow(()-> new CustomException(ExceptionCode.NOT_FOUND_MANAGER_ACCOUNT));
-
-        Random random = new Random();
-        String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
-        user.setPassword(passwordEncoder.encode(code));
-        userRepository.save(user);
-
-        smsUtil.sendAccount(requestDTO.phone(), user.getPhone(), code);
-    }
+//    public void registerCommunityAccount(Long communityId, UserRequest.SendSMSDTO requestDTO) {
+//        Player player = playerRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
+//
+//        if(userRepository.existsByCommunity(player)){
+//            throw new CustomException(ExceptionCode.ALREADY_MANAGER_ACCOUNT);
+//        } else {
+//            Random random = new Random();
+//            String phone;
+//
+//            do {
+//                phone = String.valueOf((long) 10000000000L + (long)(random.nextDouble() * 90000000000L));
+//            } while (userRepository.existsByPhone(phone));
+//
+//            String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
+//
+//            User newUser = User.builder()
+//                    .role(player.getTeam() == null ? Role.PLAYER : Role.TEAM)
+//                    .phone(phone)
+//                    .password(passwordEncoder.encode(code))
+//                    .name(player.getKoreanName())
+//                    .community(player)
+//                    .build();
+//
+//            userRepository.save(newUser);
+//
+//            smsUtil.sendAccount(requestDTO.phone(), phone, code);
+//        }
+//    }
+//
+//    public UserRequest.SendSMSDTO getManagerAccount(Long communityId, User user) {
+//        if(!user.getRole().equals(Role.ADMIN)) {
+//            throw new CustomException(ExceptionCode.USER_FORBIDDEN);
+//        }
+//
+//        Player player = playerRepository.findById(communityId).orElseThrow(()-> new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
+//
+//        Optional<User> playerAccount = userRepository.findByCommunity(player);
+//
+//        if(playerAccount.isEmpty()) {
+//            throw new CustomException(ExceptionCode.NOT_FOUND_MANAGER_ACCOUNT);
+//        } else {
+//            return new UserRequest.SendSMSDTO(user.getPhone());
+//        }
+//    }
+//
+//    @Transactional
+//    public void reissueManagerAccountPassword(Long communityId, UserRequest.SendSMSDTO requestDTO) {
+//        Player player = playerRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
+//
+//        User user = userRepository.findByCommunity(player).orElseThrow(()-> new CustomException(ExceptionCode.NOT_FOUND_MANAGER_ACCOUNT));
+//
+//        Random random = new Random();
+//        String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
+//        user.setPassword(passwordEncoder.encode(code));
+//        userRepository.save(user);
+//
+//        smsUtil.sendAccount(requestDTO.phone(), user.getPhone(), code);
+//    }
 }

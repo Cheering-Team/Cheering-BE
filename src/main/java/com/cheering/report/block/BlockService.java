@@ -3,9 +3,9 @@ package com.cheering.report.block;
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering.chat.session.ChatSessionRepository;
-import com.cheering.community.relation.Fan;
-import com.cheering.community.relation.FanRepository;
-import com.cheering.community.relation.FanResponse;
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanRepository;
+import com.cheering.fan.FanResponse;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ public class BlockService {
     @Transactional
     public void blockFan(Long fanId, User user) {
         Fan to = fanRepository.findById(fanId).orElseThrow(()-> new CustomException(ExceptionCode.FAN_NOT_FOUND));
-        Fan from = fanRepository.findByCommunityAndUser(to.getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan from = fanRepository.findByCommunityIdAndUser(to.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Block block = Block.builder()
                 .to(to)
@@ -47,7 +47,7 @@ public class BlockService {
     public void unblockFan(Long fanId, User user) {
         Fan fan = fanRepository.findById(fanId).orElseThrow(()-> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityAndUser(fan.getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(fan.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         blockRepository.deleteByFromAndTo(curFan, fan);
     }

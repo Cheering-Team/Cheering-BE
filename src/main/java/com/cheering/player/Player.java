@@ -1,21 +1,19 @@
-package com.cheering.team;
+package com.cheering.player;
 
-import com.cheering.team.league.League;
+import com.cheering.team.Team;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
-@Table(name="team_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name="player_tb")
 @Getter
-public class Team {
+@Setter
+public class Player {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "community_seq_gen")
     @SequenceGenerator(name = "community_seq_gen", sequenceName = "community_id_sequence", allocationSize = 1)
-    @Column(name = "team_id")
+    @Column(name = "player_id")
     private Long id;
 
     @Column(length = 100, nullable = false)
@@ -31,15 +29,15 @@ public class Team {
     private String backgroundImage;
 
     @ManyToOne
-    @JoinColumn(name = "league_id")
-    private League league;
+    @JoinColumn(name = "first_team_id")
+    private Team firstTeam;
 
     @Builder
-    public Team(String koreanName, String englishName, String image, String backgroundImage, League league) {
+    public Player(String koreanName, String englishName, String image, String backgroundImage, Team firstTeam) {
         this.koreanName = koreanName;
         this.englishName = englishName;
         this.image = image;
         this.backgroundImage = backgroundImage;
-        this.league = league;
+        this.firstTeam = firstTeam;
     }
 }

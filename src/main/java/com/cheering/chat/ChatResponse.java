@@ -1,7 +1,7 @@
 package com.cheering.chat;
 
-import com.cheering.community.relation.Fan;
-import com.cheering.community.relation.FanResponse;
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanResponse;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;

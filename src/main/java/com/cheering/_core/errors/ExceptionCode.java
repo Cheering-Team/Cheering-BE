@@ -2,7 +2,6 @@ package com.cheering._core.errors;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
 @AllArgsConstructor
 @Getter
@@ -36,7 +35,7 @@ public enum ExceptionCode {
     TEAM_NOT_FOUND(200, "해당 팀을 찾을 수 없습니다."),
 
     // PLAYER
-    COMMUNITY_NOT_FOUND(404, "존재하지 않는 커뮤니티"),
+    PLAYER_NOT_FOUND(404, "존재하지 않는 선수"),
 
     NOT_OWNER(200, "선수 본인이 아닙니다."),
 

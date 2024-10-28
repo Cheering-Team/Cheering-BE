@@ -1,6 +1,6 @@
 package com.cheering.comment;
 
-import com.cheering.community.relation.Fan;
+import com.cheering.fan.Fan;
 import com.cheering.post.Post;
 import java.util.List;
 import java.util.Optional;

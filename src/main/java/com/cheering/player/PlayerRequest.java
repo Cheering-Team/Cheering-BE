@@ -1,5 +1,5 @@
-package com.cheering.community;
+package com.cheering.player;
 
-public class CommunityRequest {
+public class PlayerRequest {
     public record RegisterCommunityDTO(String koreanName, String englishName, String image, String backgroundImage) { }
 }

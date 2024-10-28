@@ -24,10 +24,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(phone);
 
-        if(userDetails.getUser().getCommunity() != null && passwordEncoder.matches(code, userDetails.getUser().getPassword())) {
-            return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        }
-
         String storedCode = redisUtils.getData(phone);
 
         if(storedCode == null) {

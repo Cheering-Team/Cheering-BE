@@ -1,6 +1,6 @@
 package com.cheering.report.postReport;
 
-import com.cheering.community.relation.Fan;
+import com.cheering.fan.Fan;
 import com.cheering.post.Post;
 import com.cheering.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;

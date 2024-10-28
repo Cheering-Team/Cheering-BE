@@ -3,16 +3,14 @@ package com.cheering.comment;
 import com.cheering._core.errors.*;
 import com.cheering.badword.BadWordService;
 import com.cheering.comment.reComment.ReCommentRepository;
-import com.cheering.community.relation.FanResponse;
 import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.notification.NotificaitonType;
 import com.cheering.notification.Notification;
 import com.cheering.notification.NotificationRepository;
-import com.cheering.community.relation.Fan;
-import com.cheering.community.relation.FanRepository;
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanRepository;
 import com.cheering.post.Post;
 import com.cheering.post.PostRepository;
-import com.cheering.post.PostResponse;
 import com.cheering.post.PostType;
 import com.cheering.report.block.BlockRepository;
 import com.cheering.report.commentReport.CommentReport;
@@ -57,7 +55,7 @@ public class CommentService {
 
         String content = requestDTO.content();
 
-        Fan curFan = fanRepository.findByCommunityAndUser(post.getWriter().getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getWriter().getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Comment comment = Comment.builder()
                 .content(content)
@@ -84,7 +82,7 @@ public class CommentService {
     public CommentResponse.CommentListDTO getComments(Long postId, Pageable pageable, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityAndUser(post.getWriter().getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getWriter().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Page<Comment> commentList = commentRepository.findByPost(post, curFan, pageable);
 
@@ -117,7 +115,7 @@ public class CommentService {
 
         Fan writer = comment.getWriter();
 
-        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(writer.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);
@@ -141,5 +139,4 @@ public class CommentService {
 
         return comment.map(value -> new CommentResponse.CommentDTO(value, null, null)).orElse(null);
     }
-
 }

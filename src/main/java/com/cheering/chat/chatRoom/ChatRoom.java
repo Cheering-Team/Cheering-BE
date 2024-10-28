@@ -2,8 +2,9 @@ package com.cheering.chat.chatRoom;
 
 import com.cheering.chat.Chat;
 import com.cheering.chat.session.ChatSession;
-import com.cheering.community.Community;
-import com.cheering.community.relation.Fan;
+import com.cheering.fan.CommunityType;
+import com.cheering.player.Player;
+import com.cheering.fan.Fan;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,8 +22,12 @@ public class ChatRoom {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(nullable = false)
     private ChatRoomType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CommunityType communityType;
 
     @Column(nullable = false)
     private String name;
@@ -36,9 +41,8 @@ public class ChatRoom {
     @Column
     private Integer max;
 
-    @ManyToOne
-    @JoinColumn(name = "community_id", nullable = false)
-    private Community community;
+    @Column(nullable = false)
+    private Long communityId;
 
     @ManyToOne
     @JoinColumn(name = "manager_id")
@@ -51,14 +55,15 @@ public class ChatRoom {
     private List<ChatSession> chatSessions = new ArrayList<>();
 
     @Builder
-    public ChatRoom(Long chatRoomId, String name, String image, String description, Community community, Integer max, ChatRoomType type, Fan manager) {
+    public ChatRoom(Long chatRoomId, String name, String image, String description, Long communityId, Integer max, ChatRoomType type, CommunityType communityType, Fan manager) {
         this.id = chatRoomId;
         this.name = name;
         this.image = image;
         this.description = description;
-        this.community = community;
         this.max = max;
         this.type = type;
+        this.communityType = communityType;
+        this.communityId = communityId;
         this.manager = manager;
     }
 }

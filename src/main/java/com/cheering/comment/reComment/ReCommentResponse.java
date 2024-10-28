@@ -1,9 +1,8 @@
 package com.cheering.comment.reComment;
 
-import com.cheering.community.relation.FanResponse;
-import com.cheering.post.PostResponse;
+import com.cheering.fan.FanResponse;
+
 import java.time.LocalDateTime;
-import java.util.List;
 
 public class ReCommentResponse {
     public record ReCommentIdDTO (Long id) { }

@@ -67,9 +67,9 @@ public class ChatRoomController {
     }
 
     // (공식 채팅방 만들기)
-    @PostMapping("/communities/chatrooms")
-    public ResponseEntity<?> autoCreateChatRooms() {
-        chatRoomService.autoCreateChatRooms();
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방들이 생성되었습니다.", null));
-    }
+//    @PostMapping("/communities/chatrooms")
+//    public ResponseEntity<?> autoCreateChatRooms() {
+//        chatRoomService.autoCreateChatRooms();
+//        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방들이 생성되었습니다.", null));
+//    }
 }

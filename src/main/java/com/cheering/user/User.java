@@ -2,8 +2,8 @@ package com.cheering.user;
 
 import com.cheering.BaseTimeEntity;
 import com.cheering.notice.apply.Apply;
-import com.cheering.community.Community;
-import com.cheering.community.relation.Fan;
+import com.cheering.player.Player;
+import com.cheering.fan.Fan;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -47,11 +47,6 @@ public class User extends BaseTimeEntity {
     @Column
     private String deviceToken;
 
-    // 선수, 팀 계정일경우 자신과 연결된 커뮤니티
-    @OneToOne
-    @JoinColumn(name = "community_id")
-    private Community community;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<Fan> fans = new ArrayList<>();
 
@@ -59,8 +54,7 @@ public class User extends BaseTimeEntity {
     private List<Apply> applies = new ArrayList<>();
 
     @Builder
-    public User(Long userId, String phone, String name, Role role, String kakaoId, String naverId, String appleId, Community community, String password) {
-        this.id = userId;
+    public User(String phone, String name, Role role, String kakaoId, String naverId, String appleId, String password) {
         this.role = role;
         this.phone = phone;
         this.name = name;
@@ -68,6 +62,5 @@ public class User extends BaseTimeEntity {
         this.kakaoId = kakaoId;
         this.naverId = naverId;
         this.appleId = appleId;
-        this.community = community;
     }
 }

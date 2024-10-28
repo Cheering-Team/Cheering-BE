@@ -112,20 +112,20 @@ public class UserController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"FCM 토큰 삭제 완료", null));
     }
 
-    @PostMapping("/users/manager/{communityId}")
-    public ResponseEntity<?> registerManagerAccount(@PathVariable("communityId") Long communityId, @RequestBody UserRequest.SendSMSDTO requestDTO) {
-        userService.registerCommunityAccount(communityId, requestDTO);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "매니저 계정 등록 완료", null));
-    }
-
-    @GetMapping("/users/manager/{communityId}")
-    public ResponseEntity<?> getManagerAccount(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"매니저 계정 조회 완료", userService.getManagerAccount(communityId, customUserDetails.getUser())));
-    }
-
-    @PutMapping("/users/manager/{communityId}")
-    public ResponseEntity<?> reissueManagerAccountPassword(@PathVariable("communityId") Long communityId, @RequestBody UserRequest.SendSMSDTO requestDTO) {
-        userService.reissueManagerAccountPassword(communityId, requestDTO);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "비밀번호 재발급 완료", null));
-    }
+//    @PostMapping("/users/manager/{communityId}")
+//    public ResponseEntity<?> registerManagerAccount(@PathVariable("communityId") Long communityId, @RequestBody UserRequest.SendSMSDTO requestDTO) {
+//        userService.registerCommunityAccount(communityId, requestDTO);
+//        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "매니저 계정 등록 완료", null));
+//    }
+//
+//    @GetMapping("/users/manager/{communityId}")
+//    public ResponseEntity<?> getManagerAccount(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+//        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"매니저 계정 조회 완료", userService.getManagerAccount(communityId, customUserDetails.getUser())));
+//    }
+//
+//    @PutMapping("/users/manager/{communityId}")
+//    public ResponseEntity<?> reissueManagerAccountPassword(@PathVariable("communityId") Long communityId, @RequestBody UserRequest.SendSMSDTO requestDTO) {
+//        userService.reissueManagerAccountPassword(communityId, requestDTO);
+//        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "비밀번호 재발급 완료", null));
+//    }
 }

@@ -1,6 +1,6 @@
 package com.cheering.report.block;
 
-import com.cheering.community.relation.Fan;
+import com.cheering.fan.Fan;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;

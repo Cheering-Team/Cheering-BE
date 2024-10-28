@@ -3,7 +3,7 @@ package com.cheering.comment;
 import com.cheering.BaseTimeEntity;
 import com.cheering.comment.reComment.ReComment;
 import com.cheering.notification.Notification;
-import com.cheering.community.relation.Fan;
+import com.cheering.fan.Fan;
 import com.cheering.post.Post;
 import com.cheering.report.commentReport.CommentReport;
 import jakarta.persistence.*;

@@ -7,16 +7,15 @@ import com.cheering.badword.BadWordService;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
-import com.cheering.community.relation.FanType;
+import com.cheering.fan.CommunityType;
+import com.cheering.player.Player;
 import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.notification.NotificaitonType;
 import com.cheering.notification.Notification;
 import com.cheering.notification.NotificationRepository;
-import com.cheering.community.Community;
-import com.cheering.community.CommunityRepository;
-import com.cheering.community.relation.Fan;
-import com.cheering.community.relation.FanRepository;
-import com.cheering.community.relation.FanResponse;
+import com.cheering.player.PlayerRepository;
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanRepository;
 import com.cheering.post.Like.Like;
 import com.cheering.post.Like.LikeRepository;
 import com.cheering.post.PostImage.PostImage;
@@ -34,13 +33,10 @@ import com.cheering.report.postReport.PostReport;
 import com.cheering.report.postReport.PostReportRepository;
 import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.report.reCommentReport.ReCommentReportRepository;
+import com.cheering.team.Team;
+import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
-import org.jcodec.api.FrameGrab;
-import org.jcodec.api.JCodecException;
-import org.jcodec.common.io.FileChannelWrapper;
-import org.jcodec.common.io.NIOUtils;
-import org.jcodec.common.model.Picture;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,14 +44,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 
 @Service
@@ -64,6 +52,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final FanRepository fanRepository;
+    private final TeamRepository teamRepository;
     private final PostImageRepository postImageRepository;
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
@@ -74,7 +63,7 @@ public class PostService {
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final NotificationRepository notificationRepository;
-    private final CommunityRepository communityRepository;
+    private final PlayerRepository playerRepository;
     private final BlockRepository blockRepository;
     private final BadWordService badWordService;
     private final S3Util s3Util;
@@ -86,13 +75,11 @@ public class PostService {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
 
-        Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-
-        Fan writer = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan writer = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Post post = Post.builder()
                 .content(content)
-                .type(writer.getType() == FanType.FAN ? PostType.FAN_POST : PostType.PLAYER_POST)
+                .type(PostType.FAN_POST)
                 .writer(writer)
                 .build();
 
@@ -135,83 +122,34 @@ public class PostService {
         return new PostResponse.PostIdDTO(post.getId());
     }
 
-    // 커뮤니티 게시글 불러오기 (무한 스크롤) (id = 0 -> 모든 커뮤니티 게시글)
+    // 커뮤니티 게시글 불러오기 (무한 스크롤)
     public PostResponse.PostListDTO getPosts(Long communityId, String type, String tagName, Pageable pageable, User user) {
         Page<Post> postList;
 
-        if(communityId == 0) {
-            List<Fan> fans = fanRepository.findByUser(user);
-            List<Community> communities = fans.stream().map((Fan::getCommunity)).toList();
+        Fan curFan = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException((ExceptionCode.CUR_FAN_NOT_FOUND)));
 
-            postList = postRepository.findByCommunities(communities, PostType.valueOf(type), fans, pageable);
+        if(tagName.isEmpty()) {
+            postList = postRepository.findByCommunityId(communityId, PostType.valueOf(type), curFan, pageable);
+        } else if(tagName.equals("hot")) {
+            postList = postRepository.findHotPosts(communityId, PostType.valueOf(type), curFan, pageable);
         } else {
-            Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-
-            if(tagName.isEmpty()) {
-                Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()-> new CustomException((ExceptionCode.CUR_FAN_NOT_FOUND)));
-                postList = postRepository.findByCommunity(community, PostType.valueOf(type), curFan, pageable);
-            } else if(tagName.equals("hot")) {
-                Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()-> new CustomException((ExceptionCode.CUR_FAN_NOT_FOUND)));
-                postList = postRepository.findHotPosts(community, PostType.valueOf(type), curFan, pageable);
-            } else {
-                Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()-> new CustomException((ExceptionCode.CUR_FAN_NOT_FOUND)));
-                postList = postRepository.findByCommunityAndTagName(community, PostType.valueOf(type), tagName, curFan, pageable);
-            }
+            postList = postRepository.findByCommunityAndTagName(communityId, PostType.valueOf(type), tagName, curFan, pageable);
         }
 
-        List<PostResponse.PostInfoWithPlayerDTO> postInfoDTOS = postList.getContent().stream().map((post -> {
-            Fan curFan = fanRepository.findByCommunityAndUser(post.getWriter().getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-
-            // 태그
-            List<PostTag> postTags = postTagRepository.findByPost(post);
-            List<String> tags = postTags.stream().map((postTag) -> {
-                Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
-
-                return tag.getName();
-            }).toList();
-
-            Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
-            Long likeCount = likeRepository.countByPost(post);
-
-            Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
-
-            List<PostImage> postImages = postImageRepository.findByPost(post);
-            List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
-
-            return new PostResponse.PostInfoWithPlayerDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan);
-        })).toList();
+        List<PostResponse.PostInfoWithCommunityDTO> postInfoDTOS = postList.getContent().stream().map((post -> getPostInfo(post, curFan))).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);
     }
 
     // 게시글 불러오기
-    public PostResponse.PostInfoWithPlayerDTO getPostById(Long postId, User user) {
+    public PostResponse.PostInfoWithCommunityDTO getPostById(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         Fan writer = post.getWriter();
-        Community community = writer.getCommunity();
 
-        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(writer.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
-        Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
-        Long likeCount = likeRepository.countByPost(post);
-
-        Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
-
-        List<PostTag> postTags = postTagRepository.findByPost(post);
-
-        List<String> tags = postTags.stream().map((postTag) -> {
-            Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
-
-            return tag.getName();
-        }).toList();
-
-        List<PostImage> postImages = postImageRepository.findByPost(post);
-
-        List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
-
-        return new PostResponse.PostInfoWithPlayerDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan);
-
+        return getPostInfo(post, curFan);
     }
 
     @Transactional
@@ -219,9 +157,7 @@ public class PostService {
     public PostResponse.LikeResponseDTO toggleLike(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        Community community = post.getWriter().getCommunity();
-
-        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getWriter().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
 
@@ -265,7 +201,7 @@ public class PostService {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         Fan writer = post.getWriter();
-        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(writer.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);
@@ -325,7 +261,7 @@ public class PostService {
         Post post = postRepository.findById(postId).orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         Fan writer = post.getWriter();
-        Fan curFan = fanRepository.findByCommunityAndUser(writer.getCommunity(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(writer.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);
@@ -360,70 +296,70 @@ public class PostService {
         postRepository.delete(post);
     }
 
-    // 데일리 작성
-    public void writeDaily(Long communityId, PostRequest.PostContentDTO requestDTO, User user) {
-        Community community = communityRepository.findById(communityId).orElseThrow(()-> new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-
-        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-
-        if(!curFan.equals(community.getManager())) {
-            throw new CustomException(ExceptionCode.NOT_OWNER);
-        }
-
-        Post daily = Post.builder()
-                .type(PostType.DAILY)
-                .content(requestDTO.content())
-                .writer(curFan)
-                .build();
-
-        postRepository.save(daily);
-    }
-
-    @Transactional
-    // 데일리 불러오기
-    public PostResponse.DailyListDTO getDailys(Long communityId, String dateString, Pageable pageable, User user) {
-        Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-        Fan curFan = fanRepository.findByCommunityAndUser(community, user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-
-        Page<Post> posts;
-
-        if(dateString.isEmpty()) {
-            posts = postRepository.findAllDaily(community, PostType.DAILY, pageable);
-        } else {
-            LocalDate date = LocalDate.parse(dateString);
-            LocalDateTime startOfDay = date.atStartOfDay();
-            LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
-
-            posts = postRepository.findDaily(community, PostType.DAILY, startOfDay, endOfDay, pageable);
-        }
-
-        return new PostResponse.DailyListDTO(posts, posts.stream().map((post -> {
-            Long commentCount = commentRepository.countByPost(post);
-
-            return new PostResponse.PostInfoWithPlayerDTO(post, null, null, null, commentCount, null, curFan);})).toList(), community.getManager().equals(curFan), new FanResponse.FanDTO(community.getManager()));
-    }
-
-    // 데일리 수정
-    @Transactional
-    public void editDaily(Long dailyId, PostRequest.PostContentDTO requestDTO, User user) {
-        Post daily = postRepository.findById(dailyId).orElseThrow(()-> new CustomException(ExceptionCode.POST_NOT_FOUND));
-
-        daily.setContent(requestDTO.content());
-
-        postRepository.save(daily);
-    }
-
-    // 데일리 삭제
-    @Transactional
-    public void deleteDaily(Long dailyId) {
-        postRepository.deleteById(dailyId);
-    }
-
-    public List<String> getDailyExist(Long communityId) {
-        Community community = communityRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-
-        return postRepository.findDistinctDailyDates(community, PostType.DAILY);
-    }
+//    // 데일리 작성
+//    public void writeDaily(Long communityId, PostRequest.PostContentDTO requestDTO, User user) {
+//        Player player = playerRepository.findById(communityId).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+//
+//        Fan curFan = fanRepository.findByCommunityIdAndUser(player, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+//
+//        if(!curFan.equals(player.getManager())) {
+//            throw new CustomException(ExceptionCode.NOT_OWNER);
+//        }
+//
+//        Post daily = Post.builder()
+//                .type(PostType.DAILY)
+//                .content(requestDTO.content())
+//                .writer(curFan)
+//                .build();
+//
+//        postRepository.save(daily);
+//    }
+//
+//    @Transactional
+//    // 데일리 불러오기
+//    public PostResponse.DailyListDTO getDailys(Long communityId, String dateString, Pageable pageable, User user) {
+//        Player player = playerRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+//        Fan curFan = fanRepository.findByCommunityIdAndUser(player, user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+//
+//        Page<Post> posts;
+//
+//        if(dateString.isEmpty()) {
+//            posts = postRepository.findAllDaily(player, PostType.DAILY, pageable);
+//        } else {
+//            LocalDate date = LocalDate.parse(dateString);
+//            LocalDateTime startOfDay = date.atStartOfDay();
+//            LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+//
+//            posts = postRepository.findDaily(player, PostType.DAILY, startOfDay, endOfDay, pageable);
+//        }
+//
+//        return new PostResponse.DailyListDTO(posts, posts.stream().map((post -> {
+//            Long commentCount = commentRepository.countByPost(post);
+//
+//            return new PostResponse.PostInfoWithCommunityDTO(post, null, null, null, commentCount, null, curFan);})).toList(), player.getManager().equals(curFan), new FanResponse.FanDTO(player.getManager()));
+//    }
+//
+//    // 데일리 수정
+//    @Transactional
+//    public void editDaily(Long dailyId, PostRequest.PostContentDTO requestDTO, User user) {
+//        Post daily = postRepository.findById(dailyId).orElseThrow(()-> new CustomException(ExceptionCode.POST_NOT_FOUND));
+//
+//        daily.setContent(requestDTO.content());
+//
+//        postRepository.save(daily);
+//    }
+//
+//    // 데일리 삭제
+//    @Transactional
+//    public void deleteDaily(Long dailyId) {
+//        postRepository.deleteById(dailyId);
+//    }
+//
+//    public List<String> getDailyExist(Long communityId) {
+//        Player player = playerRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+//
+//        return postRepository.findDistinctDailyDates(player, PostType.DAILY);
+//    }
 
     @NotNull
     private static PostImageType getPostImageType(MultipartFile image) {
@@ -441,5 +377,33 @@ public class PostService {
             type = PostImageType.IMAGE;
         }
         return type;
+    }
+
+    @NotNull
+    private PostResponse.PostInfoWithCommunityDTO getPostInfo(Post post, Fan curFan) {
+        List<PostTag> postTags = postTagRepository.findByPost(post);
+        List<String> tags = postTags.stream().map((postTag) -> {
+            Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
+
+            return tag.getName();
+        }).toList();
+
+        List<PostImage> postImages = postImageRepository.findByPost(post);
+        List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
+
+        Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
+        Long likeCount = likeRepository.countByPost(post);
+
+        Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
+
+        if(curFan.getType().equals(CommunityType.TEAM)) {
+            Team team = teamRepository.findById(curFan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+
+            return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team);
+        } else {
+            Player player = playerRepository.findById(curFan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+
+            return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player);
+        }
     }
 }

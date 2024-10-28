@@ -3,7 +3,7 @@ package com.cheering.post;
 import com.cheering.BaseTimeEntity;
 import com.cheering.comment.Comment;
 import com.cheering.notification.Notification;
-import com.cheering.community.relation.Fan;
+import com.cheering.fan.Fan;
 import com.cheering.post.Like.Like;
 import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.relation.PostTag;

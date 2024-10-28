@@ -1,7 +1,7 @@
 package com.cheering.report.postReport;
 
 import com.cheering.BaseTimeEntity;
-import com.cheering.community.relation.Fan;
+import com.cheering.fan.Fan;
 import com.cheering.post.Post;
 import jakarta.persistence.*;
 import lombok.*;

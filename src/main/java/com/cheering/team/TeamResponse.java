@@ -1,15 +1,19 @@
 package com.cheering.team;
 
-public class TeamResponse {
-    public record TeamDTO(Long id, String name, String image, Long fanCount, Long communityId) {
-        public TeamDTO(Team team, Long fanCount, Long communityId) {
-            this(team.getId(), team.getFirstName() + " " + team.getSecondName(), team.getImage(), fanCount, communityId);
-        }
-    }
+import com.cheering.fan.FanResponse;
 
-    public record TeamNameDTO(Long id, String firstName, String secondName, String image, Long fanCount, Long communityId) {
-        public TeamNameDTO(Team team, Long fanCount) {
-            this(team.getId(), team.getFirstName(), team.getSecondName(), team.getImage(), fanCount, team.getCommunity().getId());
+public class TeamResponse {
+    public record TeamDTO(Long id, String koreanName, String image) {
+
+        public TeamDTO(Team team) {
+            this(team.getId(), team.getKoreanName(), team.getImage());
         }
+//        public TeamDTO(Team team, Long fanCount) {
+//            this(team.getId(), team.getKoreanName(), team.getEnglishName(), team.getImage(), team.getBackgroundImage(), team.getLeague().getSport().getName(), team.getLeague().getName(), fanCount, null);
+//        }
+//
+//        public TeamDTO(Team team, Long fanCount, FanResponse.FanDTO curfan) {
+//            this(team.getId(), team.getKoreanName(), team.getEnglishName(), team.getImage(), team.getBackgroundImage(), team.getLeague().getSport().getName(), team.getLeague().getName(), fanCount, curfan);
+//        }
     }
 }

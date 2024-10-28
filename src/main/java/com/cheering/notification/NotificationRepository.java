@@ -2,7 +2,7 @@ package com.cheering.notification;
 
 import com.cheering.comment.Comment;
 import com.cheering.comment.reComment.ReComment;
-import com.cheering.community.relation.Fan;
+import com.cheering.fan.Fan;
 import com.cheering.post.Post;
 import com.cheering.user.User;
 import org.springframework.data.domain.Page;

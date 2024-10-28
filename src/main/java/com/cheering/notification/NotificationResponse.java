@@ -2,7 +2,7 @@ package com.cheering.notification;
 
 import com.cheering.comment.Comment;
 import com.cheering.comment.reComment.ReComment;
-import com.cheering.community.relation.FanResponse;
+import com.cheering.fan.FanResponse;
 import com.cheering.post.Post;
 import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.PostImage.PostImageResponse;

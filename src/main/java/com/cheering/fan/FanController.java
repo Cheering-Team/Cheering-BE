@@ -1,4 +1,4 @@
-package com.cheering.community.relation;
+package com.cheering.fan;
 
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;

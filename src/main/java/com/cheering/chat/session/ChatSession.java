@@ -1,7 +1,7 @@
 package com.cheering.chat.session;
 
 import com.cheering.chat.chatRoom.ChatRoom;
-import com.cheering.community.relation.Fan;
+import com.cheering.fan.Fan;
 import jakarta.persistence.*;
 import lombok.*;
 
