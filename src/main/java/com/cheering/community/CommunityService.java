@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -153,5 +154,20 @@ public class CommunityService {
 
             fanRepository.save(fan);
         }
+    }
+
+    // 내가 가입한 커뮤니티 조회
+    public List<CommunityResponse.CommunityDTO> getMyCommunities(User user) {
+        List<Fan> fans = fanRepository.findByUser(user).stream().sorted(Comparator.comparing(fan -> fan.getType().equals(CommunityType.TEAM) ? 0 : 1)).toList();
+
+        return fans.stream().map((fan -> {
+            if(fan.getType().equals(CommunityType.TEAM)) {
+                Team team = teamRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+                return new CommunityResponse.CommunityDTO(team, null, new FanResponse.FanDTO(fan));
+            } else {
+                Player player = playerRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+                return new CommunityResponse.CommunityDTO(player, null, new FanResponse.FanDTO(fan));
+            }
+        })).toList();
     }
 }

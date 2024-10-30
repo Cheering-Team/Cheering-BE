@@ -3,6 +3,7 @@ package com.cheering.fan;
 import com.cheering.chat.Chat;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.session.ChatSession;
+import com.cheering.cheer.Cheer;
 import com.cheering.comment.Comment;
 import com.cheering.comment.reComment.ReComment;
 import com.cheering.notification.Notification;
@@ -95,6 +96,9 @@ public class Fan {
 
     @OneToMany(mappedBy = "from", cascade = CascadeType.REMOVE)
     private List<Notification> notificationsFrom = new ArrayList<>();
+
+    @OneToMany(mappedBy = "writer", cascade = CascadeType.REMOVE)
+    private List<Cheer> cheers = new ArrayList<>();
 
     @Builder
     public Fan(CommunityType type, String name, String image, Long communityId, User user) {

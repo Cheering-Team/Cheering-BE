@@ -22,6 +22,7 @@ public enum ExceptionCode {
     NOTIFICATION_NOT_FOUND(404, "존재하지 않는 알림"),
     CHATROOM_NOT_FOUND(404, "존재하지 않는 채팅방"),
     NOTICE_NOT_FOUND(404, "존재하지 않는 공지사항"),
+    MATCH_NOT_FOUND(404, "존재하지 않는 경기"),
 
     // USER
     USER_NOT_FOUND(200, "해당 사용자를 찾을 수 없습니다."),

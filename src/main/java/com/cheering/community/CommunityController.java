@@ -40,4 +40,10 @@ public class CommunityController {
         communityService.joinCommunity(communityId, name, image, userDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 가입 완료", null));
     }
+
+    // 내가 가입한 커뮤니티 조회
+    @GetMapping("/my/communities")
+    public ResponseEntity<?> getMyCommunities(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "내 커뮤니티 조회 완료", communityService.getMyCommunities(userDetails.getUser())));
+    }
 }

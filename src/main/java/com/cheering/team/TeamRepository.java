@@ -1,14 +1,19 @@
 package com.cheering.team;
 
+import com.cheering.team.league.League;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TeamRepository extends JpaRepository<Team, Long> {
     List<Team> findByLeagueIdOrderByKoreanName(Long leagueId);
 
     @Query("SELECT DISTINCT t FROM Team t WHERE REPLACE(t.koreanName, ' ', '') LIKE %:name% OR REPLACE(t.englishName, ' ', '') LIKE %:name%")
     List<Team> findByName(@Param("name") String name);
+
+    Team findByKoreanNameStartingWithAndLeague(String koreanName, League league);
+
 }

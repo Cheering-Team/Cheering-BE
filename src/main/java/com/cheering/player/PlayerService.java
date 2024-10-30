@@ -31,21 +31,6 @@ public class PlayerService {
     private final FanRepository fanRepository;
     private final ChatRoomRepository chatRoomRepository;
 
-    // 내가 가입한 커뮤니티 조회
-    public List<CommunityResponse.CommunityDTO> getMyCommunities(User user) {
-        List<Fan> fans = fanRepository.findByUser(user).stream().sorted(Comparator.comparing(fan -> fan.getType().equals(CommunityType.TEAM) ? 0 : 1)).toList();
-
-        return fans.stream().map((fan -> {
-            if(fan.getType().equals(CommunityType.TEAM)) {
-                Team team = teamRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
-                return new CommunityResponse.CommunityDTO(team, null, new FanResponse.FanDTO(fan));
-            } else {
-                Player player = playerRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
-                return new CommunityResponse.CommunityDTO(player, null, new FanResponse.FanDTO(fan));
-            }
-        })).toList();
-    }
-
     public void registerPlayer(Long teamId, PlayerRequest.RegisterCommunityDTO requestDTO) {
         Team team = teamRepository.findById(teamId).orElseThrow(()->new CustomException(ExceptionCode.TEAM_NOT_FOUND));
 
@@ -77,32 +62,4 @@ public class PlayerService {
 
         chatRoomRepository.save(chatRoom);
     }
-//
-//    public void createTeamCommunities() {
-//        List<Team> teams = teamRepository.findAll();
-//
-//        for(Team team : teams) {
-//            Optional<Player> teamCommunity = playerRepository.findByTeam(team);
-//            if(teamCommunity.isEmpty()){
-//                Player player = Player.builder()
-//                        .type(PlayerType.TEAM)
-//                        .koreanName(team.getKoreanName() + " " + team.getSecondName())
-//                        .image(team.getImage())
-//                        .team(team)
-//                        .build();
-//
-//                playerRepository.save(player);
-//
-//                ChatRoom chatRoom = ChatRoom.builder()
-//                        .type(ChatRoomType.OFFICIAL)
-//                        .name(player.getKoreanName())
-//                        .image(team.getImage())
-//                        .description(player.getKoreanName() + " 팬들끼리 응원해요!")
-//                        .community(player)
-//                        .build();
-//
-//                chatRoomRepository.save(chatRoom);
-//            }
-//        }
-//    }
 }
