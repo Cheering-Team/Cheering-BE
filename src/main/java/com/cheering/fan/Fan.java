@@ -48,6 +48,9 @@ public class Fan {
     @Column(nullable = false)
     private Long communityId;
 
+    @Column
+    private Integer communityOrder;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

@@ -7,7 +7,6 @@ import com.cheering.fan.Fan;
 import com.cheering.post.Like.Like;
 import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.relation.PostTag;
-import com.cheering.report.ReportableEntity;
 import com.cheering.report.postReport.PostReport;
 import jakarta.persistence.*;
 

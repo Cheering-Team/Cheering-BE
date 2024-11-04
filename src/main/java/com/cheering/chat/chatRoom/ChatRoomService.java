@@ -105,7 +105,7 @@ public class ChatRoomService {
     }
 
     public List<ChatRoomResponse.ChatRoomSectionDTO> getMyChatRooms(User user) {
-        List<Fan> fans = fanRepository.findByUser(user);
+        List<Fan> fans = fanRepository.findByUserOrderByCommunityOrderAsc(user);
 
         List<Long> communityIds = fans.stream().map((Fan::getCommunityId)).toList();
 

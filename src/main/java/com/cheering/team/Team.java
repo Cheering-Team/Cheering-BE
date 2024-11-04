@@ -24,22 +24,34 @@ public class Team {
     @Column(length = 100)
     private String englishName;
 
+    @Column(length = 100)
+    private String shortName;
+
     @Column(length = 2000)
     private String image;
 
     @Column(length = 2000)
     private String backgroundImage;
 
+    @Column
+    private String radarId;
+
+    @Column
+    private String location;
+
     @ManyToOne
     @JoinColumn(name = "league_id")
     private League league;
 
     @Builder
-    public Team(String koreanName, String englishName, String image, String backgroundImage, League league) {
+    public Team(String koreanName, String englishName, String shortName, String image, String backgroundImage, League league, String radarId, String location) {
         this.koreanName = koreanName;
         this.englishName = englishName;
+        this.shortName = shortName;
         this.image = image;
         this.backgroundImage = backgroundImage;
         this.league = league;
+        this.radarId = radarId;
+        this.location = location;
     }
 }

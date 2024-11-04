@@ -10,6 +10,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -45,5 +47,12 @@ public class CommunityController {
     @GetMapping("/my/communities")
     public ResponseEntity<?> getMyCommunities(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "내 커뮤니티 조회 완료", communityService.getMyCommunities(userDetails.getUser())));
+    }
+
+    // 커뮤니티 순서 변경
+    @PutMapping("/communities/order")
+    public ResponseEntity<?> changeCommunityOrder(@RequestBody List<CommunityRequest.ChangeOrderRequest> changeOrderRequests, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        communityService.changeCommunityOrder(changeOrderRequests, userDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 순서 변겨 완료", null));
     }
 }

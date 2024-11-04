@@ -32,4 +32,11 @@ public class CheerController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "응원 목록 조회 완료", cheerService.getCheers(matchId, communityId, pageable, customUserDetails.getUser())));
     }
+
+    // 응원 삭제
+    @DeleteMapping("/cheers/{cheerId}")
+    public ResponseEntity<?> deleteCheer(@PathVariable("cheerId") Long cheerId) {
+        cheerService.deleteCheer(cheerId);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "응원 삭제 완료", null));
+    }
 }

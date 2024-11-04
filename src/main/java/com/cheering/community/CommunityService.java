@@ -4,6 +4,8 @@ import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.S3Util;
 import com.cheering.badword.BadWordService;
+import com.cheering.chat.chatRoom.ChatRoom;
+import com.cheering.chat.chatRoom.ChatRoomRepository;
 import com.cheering.fan.CommunityType;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanRepository;
@@ -31,6 +33,7 @@ public class CommunityService {
     private final PlayerRepository playerRepository;
     private final FanRepository fanRepository;
     private final TeamPlayerRepository teamPlayerRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final BadWordService badWordService;
     private final S3Util s3Util;
 
@@ -158,16 +161,28 @@ public class CommunityService {
 
     // 내가 가입한 커뮤니티 조회
     public List<CommunityResponse.CommunityDTO> getMyCommunities(User user) {
-        List<Fan> fans = fanRepository.findByUser(user).stream().sorted(Comparator.comparing(fan -> fan.getType().equals(CommunityType.TEAM) ? 0 : 1)).toList();
+        List<Fan> fans = fanRepository.findByUserOrderByCommunityOrderAsc(user);
 
         return fans.stream().map((fan -> {
+            Long fanCount = fanRepository.countByCommunityId(fan.getCommunityId());
+            List<ChatRoom> chatRooms = chatRoomRepository.findOfficialByCommunityId(fan.getCommunityId());
             if(fan.getType().equals(CommunityType.TEAM)) {
                 Team team = teamRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
-                return new CommunityResponse.CommunityDTO(team, null, new FanResponse.FanDTO(fan));
+                return new CommunityResponse.CommunityDTO(team, fanCount, new FanResponse.FanDTO(fan), chatRooms.get(0).getId());
             } else {
                 Player player = playerRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
-                return new CommunityResponse.CommunityDTO(player, null, new FanResponse.FanDTO(fan));
+                return new CommunityResponse.CommunityDTO(player, fanCount, new FanResponse.FanDTO(fan), chatRooms.get(0).getId());
             }
         })).toList();
+    }
+
+    @Transactional
+    public void changeCommunityOrder(List<CommunityRequest.ChangeOrderRequest> changeOrderRequests, User user) {
+        for(CommunityRequest.ChangeOrderRequest changeOrderRequest: changeOrderRequests) {
+            Fan fan = fanRepository.findByCommunityIdAndUser(changeOrderRequest.communityId(), user).orElseThrow(()-> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+            fan.setCommunityOrder(changeOrderRequest.communityOrder());
+            fanRepository.save(fan);
+        }
     }
 }

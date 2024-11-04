@@ -25,10 +25,10 @@ public class TeamController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "팀 목록 조회 완료", teamService.getTeamsByPlayer(playerId)));
     }
 
-//    // (팀 등록)
-//    @PostMapping("/leagues/{leagueId}/teams")
-//    public ResponseEntity<?> registerTeam(@PathVariable("leagueId") Long leagueId, @RequestBody TeamRequest.RegisterTeamDTO requestDTO){
-//        teamService.registerTeam(leagueId, requestDTO);
-//        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "팀 등록 완료", null));
-//    }
+    // (팀 등록)
+    @PostMapping("/leagues/{leagueId}/teams")
+    public ResponseEntity<?> registerTeam(@PathVariable("leagueId") Long leagueId, @RequestBody TeamRequest.RegisterTeamDTO requestDTO){
+        teamService.registerTeam(leagueId, requestDTO);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "팀 등록 완료", null));
+    }
 }

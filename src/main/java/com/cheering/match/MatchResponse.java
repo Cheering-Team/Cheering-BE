@@ -12,9 +12,9 @@ public class MatchResponse {
         }
     }
 
-    public record MatchDetailDTO (Long id, LocalDateTime time, String location, TeamResponse.TeamDTO homeTeam, TeamResponse.TeamDTO awayTeam) {
+    public record MatchDetailDTO (Long id, MatchStatus status, LocalDateTime time, String location, Long homeScore, Long awayScore, TeamResponse.TeamDTO homeTeam, TeamResponse.TeamDTO awayTeam, String sportName) {
         public MatchDetailDTO(Match match) {
-            this(match.getId(), match.getTime(), match.getLocation(), new TeamResponse.TeamDTO(match.getHomeTeam()), new TeamResponse.TeamDTO(match.getAwayTeam()));
+            this(match.getId(), match.getStatus(), match.getTime(), match.getLocation(), match.getHomeScore(), match.getAwayScore(), new TeamResponse.TeamDTO(match.getHomeTeam()), new TeamResponse.TeamDTO(match.getAwayTeam()), match.getHomeTeam().getLeague().getSport().getName());
         }
     }
 }

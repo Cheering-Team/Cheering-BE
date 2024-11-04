@@ -2,11 +2,15 @@ package com.cheering.team;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
+import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.chatRoom.ChatRoomRepository;
+import com.cheering.chat.chatRoom.ChatRoomType;
+import com.cheering.fan.CommunityType;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanResponse;
 import com.cheering.player.PlayerRepository;
 import com.cheering.fan.FanRepository;
+import com.cheering.team.league.League;
 import com.cheering.team.league.LeagueRepository;
 import com.cheering.team.relation.TeamPlayer;
 import com.cheering.team.relation.TeamPlayerRepository;
@@ -39,36 +43,29 @@ public class TeamService {
         return teams.stream().map((TeamResponse.TeamDTO::new)).toList();
     }
 
-//    public void registerTeam(Long leagueId, TeamRequest.RegisterTeamDTO requestDTO) {
-//        League league = leagueRepository.findById(leagueId).orElseThrow(()->new CustomException(ExceptionCode.LEAGUE_NOT_FOUND));
-//
-//        Team team = Team.builder()
-//                .firstName(requestDTO.firstName())
-//                .secondName(requestDTO.secondName())
-//                .image(requestDTO.image())
-//                .league(league)
-//                .build();
-//
-//        teamRepository.save(team);
-//
-//        Player teamPlayer = Player.builder()
-//                .koreanName(requestDTO.firstName() + " " + requestDTO.secondName())
-//                .englishName(requestDTO.englishName())
-//                .image(requestDTO.image())
-//                .backgroundImage(requestDTO.backgroundImage())
-//                .team(team)
-//                .build();
-//
-//        playerRepository.save(teamPlayer);
-//
-//        ChatRoom newChatRoom = ChatRoom.builder()
-//                .community(teamPlayer)
-//                .name(teamPlayer.getKoreanName())
-//                .description(teamPlayer.getKoreanName() + " 팬들끼리 응원해요!")
-//                .type(ChatRoomType.OFFICIAL)
-//                .image(teamPlayer.getImage())
-//                .build();
-//
-//        chatRoomRepository.save(newChatRoom);
-//    }
+    public void registerTeam(Long leagueId, TeamRequest.RegisterTeamDTO requestDTO) {
+        League league = leagueRepository.findById(leagueId).orElseThrow(()->new CustomException(ExceptionCode.LEAGUE_NOT_FOUND));
+
+        Team team = Team.builder()
+                .koreanName(requestDTO.koreanName())
+                .shortName(requestDTO.shortName())
+                .image(requestDTO.image())
+                .radarId(requestDTO.radarId())
+                .location(requestDTO.location())
+                .league(league)
+                .build();
+
+        teamRepository.save(team);
+
+        ChatRoom newChatRoom = ChatRoom.builder()
+                .type(ChatRoomType.OFFICIAL)
+                .communityType(CommunityType.TEAM)
+                .name(team.getKoreanName())
+                .image(team.getImage())
+                .description(team.getKoreanName() + " 팬들끼리 응원해요!")
+                .communityId(team.getId())
+                .build();
+
+        chatRoomRepository.save(newChatRoom);
+    }
 }

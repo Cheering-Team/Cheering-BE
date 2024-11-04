@@ -80,4 +80,10 @@ public class CheerService {
 
         return new CheerResponse.CheerListDTO(cheerList, cheerDTOList);
     }
+
+    public void deleteCheer(Long cheerId) {
+        Cheer cheer = cheerRepository.findById(cheerId).orElseThrow(()-> new CustomException(ExceptionCode.MATCH_NOT_FOUND));
+
+        cheerRepository.delete(cheer);
+    }
 }

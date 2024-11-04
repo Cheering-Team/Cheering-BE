@@ -14,6 +14,5 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     @Query("SELECT DISTINCT t FROM Team t WHERE REPLACE(t.koreanName, ' ', '') LIKE %:name% OR REPLACE(t.englishName, ' ', '') LIKE %:name%")
     List<Team> findByName(@Param("name") String name);
 
-    Team findByKoreanNameStartingWithAndLeague(String koreanName, League league);
-
+    Team findByRadarId(String teamRadarId);
 }
