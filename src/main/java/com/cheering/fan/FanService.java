@@ -182,6 +182,19 @@ public class FanService {
             postReport.setPost(null);
         }
 
+        List<Fan> fans = fanRepository.findByUserOrderByCommunityOrderAsc(fan.getUser());
+
+        Integer removedOrder = fan.getCommunityOrder();
+
         fanRepository.delete(fan);
+        fans.remove(fan);
+
+        for(Fan eachFan : fans) {
+            if(eachFan.getCommunityOrder() > removedOrder) {
+                eachFan.setCommunityOrder(eachFan.getCommunityOrder() - 1);
+            }
+        }
+
+        fanRepository.saveAll(fans);
     }
 }

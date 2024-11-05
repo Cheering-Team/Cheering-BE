@@ -113,6 +113,8 @@ public class CommunityService {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
 
+        Integer count = fanRepository.countByUser(user);
+
         if(team.isPresent()) {
             if(team.get().getKoreanName().equals(name)) {
                 throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
@@ -130,6 +132,7 @@ public class CommunityService {
                     .name(name)
                     .image(imageUrl)
                     .communityId(communityId)
+                    .communityOrder(count + 1)
                     .user(user)
                     .build();
 
@@ -152,6 +155,7 @@ public class CommunityService {
                     .name(name)
                     .image(imageUrl)
                     .communityId(communityId)
+                    .communityOrder(count + 1)
                     .user(user)
                     .build();
 

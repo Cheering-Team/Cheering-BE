@@ -104,11 +104,12 @@ public class Fan {
     private List<Cheer> cheers = new ArrayList<>();
 
     @Builder
-    public Fan(CommunityType type, String name, String image, Long communityId, User user) {
+    public Fan(CommunityType type, String name, String image, Long communityId, Integer communityOrder, User user) {
         this.type = type;
         this.name = name;
         this.image = image;
         this.communityId = communityId;
         this.user = user;
+        this.communityOrder = communityOrder;
     }
 }

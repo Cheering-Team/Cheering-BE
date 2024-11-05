@@ -16,4 +16,6 @@ public interface FanRepository extends JpaRepository<Fan, Long> {
     Optional<Fan> findByCommunityIdAndName(Long communityId, String name);
 
     List<Fan> findByUserOrderByCommunityOrderAsc(User user);
+
+    Integer countByUser(User user);
 }
