@@ -13,6 +13,7 @@ public enum ExceptionCode {
     NEED_SIGNUP(2005, "회원가입 필요"),
     NOT_FOUND_MANAGER_ACCOUNT(2006, "존재하지 않는 매니저 계정"),
     DUPLICATE_NAME(2007, "중복된 이름"),
+    ALREADY_HANDLED_APPLY(2008, "이미 처리된 신청"),
 
     // 404
     FAN_NOT_FOUND(404, "존재하지 않는 팬"),
@@ -24,6 +25,8 @@ public enum ExceptionCode {
     NOTICE_NOT_FOUND(404, "존재하지 않는 공지사항"),
     MATCH_NOT_FOUND(404, "존재하지 않는 경기"),
     CHEER_NOT_FOUND(404, "존재하지 않는 응원"),
+    CHAT_SESSION_NOT_FOUND(404, "존재하지 않는 세션"),
+    APPLY_NOT_FOUND(404, "존재하지 않는 신청"),
 
     // USER
     USER_NOT_FOUND(200, "해당 사용자를 찾을 수 없습니다."),

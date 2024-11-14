@@ -24,6 +24,7 @@ import com.cheering.user.User;
 import com.cheering.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -83,55 +84,69 @@ public class ChatRoomService {
         return new ChatRoomResponse.IdDTO(chatRoom.getId());
     }
 
-    public List<ChatRoomResponse.ChatRoomSectionDTO> getChatRooms(Long communityId, User user) {
-        Fan curFan = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+    // 대표 채팅방 조회
+    public ChatRoomResponse.ChatRoomDTO getOfficialChatRoom(Long communityId) {
+        ChatRoom chatRoom = chatRoomRepository.findOfficialByCommunityId(communityId);
 
-        List<ChatRoom> officialChatRooms = chatRoomRepository.findOfficialByCommunityId(communityId);
-        List<ChatRoom> publicChatRooms = chatRoomRepository.findPublicByCommunityId(communityId, curFan);
-
-        List <ChatRoomResponse.ChatRoomDTO> officialChatRoomDTOs = officialChatRooms.stream().map((chatRoom -> {
-            int count = chatSessionRepository.countByChatRoom(chatRoom);
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, null);
-        } )).toList();
-
-        List <ChatRoomResponse.ChatRoomDTO> publicChatRoomDTOs =  publicChatRooms.stream().map((chatRoom -> {
-            int count = chatSessionRepository.countByChatRoom(chatRoom);
-            Optional<ChatSession> chatSession = chatSessionRepository.findByChatRoomAndFan(chatRoom, curFan);
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatSession.isPresent());
-        } )).toList();
-
-        return List.of(new ChatRoomResponse.ChatRoomSectionDTO("official", officialChatRoomDTOs),
-                new ChatRoomResponse.ChatRoomSectionDTO("public", publicChatRoomDTOs));
+        int count = chatSessionRepository.countByChatRoom(chatRoom);
+        return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, false);
     }
 
-    public List<ChatRoomResponse.ChatRoomSectionDTO> getMyChatRooms(User user) {
-        List<Fan> fans = fanRepository.findByUserOrderByCommunityOrderAsc(user);
+    // 일반 채팅방 조회
+    public ChatRoomResponse.ChatRoomListDTO getChatRooms(Long communityId, String sortBy, String name, Pageable pageable, User user) {
+        Page<ChatRoom> chatRoomList;
 
-        List<Long> communityIds = fans.stream().map((Fan::getCommunityId)).toList();
+        Fan curFan = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
-        // 공식은 모두
-        List<ChatRoom> officialChatRooms = chatRoomRepository.findOfficialByCommunityIdsIn(communityIds).stream().sorted(Comparator.comparing(chatRoom -> chatRoom.getCommunityType().equals(CommunityType.TEAM) ? 0 : 1)).toList();
+        if(sortBy.equals("participants")) {
+            if(name.isEmpty()){
+                chatRoomList = chatRoomRepository.findPublicByCommunityIdByCount(communityId, curFan, pageable);
+            } else {
+                chatRoomList = chatRoomRepository.findPublicByCommunityIdByCountWithName(communityId, curFan, name, pageable);
+            }
+        } else {
+            if(name.isEmpty()){
+                chatRoomList = chatRoomRepository.findPublicByCommunityIdByCreatedAt(communityId, curFan, pageable);
+            } else {
+                chatRoomList = chatRoomRepository.findPublicByCommunityIdByCreatedAtWithName(communityId, curFan, name, pageable);
+            }
+        }
 
-        // 비공식은 내가 참여중인 채팅방만
-        List<ChatRoom> publicChatRooms = chatRoomRepository.findPublicByCommunityIdsIn(communityIds).stream()
-                .filter((chatRoom -> {
-                    Fan curFan = fanRepository.findByCommunityIdAndUser(chatRoom.getCommunityId(), user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-                    return chatSessionRepository.findByChatRoomAndFan(chatRoom, curFan).isPresent();
-                }))
-                .sorted(Comparator.comparing(chatRoom -> chatRoom.getCommunityType().equals(CommunityType.TEAM) ? 0 : 1)).toList();
+       List<ChatRoomResponse.ChatRoomDTO> chatRoomDTOS = chatRoomList.getContent().stream().map((chatRoom -> {
+           Integer count = chatSessionRepository.countByChatRoom(chatRoom);
+           Optional<ChatSession> chatSession = chatSessionRepository.findByChatRoomAndFan(chatRoom, curFan);
+           return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, chatSession.isPresent());
+       })).toList();
 
-        List<ChatRoomResponse.ChatRoomDTO> officialChatRoomDTOs = officialChatRooms.stream().map((chatRoom -> {
-            int count = chatSessionRepository.countByChatRoom(chatRoom);
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count,null);
-        } )).toList();
+        return new ChatRoomResponse.ChatRoomListDTO(chatRoomList, chatRoomDTOS);
+    }
 
-        List<ChatRoomResponse.ChatRoomDTO> publicChatRoomDTOs = publicChatRooms.stream().map((chatRoom -> {
-            int count = chatSessionRepository.countByChatRoom(chatRoom);
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count,true);
-        } )).toList();
+    public List<ChatRoomResponse.ChatRoomDTO> getMyOfficialChatRooms(User user) {
+        List<ChatRoom> officialChatRooms = chatRoomRepository.findMyOfficial(user);
 
-        return List.of(new ChatRoomResponse.ChatRoomSectionDTO("official", officialChatRoomDTOs),
-                new ChatRoomResponse.ChatRoomSectionDTO("public", publicChatRoomDTOs));
+        return officialChatRooms.stream().map((chatRoom -> {
+            Integer count = chatSessionRepository.countByChatRoom(chatRoom);
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, false);
+        })).toList();
+    }
+
+    public List<ChatRoomResponse.ChatRoomDTO> getMyChatRooms(User user) {
+        List<ChatRoom> publicChatRooms = chatRoomRepository.findPublicByUser(user);
+
+        return publicChatRooms.stream().map((chatRoom -> {
+            Fan fan = fanRepository.findByCommunityIdAndUser(chatRoom.getCommunityId(), user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+            ChatSession chatSession = chatSessionRepository.findByChatRoomAndFan(chatRoom, fan).orElseThrow(()-> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
+
+            Pageable pageable = PageRequest.of(0, 1);
+            List<Message> messages = messageRepository.findLastMessage(chatRoom, pageable);
+            String lastMessage = messages.isEmpty() ? null : messages.get(0).getContent();
+            LocalDateTime lastMessageTime = messages.isEmpty() ? null : messages.get(0).getCreatedAt();
+
+            Integer unreadCount = messageRepository.countUnreadMessages(chatRoom, chatSession.getLastExitTime());
+
+            Integer count = chatSessionRepository.countByChatRoom(chatRoom);
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, true, lastMessage, lastMessageTime, unreadCount);
+        })).toList();
     }
 
     public ChatRoomResponse.ChatRoomDTO getChatRoomById(Long chatRoomId, User user) {
@@ -148,82 +163,6 @@ public class ChatRoomService {
             Player player = playerRepository.findById(chatRoom.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
             return chatRoom.getType().equals(ChatRoomType.OFFICIAL) ? new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, null, player) : new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, chatRoom.getManager(), player);
         }
-    }
-
-    @Transactional
-    public void addUserToRoom(Long chatRoomId, String sessionId, Long userId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
-
-        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
-
-        Fan fan = fanRepository.findByCommunityIdAndUser(chatRoom.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-
-        Optional<ChatSession> chatSession = chatSessionRepository.findByChatRoomAndFan(chatRoom, fan);
-
-        if(chatSession.isEmpty()) {
-            ChatSession newChatSession = ChatSession.builder()
-                    .sessionId(sessionId)
-                    .chatRoom(chatRoom)
-                    .fan(fan)
-                    .build();
-            chatSessionRepository.save(newChatSession);
-        } else {
-            chatSession.get().setSessionId(sessionId);
-            chatSessionRepository.save(chatSession.get());
-        }
-        broadcastUserCount(chatRoomId);
-    }
-
-    public void sendMessage(ChatRequest.ChatRequestDTO chatDTO, String sessionId) {
-        Long chatRoomId = chatDTO.chatRoomId();
-
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
-
-        ChatSession chatSession = chatSessionRepository.findByChatRoomAndSessionId(chatRoom, sessionId);
-
-        Fan curFan = chatSession.getFan();
-
-        LocalDateTime now = LocalDateTime.now();
-
-        // 비공식 채팅방만 채팅 저장
-        if(chatRoom.getType().equals(ChatRoomType.PUBLIC)){
-            Optional<Chat> chat = chatRepository.findByChatRoomAndWriterAndCreatedAtMinute(chatRoom.getId(), curFan.getId());
-            if(chat.isPresent()) {
-                Message message = Message.builder()
-                        .content(chatDTO.message())
-                        .chat(chat.get())
-                        .build();
-                messageRepository.save(message);
-            } else {
-                Chat newChat = Chat.builder()
-                        .chatRoom(chatRoom)
-                        .writer(curFan)
-                        .build();
-                chatRepository.save(newChat);
-
-                Message message = Message.builder()
-                        .content(chatDTO.message())
-                        .chat(newChat)
-                        .build();
-                messageRepository.save(message);
-            }
-        }
-        simpMessagingTemplate.convertAndSend("/sub/chat/" + chatRoomId, new ChatResponse.ChatResponseDTO(chatDTO.message(), now, curFan));
-    }
-
-    @Transactional
-    public void removeUserFromRoom(Long chatRoomId, String sessionId) {
-        chatSessionRepository.deleteByChatRoomIdAndSessionId(chatRoomId, sessionId);
-
-        broadcastUserCount(chatRoomId);
-    }
-
-    private void broadcastUserCount(Long chatRoomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()->new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
-
-        int count = chatSessionRepository.countByChatRoom(chatRoom);
-
-        simpMessagingTemplate.convertAndSend("/sub/" + chatRoomId + "/count", count);
     }
 
     public ChatResponse.ChatListDTO getChats(Long chatRoomId, Pageable pageable) {
@@ -289,5 +228,57 @@ public class ChatRoomService {
                 chatRoomRepository.save(newChatRoom);
             }
         }
+    }
+
+    // WS
+    public void sendMessage(ChatRequest.ChatRequestDTO chatDTO, Long chatRoomId, String sessionId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
+        ChatSession chatSession = chatSessionRepository.findByChatRoomAndSessionId(chatRoom, sessionId);
+        Fan curFan = chatSession.getFan();
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // 비공식 채팅방만 채팅 저장
+        if(chatRoom.getType().equals(ChatRoomType.PUBLIC)){
+            Optional<Chat> chat = chatRepository.findByChatRoomAndWriterAndCreatedAtMinute(chatRoom.getId(), curFan.getId());
+            if(chat.isPresent()) {
+                Message message = Message.builder()
+                        .content(chatDTO.message())
+                        .chat(chat.get())
+                        .build();
+                messageRepository.save(message);
+            } else {
+                Chat newChat = Chat.builder()
+                        .chatRoom(chatRoom)
+                        .writer(curFan)
+                        .build();
+                chatRepository.save(newChat);
+
+                Message message = Message.builder()
+                        .content(chatDTO.message())
+                        .chat(newChat)
+                        .build();
+                messageRepository.save(message);
+            }
+        }
+        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId, new ChatResponse.ChatResponseDTO(chatDTO.message(), now, curFan));
+    }
+
+    @Transactional
+    public void removeUserFromRoom(Long chatRoomId, String sessionId) {
+        chatSessionRepository.deleteByChatRoomIdAndSessionId(chatRoomId, sessionId);
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()->new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+        Integer count = chatSessionRepository.countByChatRoom(chatRoom);
+        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", count);
+    }
+
+    @Transactional
+    public void updateExitTime(Long chatRoomId, String sessionId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()->new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+        ChatSession chatSession = chatSessionRepository.findByChatRoomAndSessionId(chatRoom, sessionId);
+
+        chatSession.setLastExitTime(LocalDateTime.now());
+        chatSessionRepository.save(chatSession);
     }
 }

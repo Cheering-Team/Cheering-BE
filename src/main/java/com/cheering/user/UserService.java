@@ -385,6 +385,14 @@ public class UserService {
         return new UserResponse.TokenDTO(accessToken, refreshToken);
     }
 
+    @Transactional
+    public Boolean isFirstLogin(User user) {
+        Boolean isFirstLogin = user.getIsFirstLogin();
+        user.setIsFirstLogin(false);
+        userRepository.save(user);
+        return isFirstLogin;
+    }
+
 //    public void registerCommunityAccount(Long communityId, UserRequest.SendSMSDTO requestDTO) {
 //        Player player = playerRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
 //

@@ -5,6 +5,8 @@ import com.cheering.fan.Fan;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "chat_session_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -18,6 +20,9 @@ public class ChatSession {
 
     @Column(nullable = false)
     private String sessionId;
+
+    @Column
+    private LocalDateTime lastExitTime;
 
     @ManyToOne
     @JoinColumn(name = "chat_room_id")

@@ -17,9 +17,12 @@ import com.cheering.team.relation.TeamPlayer;
 import com.cheering.team.relation.TeamPlayerRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -61,5 +64,13 @@ public class PlayerService {
                 .build();
 
         chatRoomRepository.save(chatRoom);
+    }
+
+    public List<CommunityResponse.CommunityDTO> getPopularPlayers() {
+        LocalDateTime lastWeek = LocalDateTime.now().minusWeeks(1);
+        Pageable topTen = PageRequest.of(0, 10);
+        List<Player> players = playerRepository.findTop10PlayersByRecentFanCount(lastWeek, topTen);
+
+        return players.stream().map(player -> new CommunityResponse.CommunityDTO(player, null, null)).toList();
     }
 }

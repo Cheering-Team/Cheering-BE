@@ -1,5 +1,6 @@
 package com.cheering.fan;
 
+import com.cheering.BaseTimeEntity;
 import com.cheering.chat.Chat;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.session.ChatSession;
@@ -28,7 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Getter
 @Setter
-public class Fan {
+public class Fan extends BaseTimeEntity {
 
     @Id
     @GeneratedValue
@@ -39,7 +40,7 @@ public class Fan {
     @Enumerated(value = EnumType.STRING)
     private CommunityType type;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 10, nullable = false)
     private String name;
 
     @Column(length = 2000)

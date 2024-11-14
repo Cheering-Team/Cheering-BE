@@ -26,10 +26,6 @@ public class Post extends BaseTimeEntity {
     @Column(name = "post_id")
     private Long id;
 
-    @Column(nullable = false)
-    @Enumerated(value = EnumType.STRING)
-    private PostType type;
-
     @Column(length = 1000)
     private String content;
 
@@ -60,10 +56,9 @@ public class Post extends BaseTimeEntity {
     private List<Notification> notifications = new ArrayList<>();
 
     @Builder
-    public Post(Long postId, String content, Fan writer, PostType type) {
+    public Post(Long postId, String content, Fan writer) {
         this.id = postId;
         this.content = content;
         this.writer = writer;
-        this.type = type;
     }
 }

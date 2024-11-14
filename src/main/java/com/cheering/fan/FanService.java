@@ -117,7 +117,7 @@ public class FanService {
 
         String imageUrl = "";
         if(image == null) {
-            imageUrl = "https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-profile.jpg";
+            imageUrl = "https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/profile-image.jpg";
         } else {
             imageUrl = s3Util.upload(image);
         }

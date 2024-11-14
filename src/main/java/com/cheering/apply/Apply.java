@@ -1,6 +1,7 @@
-package com.cheering.notice.apply;
+package com.cheering.apply;
 
 import com.cheering.BaseTimeEntity;
+import com.cheering.fan.CommunityType;
 import com.cheering.user.User;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -15,34 +16,26 @@ public class Apply extends BaseTimeEntity {
     @Id
     @GeneratedValue
     @Column(name = "apply_id")
-    Long id;
+    private Long id;
+
+    @Column(nullable = false)
+    private String content;
 
     @Column
-    String field1;
+    private String comment;
 
-    @Column
-    String field2;
-
-    @Column
-    String field3;
-
-    @Column
-    String field4;
-
-    @Column
-    String image;
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private ApplyStatus status;
 
     @ManyToOne
     @JoinColumn(name = "writer_id", nullable = false)
     private User writer;
 
     @Builder
-    public Apply(String field1, String field2, String field3, String field4, String image, User writer) {
+    public Apply (String content, User writer, ApplyStatus status) {
+        this.content = content;
         this.writer = writer;
-        this.field1 = field1;
-        this.field2 = field2;
-        this.field3 = field3;
-        this.field4 = field4;
-        this.image = image;
+        this.status = status;
     }
 }

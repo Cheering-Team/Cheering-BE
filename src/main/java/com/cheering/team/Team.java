@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name="team_tb")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -34,10 +37,18 @@ public class Team {
     private String backgroundImage;
 
     @Column
+    private String color;
+
+    @Column
     private String radarId;
 
     @Column
     private String location;
+
+    @ElementCollection
+    @CollectionTable(name = "team_aliases", joinColumns = @JoinColumn(name = "team_id"))
+    @Column(name = "alias")
+    private List<String> aliases = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "league_id")

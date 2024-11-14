@@ -26,15 +26,26 @@ public class ChatRoomController {
                                             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 생성 완료", chatRoomService.createChatRoom(communityId, name, description, image, max, customUserDetails.getUser())));
     }
-
-    // 채팅방 목록 조회
-    @GetMapping("/communities/{communityId}/chatrooms")
-    public ResponseEntity<?> getChatRooms(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 목록 조회 완료", chatRoomService.getChatRooms(communityId, customUserDetails.getUser())));
+    // 대표 채팅방 조회
+    @GetMapping("/communities/{communityId}/chatrooms/official")
+    public ResponseEntity<?> getOfficialChatRoom(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "대표 채팅방 조회 완료", chatRoomService.getOfficialChatRoom(communityId)));
     }
 
-    // 참여중인 채팅방 목록 조회
-    // (대표는 가입된 모두 커뮤니티)
+    // 일반 채팅방 목록 조회
+    @GetMapping("/communities/{communityId}/chatrooms")
+    public ResponseEntity<?> getChatRooms(@PathVariable("communityId") Long communityId, @RequestParam String sortBy, @RequestParam String name, @RequestParam int page, @RequestParam int size, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 목록 조회 완료", chatRoomService.getChatRooms(communityId, sortBy, name, pageable, customUserDetails.getUser())));
+    }
+
+    // 참여중인 대표 채팅방 목록 조회
+    @GetMapping("/my/chatrooms/official")
+    public ResponseEntity<?> getMyOfficialChatRooms(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "대표 채팅방 목록 조회 완료", chatRoomService.getMyOfficialChatRooms(customUserDetails.getUser())));
+    }
+
+    // 참여중인 일반 채팅방 목록 조회
     @GetMapping("/my/chatrooms")
     public ResponseEntity<?> getMyChatRooms(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "참여 채팅방 목록 조회 완료", chatRoomService.getMyChatRooms(customUserDetails.getUser())));
@@ -66,7 +77,7 @@ public class ChatRoomController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 삭제 완료", null));
     }
 
-//     (공식 채팅방 만들기)
+    // (공식 채팅방 만들기)
     @PostMapping("/communities/chatrooms")
     public ResponseEntity<?> autoCreateChatRooms() {
         chatRoomService.autoCreateChatRooms();

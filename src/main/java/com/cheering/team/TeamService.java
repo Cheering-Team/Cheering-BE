@@ -5,6 +5,7 @@ import com.cheering._core.errors.ExceptionCode;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.chatRoom.ChatRoomRepository;
 import com.cheering.chat.chatRoom.ChatRoomType;
+import com.cheering.community.CommunityResponse;
 import com.cheering.fan.CommunityType;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanResponse;
@@ -16,8 +17,12 @@ import com.cheering.team.relation.TeamPlayer;
 import com.cheering.team.relation.TeamPlayerRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,9 +32,7 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final TeamPlayerRepository teamPlayerRepository;
     private final LeagueRepository leagueRepository;
-    private final PlayerRepository playerRepository;
     private final ChatRoomRepository chatRoomRepository;
-    private final FanRepository fanRepository;
 
     public List<TeamResponse.TeamDTO> getTeams(Long leagueId) {
         List<Team> teams = teamRepository.findByLeagueIdOrderByKoreanName(leagueId);
@@ -41,6 +44,18 @@ public class TeamService {
         List<Team> teams = teamPlayerRepository.findByPlayerId(playerId);
 
         return teams.stream().map((TeamResponse.TeamDTO::new)).toList();
+    }
+
+    public List<TeamResponse.TeamWithLeagueDTO> searchTeams(String name) {
+        List<Team> teams;
+
+        if(name.isEmpty()) {
+            teams = teamRepository.findAllOrderByFan();
+        } else {
+            teams = teamRepository.findByName(name);
+        }
+
+        return teams.stream().map((TeamResponse.TeamWithLeagueDTO::new)).toList();
     }
 
     public void registerTeam(Long leagueId, TeamRequest.RegisterTeamDTO requestDTO) {
@@ -67,5 +82,13 @@ public class TeamService {
                 .build();
 
         chatRoomRepository.save(newChatRoom);
+    }
+
+    public List<TeamResponse.TeamWithLeagueDTO> getPopularTeams() {
+        LocalDateTime lastWeek = LocalDateTime.now().minusWeeks(1);
+        Pageable topTen = PageRequest.of(0, 10);
+        List<Team> teams = teamRepository.findTop10TeamsByRecentFanCount(lastWeek, topTen);
+
+        return teams.stream().map(TeamResponse.TeamWithLeagueDTO::new).toList();
     }
 }
