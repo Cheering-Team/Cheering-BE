@@ -117,7 +117,7 @@ public class FanService {
 
         String imageUrl = "";
         if(image == null) {
-            imageUrl = "https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-profile.jpg";
+            imageUrl = "https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/profile-image.jpg";
         } else {
             imageUrl = s3Util.upload(image);
         }
@@ -182,6 +182,19 @@ public class FanService {
             postReport.setPost(null);
         }
 
+        List<Fan> fans = fanRepository.findByUserOrderByCommunityOrderAsc(fan.getUser());
+
+        Integer removedOrder = fan.getCommunityOrder();
+
         fanRepository.delete(fan);
+        fans.remove(fan);
+
+        for(Fan eachFan : fans) {
+            if(eachFan.getCommunityOrder() > removedOrder) {
+                eachFan.setCommunityOrder(eachFan.getCommunityOrder() - 1);
+            }
+        }
+
+        fanRepository.saveAll(fans);
     }
 }

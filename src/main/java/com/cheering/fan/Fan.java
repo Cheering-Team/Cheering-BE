@@ -1,8 +1,10 @@
 package com.cheering.fan;
 
+import com.cheering.BaseTimeEntity;
 import com.cheering.chat.Chat;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.session.ChatSession;
+import com.cheering.cheer.Cheer;
 import com.cheering.comment.Comment;
 import com.cheering.comment.reComment.ReComment;
 import com.cheering.notification.Notification;
@@ -27,7 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Getter
 @Setter
-public class Fan {
+public class Fan extends BaseTimeEntity {
 
     @Id
     @GeneratedValue
@@ -38,7 +40,7 @@ public class Fan {
     @Enumerated(value = EnumType.STRING)
     private CommunityType type;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 10, nullable = false)
     private String name;
 
     @Column(length = 2000)
@@ -46,6 +48,9 @@ public class Fan {
 
     @Column(nullable = false)
     private Long communityId;
+
+    @Column
+    private Integer communityOrder;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -96,12 +101,16 @@ public class Fan {
     @OneToMany(mappedBy = "from", cascade = CascadeType.REMOVE)
     private List<Notification> notificationsFrom = new ArrayList<>();
 
+    @OneToMany(mappedBy = "writer", cascade = CascadeType.REMOVE)
+    private List<Cheer> cheers = new ArrayList<>();
+
     @Builder
-    public Fan(CommunityType type, String name, String image, Long communityId, User user) {
+    public Fan(CommunityType type, String name, String image, Long communityId, Integer communityOrder, User user) {
         this.type = type;
         this.name = name;
         this.image = image;
         this.communityId = communityId;
         this.user = user;
+        this.communityOrder = communityOrder;
     }
 }

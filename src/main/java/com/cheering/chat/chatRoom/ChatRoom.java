@@ -1,5 +1,6 @@
 package com.cheering.chat.chatRoom;
 
+import com.cheering.BaseTimeEntity;
 import com.cheering.chat.Chat;
 import com.cheering.chat.session.ChatSession;
 import com.cheering.fan.CommunityType;
@@ -15,7 +16,7 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
-public class ChatRoom {
+public class ChatRoom extends BaseTimeEntity {
     @Id
     @GeneratedValue
     @Column(name = "chat_room_id")

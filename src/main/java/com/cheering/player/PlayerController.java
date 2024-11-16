@@ -15,10 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class PlayerController {
     private final PlayerService playerService;
 
-    // 내가 가입한 커뮤니티 조회
-    @GetMapping("/my/communities")
-    public ResponseEntity<?> getMyCommunities(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "내 커뮤니티 조회 완료", playerService.getMyCommunities(userDetails.getUser())));
+    // 인기 선수 조회
+    @GetMapping("/players/popular")
+    public ResponseEntity<?> getPopularPlayers(){
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "인기 선수 조회 완료", playerService.getPopularPlayers()));
     }
 
     // (선수 등록)
@@ -27,11 +27,4 @@ public class PlayerController {
         playerService.registerPlayer(teamId, requestDTO);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 등록 완료", null));
     }
-//
-//    // (팀 커뮤니티 생성)
-//    @PostMapping("/teams/communities")
-//    public ResponseEntity<?> createTeamCommunities(){
-//        playerService.createTeamCommunities();
-//        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 등록 완료", null));
-//    }
 }

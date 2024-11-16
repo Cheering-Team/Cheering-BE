@@ -25,10 +25,21 @@ public class TeamController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "팀 목록 조회 완료", teamService.getTeamsByPlayer(playerId)));
     }
 
-//    // (팀 등록)
-//    @PostMapping("/leagues/{leagueId}/teams")
-//    public ResponseEntity<?> registerTeam(@PathVariable("leagueId") Long leagueId, @RequestBody TeamRequest.RegisterTeamDTO requestDTO){
-//        teamService.registerTeam(leagueId, requestDTO);
-//        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "팀 등록 완료", null));
-//    }
+    @GetMapping("/teams")
+    public ResponseEntity<?> searchTeams(@RequestParam(name = "name", required = false) String name){
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "팀 검색 완료", teamService.searchTeams(name)));
+    }
+
+    // 인기 팀 조회
+    @GetMapping("/teams/popular")
+    public ResponseEntity<?> getPopularTeams(){
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "인기 팀 조회 완료", teamService.getPopularTeams()));
+    }
+
+    // (팀 등록)
+    @PostMapping("/leagues/{leagueId}/teams")
+    public ResponseEntity<?> registerTeam(@PathVariable("leagueId") Long leagueId, @RequestBody TeamRequest.RegisterTeamDTO requestDTO){
+        teamService.registerTeam(leagueId, requestDTO);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "팀 등록 완료", null));
+    }
 }

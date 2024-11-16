@@ -112,6 +112,11 @@ public class UserController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"FCM 토큰 삭제 완료", null));
     }
 
+    @GetMapping("/isFirstLogin")
+    public ResponseEntity<?> isFirstLogin(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"조회 완료", userService.isFirstLogin(customUserDetails.getUser())));
+    }
+
 //    @PostMapping("/users/manager/{communityId}")
 //    public ResponseEntity<?> registerManagerAccount(@PathVariable("communityId") Long communityId, @RequestBody UserRequest.SendSMSDTO requestDTO) {
 //        userService.registerCommunityAccount(communityId, requestDTO);

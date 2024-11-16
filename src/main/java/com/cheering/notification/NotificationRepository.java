@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     @Modifying
     @Query("DELETE FROM Notification n WHERE n.post = :post AND n.from = :from AND n.type = :type")
-    void deleteLikeByPostAndFrom(@Param("post") Post post, @Param("from") Fan curFan, @Param("type") String type);
+    void deleteLikeByPostAndFrom(@Param("post") Post post, @Param("from") Fan curFan, @Param("type") NotificaitonType type);
 
 
     @Query("SELECT n FROM Notification n WHERE n.to.user = :user AND n.from NOT IN (SELECT b.to FROM Block b WHERE b.from.user = :user) ORDER BY n.createdAt DESC")
