@@ -15,7 +15,7 @@ import java.io.InputStream;
 public class FirebaseConfig {
     @Bean
     public FirebaseApp initializeFirebase() throws IOException {
-        ClassPathResource resource = new ClassPathResource("cheering-56d3b-firebase-adminsdk-rcj2y-7e52fc295c.json");
+        ClassPathResource resource = new ClassPathResource("firebase.json");
         InputStream inputStream = resource.getInputStream();
 
         FirebaseOptions options = FirebaseOptions.builder()
