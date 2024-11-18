@@ -20,6 +20,8 @@ public class HealthCheckController {
     private String serverAddress;
     @Value("${serverName}")
     private String serverName;
+    @Value("${spring.data.redis.host}")
+    private String redisHost;
 
     @GetMapping("/hc")
     public ResponseEntity<?> healthCheck() {
@@ -28,6 +30,7 @@ public class HealthCheckController {
         responseData.put("serverAddress", serverAddress);
         responseData.put("serverPort", serverPort);
         responseData.put("env", env);
+        responseData.put("redisHost", redisHost);
 
         return ResponseEntity.ok(responseData);
     }
