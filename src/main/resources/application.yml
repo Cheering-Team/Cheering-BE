@@ -47,9 +47,6 @@ spring:
       on-profile: blue
 
   datasource:
-    url: jdbc:postgresql://commerce-postgresql.cv0262ui2g6f.ap-northeast-2.rds.amazonaws.com:5432/cheering
-    username: postgre
-    password: tidlsl!2
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -63,14 +60,8 @@ spring:
 
   data:
     redis:
-      host: shared_redis
-      port: 6379
       repositories:
         enabled: false
-
-server:
-  port: 8080
-  serverAddress: 15.165.150.47
 
 serverName: blue_server
 
@@ -82,9 +73,6 @@ spring:
       on-profile: green
 
   datasource:
-    url: jdbc:postgresql://commerce-postgresql.cv0262ui2g6f.ap-northeast-2.rds.amazonaws.com:5432/cheering
-    username: postgre
-    password: tidlsl!2
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -98,14 +86,8 @@ spring:
 
   data:
     redis:
-      host: shared_redis
-      port: 6379
       repositories:
         enabled: false
-
-server:
-  port: 8081
-  serverAddress: 15.165.150.47
 
 serverName: green_server
 
