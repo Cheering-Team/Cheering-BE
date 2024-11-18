@@ -43,4 +43,4 @@ out/
 
 ### yml ###
 src/main/resources/application-secret.yml
-
+docker-compose-local.yml
