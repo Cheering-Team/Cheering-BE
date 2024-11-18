@@ -4,7 +4,10 @@ spring:
     group:
       local: local, common, secret
       blue: blue, common, secret
-      green: green, common, secret,
+      green: green, common, secret
+
+server:
+  env: local
 
 ---
 
@@ -31,7 +34,6 @@ spring:
         enabled: false
 
 server:
-  env: local
   port: 8080
   serverAddress: localhost
 
@@ -52,7 +54,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
       format_sql: true
@@ -67,10 +69,8 @@ spring:
         enabled: false
 
 server:
-  env: blue
   port: 8080
   serverAddress: 15.165.150.47
-
 
 serverName: blue_server
 
@@ -89,7 +89,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
       format_sql: true
@@ -104,7 +104,6 @@ spring:
         enabled: false
 
 server:
-  env: green
   port: 8081
   serverAddress: 15.165.150.47
 
