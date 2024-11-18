@@ -44,3 +44,4 @@ out/
 ### yml ###
 src/main/resources/application-secret.yml
 docker-compose-local.yml
+src/main/resources/cheering-56d3b-firebase-adminsdk-rcj2y-7e52fc295c.json
