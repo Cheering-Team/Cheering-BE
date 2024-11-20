@@ -49,10 +49,10 @@ jobs:
     steps:
       - name: Set target IP
         run: |
-          STATUS=$(curl -o /dev/null -w "%{http_code}" "http://${{ secrets.CHEERING_SERVER_IP }}/env")
+          STATUS=$(curl -o /dev/null -w "%{http_code}" "https://${{ secrets.API_URL }}/env")
           echo $STATUS
           if [ $STATUS = 200 ]; then
-            CURRENT_UPSTREAM=$(curl -s "http://${{ secrets.CHEERING_SERVER_IP }}/env")
+            CURRENT_UPSTREAM=$(curl -s "https://${{ secrets.API_URL }}/env")
           else
             CURRENT_UPSTREAM=green
           fi
