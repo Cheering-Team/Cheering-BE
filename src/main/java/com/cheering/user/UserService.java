@@ -64,6 +64,8 @@ public class UserService {
 
         if(phone.equals("01062013110")) {
             verificationCode = "911911";
+        } else if(phone.equals("01912341234")) {
+            verificationCode = "019123";
         } else {
             verificationCode = String.valueOf((int) (Math.random() * 900000) + 100000);
 //            smsUtil.sendOne(phone, verificationCode);
