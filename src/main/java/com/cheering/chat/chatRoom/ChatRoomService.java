@@ -276,9 +276,12 @@ public class ChatRoomService {
     @Transactional
     public void updateExitTime(Long chatRoomId, String sessionId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()->new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
-        ChatSession chatSession = chatSessionRepository.findByChatRoomAndSessionId(chatRoom, sessionId);
 
-        chatSession.setLastExitTime(LocalDateTime.now());
-        chatSessionRepository.save(chatSession);
+        if(chatRoom.getType().equals(ChatRoomType.PUBLIC)) {
+            ChatSession chatSession = chatSessionRepository.findByChatRoomAndSessionId(chatRoom, sessionId);
+
+            chatSession.setLastExitTime(LocalDateTime.now());
+            chatSessionRepository.save(chatSession);
+        }
     }
 }

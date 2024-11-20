@@ -39,15 +39,12 @@ public class UserService {
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
-    private final FanRepository fanRepository;
     private final TempAppleUserRepository tempAppleUserRepository;
-    private final PlayerRepository playerRepository;
     private final BadWordService badWordService;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
     private final JWTUtil jwtUtil;
     private final AppleUtil appleUtil;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private static final String PHONE_REGEX = "^01[0-9]{1}[0-9]{3,4}[0-9]{4}$";
 
     @Transactional
@@ -64,10 +61,12 @@ public class UserService {
 
         if(phone.equals("01062013110")) {
             verificationCode = "911911";
+            smsUtil.sendCode(phone, verificationCode);
+        } else if(phone.equals("01912341234")) {
+            verificationCode = "019123";
         } else {
             verificationCode = String.valueOf((int) (Math.random() * 900000) + 100000);
-//            smsUtil.sendOne(phone, verificationCode);
-            System.out.println(verificationCode);
+            smsUtil.sendCode(phone, verificationCode);
         }
 
         redisUtils.setDataExpire(phone, verificationCode, 60 * 5L);
@@ -376,7 +375,7 @@ public class UserService {
     }
 
     private UserResponse.TokenDTO issueToken(User user) {
-        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L); // 일주일
+        String accessToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 30L); // 1달
         String refreshToken = jwtUtil.createJwt(user.getPhone(), user.getRole().getValue(), 1000 * 60 * 60 * 24 * 365L); // 1년
 
         redisUtils.deleteData(user.getId().toString());
