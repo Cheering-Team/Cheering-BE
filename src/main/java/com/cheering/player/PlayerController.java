@@ -9,6 +9,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -23,7 +25,7 @@ public class PlayerController {
 
     // (선수 등록)
     @PostMapping("/teams/{teamId}/players")
-    public ResponseEntity<?> registerPlayer(@PathVariable("teamId") Long teamId, @RequestBody PlayerRequest.RegisterCommunityDTO requestDTO){
+    public ResponseEntity<?> registerPlayer(@PathVariable("teamId") Long teamId, @RequestBody List<PlayerRequest.RegisterCommunityDTO> requestDTO){
         playerService.registerPlayer(teamId, requestDTO);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 등록 완료", null));
     }
