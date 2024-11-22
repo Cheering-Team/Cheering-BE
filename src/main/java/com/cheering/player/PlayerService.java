@@ -42,18 +42,23 @@ public class PlayerService {
             String imageUrl = "";
 
             if(!requestDTO.image().isEmpty()) {
-                try {
-                    URL url = new URL(requestDTO.image());
-                    try (InputStream inputStream = url.openStream()) {
-                        String fileName = requestDTO.image().substring(requestDTO.image().lastIndexOf("/") + 1);
-                        MultipartFile image = new MockMultipartFile(fileName, fileName, "image/png", inputStream);
-                        imageUrl = s3Util.upload(image);
-                    } catch (IOException e) {
+                if(requestDTO.image().startsWith("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/")) {
+                    imageUrl = requestDTO.image();
+                } else {
+                    try {
+                        URL url = new URL(requestDTO.image());
+                        try (InputStream inputStream = url.openStream()) {
+                            String fileName = requestDTO.image().substring(requestDTO.image().lastIndexOf("/") + 1);
+                            MultipartFile image = new MockMultipartFile(fileName, fileName, "image/png", inputStream);
+                            imageUrl = s3Util.upload(image);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
                     }
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
                 }
+
             }
 
             Player player = Player.builder()
