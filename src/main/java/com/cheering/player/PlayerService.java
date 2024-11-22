@@ -39,19 +39,21 @@ public class PlayerService {
         Team team = teamRepository.findById(teamId).orElseThrow(()->new CustomException(ExceptionCode.TEAM_NOT_FOUND));
 
         requestDTOs.forEach(requestDTO -> {
-            String imageUrl;
+            String imageUrl = "";
 
-            try {
-                URL url = new URL(requestDTO.image());
-                try (InputStream inputStream = url.openStream()) {
-                    String fileName = requestDTO.image().substring(requestDTO.image().lastIndexOf("/") + 1);
-                    MultipartFile image = new MockMultipartFile(fileName, fileName, "image/png", inputStream);
-                    imageUrl = s3Util.upload(image);
-                } catch (IOException e) {
+            if(!requestDTO.image().isEmpty()) {
+                try {
+                    URL url = new URL(requestDTO.image());
+                    try (InputStream inputStream = url.openStream()) {
+                        String fileName = requestDTO.image().substring(requestDTO.image().lastIndexOf("/") + 1);
+                        MultipartFile image = new MockMultipartFile(fileName, fileName, "image/png", inputStream);
+                        imageUrl = s3Util.upload(image);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
                 }
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
             }
 
             Player player = Player.builder()
