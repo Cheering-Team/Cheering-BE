@@ -8,11 +8,17 @@ import com.cheering.chat.chatRoom.ChatRoomRepository;
 import com.cheering.chat.chatRoom.ChatRoomType;
 import com.cheering.community.CommunityResponse;
 import com.cheering.fan.CommunityType;
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanRepository;
+import com.cheering.fan.FanResponse;
+import com.cheering.post.Post;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.team.relation.TeamPlayer;
 import com.cheering.team.relation.TeamPlayerRepository;
+import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
@@ -33,7 +39,40 @@ public class PlayerService {
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final FanRepository fanRepository;
     private final S3Util s3Util;
+
+    // 선수 검색하기 (무한 스크롤)
+    public CommunityResponse.CommunityListDTO searchPlayers(String name, Long teamId, Pageable pageable, User user) {
+        name = name.replace(" ", "");
+
+        Page<Player> players;
+        if(teamId != null && name.isEmpty()) {
+            players = playerRepository.findByTeamId(teamId, pageable);
+        } else if(teamId != null) {
+            players = playerRepository.findByNameAndTeamId(name, teamId, pageable);
+        } else if(!name.isEmpty()){
+            players = playerRepository.findByNameOrTeamName(name, pageable);
+        } else {
+            players = Page.empty();
+        }
+
+        List<CommunityResponse.CommunityDTO> playerDTOS = players.getContent().stream().map((player) -> {
+            Long fanCount = fanRepository.countByCommunityId(player.getId());
+            Optional<Fan> fan = fanRepository.findByCommunityIdAndUser(player.getId(), user);
+            return new CommunityResponse.CommunityDTO(player, fanCount, fan.map(FanResponse.FanDTO::new).orElse(null));
+        }).toList();
+
+        return new CommunityResponse.CommunityListDTO(players, playerDTOS);
+    }
+
+    public List<CommunityResponse.CommunityDTO> getPopularPlayers() {
+        LocalDateTime lastWeek = LocalDateTime.now().minusWeeks(1);
+        Pageable topTen = PageRequest.of(0, 10);
+        List<Player> players = playerRepository.findTop10PlayersByRecentFanCount(lastWeek, topTen);
+
+        return players.stream().map(player -> new CommunityResponse.CommunityDTO(player, null, null)).toList();
+    }
 
     public void registerPlayer(Long teamId, List<PlayerRequest.RegisterCommunityDTO> requestDTOs) {
         Team team = teamRepository.findById(teamId).orElseThrow(()->new CustomException(ExceptionCode.TEAM_NOT_FOUND));
@@ -89,13 +128,5 @@ public class PlayerService {
 
             chatRoomRepository.save(chatRoom);
         });
-    }
-
-    public List<CommunityResponse.CommunityDTO> getPopularPlayers() {
-        LocalDateTime lastWeek = LocalDateTime.now().minusWeeks(1);
-        Pageable topTen = PageRequest.of(0, 10);
-        List<Player> players = playerRepository.findTop10PlayersByRecentFanCount(lastWeek, topTen);
-
-        return players.stream().map(player -> new CommunityResponse.CommunityDTO(player, null, null)).toList();
     }
 }
