@@ -3,6 +3,8 @@ package com.cheering.player;
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +18,16 @@ import java.util.List;
 @RequestMapping("/api")
 public class PlayerController {
     private final PlayerService playerService;
+    // 선수 검색 (무한 스크롤)
+    @GetMapping("/players")
+    public ResponseEntity<?> searchPlayers(
+            @RequestParam(name = "teamId", required = false) Long teamId,
+            @RequestParam(name = "name", required = false) String name,
+            @RequestParam int page, @RequestParam int size,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "선수 검색 완료", playerService.searchPlayers(name, teamId, pageable, userDetails.getUser())));
+    }
 
     // 인기 선수 조회
     @GetMapping("/players/popular")

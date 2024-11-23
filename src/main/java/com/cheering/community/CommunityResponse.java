@@ -3,7 +3,9 @@ package com.cheering.community;
 import com.cheering.chat.chatRoom.ChatRoomResponse;
 import com.cheering.fan.FanResponse;
 import com.cheering.player.Player;
+import com.cheering.post.PostResponse;
 import com.cheering.team.Team;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -27,4 +29,10 @@ public class CommunityResponse {
         }
     }
     public record CommunitySectionDTO (String title, List<CommunityDTO> data) { }
+
+    public record CommunityListDTO(List<CommunityDTO> players, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
+        public CommunityListDTO(Page<?> page, List<CommunityDTO> players) {
+            this(players, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
+        }
+    }
 }

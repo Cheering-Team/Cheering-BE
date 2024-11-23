@@ -6,7 +6,6 @@ import com.cheering._core.util.S3Util;
 import com.cheering.badword.BadWordService;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.chatRoom.ChatRoomRepository;
-import com.cheering.chat.chatRoom.ChatRoomResponse;
 import com.cheering.fan.CommunityType;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanRepository;
@@ -18,9 +17,9 @@ import com.cheering.team.TeamRepository;
 import com.cheering.team.relation.TeamPlayerRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -53,8 +52,8 @@ public class CommunityService {
     }
 
     // 커뮤니티 검색
+    // 4.0.2 까지 사용
     public List<CommunityResponse.CommunitySectionDTO> getCommunities(String name, Long teamId, User user) {
-
         name = name.replace(" ", "");
 
         List<Team> teams = new ArrayList<>();
