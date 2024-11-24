@@ -4,6 +4,8 @@ import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
 import com.cheering.player.PlayerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,6 +27,7 @@ public class CommunityController {
     }
 
     // 커뮤니티 검색
+    // 4.0.2 까지 사용
     @GetMapping("/communities")
     public ResponseEntity<?> getCommunities(
             @RequestParam(name = "teamId", required = false) Long teamId,
