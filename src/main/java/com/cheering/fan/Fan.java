@@ -15,6 +15,7 @@ import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.postReport.PostReport;
 import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.user.User;
+import com.cheering.vote.fanVote.FanVote;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -103,6 +104,9 @@ public class Fan extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "writer", cascade = CascadeType.REMOVE)
     private List<Cheer> cheers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "fan", cascade = CascadeType.REMOVE)
+    private List<FanVote> fanVotes = new ArrayList<>();
 
     @Builder
     public Fan(CommunityType type, String name, String image, Long communityId, Integer communityOrder, User user) {

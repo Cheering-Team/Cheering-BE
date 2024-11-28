@@ -57,11 +57,17 @@ spring:
       format_sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
 
   data:
     redis:
       repositories:
         enabled: false
+
+logging:
+  level:
+    org.hibernate.tool.schema.internal: DEBUG
+
 
 serverName: blue_server
 

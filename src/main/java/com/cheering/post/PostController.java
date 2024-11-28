@@ -7,11 +7,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.print.attribute.standard.Media;
 import java.util.List;
 
 @RestController
@@ -22,15 +24,16 @@ public class PostController {
     private final PostService postService;
 
     // 게시글 작성
-    @PostMapping("/communities/{communityId}/posts")
+    @PostMapping(value = "/communities/{communityId}/posts", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<?> writePost(@PathVariable("communityId") Long communityId,
-                                       @RequestParam(value = "content", required = false) String content,
-                                       @RequestParam(value = "images", required = false) List<MultipartFile> images,
-                                       @RequestParam(value = "widthDatas", required = false) List<Integer> widthDatas,
-                                       @RequestParam(value = "heightDatas", required = false) List<Integer> heightDatas,
-                                       @RequestParam(value = "tags", required = false) List<String> tags,
+                                       @RequestPart(value = "content", required = false) String content,
+                                       @RequestPart(value = "images", required = false) List<MultipartFile> images,
+                                       @RequestPart(value = "widthDatas", required = false) List<Integer> widthDatas,
+                                       @RequestPart(value = "heightDatas", required = false) List<Integer> heightDatas,
+                                       @RequestPart(value = "tags", required = false) List<String> tags,
+                                       @RequestPart(value = "vote", required = false) PostRequest.VoteDTO vote,
                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 작성 완료", postService.writePost(communityId, content, images, widthDatas, heightDatas, tags, customUserDetails.getUser())));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 작성 완료", postService.writePost(communityId, content, images, widthDatas, heightDatas, tags, vote, customUserDetails.getUser())));
     }
 
     // 커뮤니티 게시글 불러오기 (무한 스크롤)

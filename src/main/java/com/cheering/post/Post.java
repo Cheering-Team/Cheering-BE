@@ -8,6 +8,7 @@ import com.cheering.post.Like.Like;
 import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.relation.PostTag;
 import com.cheering.report.postReport.PostReport;
+import com.cheering.vote.Vote;
 import jakarta.persistence.*;
 
 import lombok.*;
@@ -54,6 +55,9 @@ public class Post extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
     private List<Notification> notifications = new ArrayList<>();
+
+    @OneToOne(mappedBy = "post", cascade = CascadeType.REMOVE)
+    private Vote vote;
 
     @Builder
     public Post(Long postId, String content, Fan writer) {
