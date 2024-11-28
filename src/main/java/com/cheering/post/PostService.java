@@ -10,6 +10,7 @@ import com.cheering.comment.reComment.ReCommentRepository;
 import com.cheering.fan.CommunityType;
 import com.cheering.match.Match;
 import com.cheering.match.MatchRepository;
+import com.cheering.match.MatchResponse;
 import com.cheering.player.Player;
 import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.notification.NotificaitonType;
@@ -369,6 +370,8 @@ public class PostService {
 
     @NotNull
     private PostResponse.PostInfoWithCommunityDTO getPostInfo(Post post, Fan curFan) {
+        boolean isTeam = curFan.getType().equals(CommunityType.TEAM);
+
         List<PostTag> postTags = postTagRepository.findByPost(post);
         List<String> tags = postTags.stream().map((postTag) -> {
             Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
@@ -384,7 +387,7 @@ public class PostService {
 
         Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
 
-        if(curFan.getType().equals(CommunityType.TEAM)) {
+        if(isTeam) {
             Team team = teamRepository.findById(curFan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
 
             return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team);

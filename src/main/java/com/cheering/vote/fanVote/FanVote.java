@@ -4,10 +4,7 @@ import com.cheering.fan.Fan;
 import com.cheering.vote.Vote;
 import com.cheering.vote.voteOption.VoteOption;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "fan_vote_tb")
@@ -32,6 +29,10 @@ public class FanVote {
     @JoinColumn(name = "vote_id", nullable = false)
     private Vote vote;
 
-    @Column(nullable = false)
-    private boolean isVoted;
+    @Builder
+    public FanVote(Fan fan, VoteOption voteOption) {
+        this.fan = fan;
+        this.voteOption = voteOption;
+        this.vote = voteOption.getVote();
+    }
 }

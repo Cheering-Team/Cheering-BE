@@ -1,11 +1,14 @@
 package com.cheering.post;
 
 import com.cheering.community.CommunityResponse;
+import com.cheering.match.MatchResponse;
 import com.cheering.player.Player;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanResponse;
 import com.cheering.post.PostImage.PostImageResponse;
 import com.cheering.team.Team;
+import com.cheering.vote.Vote;
+import com.cheering.vote.voteOption.VoteOption;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
@@ -14,8 +17,18 @@ import java.util.List;
 public class PostResponse {
     public record PostIdDTO (Long id) { }
 
-    public record PostInfoWithCommunityDTO(Long id, CommunityResponse.CommunityDTO community, String content, LocalDateTime createdAt, Boolean isHide, List<String> tags,
-                                           Boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, FanResponse.FanDTO writer, FanResponse.FanDTO user) {
+    public record PostInfoWithCommunityDTO(Long id,
+                                           CommunityResponse.CommunityDTO community,
+                                           String content, LocalDateTime createdAt,
+                                           Boolean isHide,
+                                           List<String> tags,
+                                           Boolean isLike,
+                                           Long likeCount,
+                                           Long commentCount,
+                                           List<PostImageResponse.ImageDTO> images,
+                                           FanResponse.FanDTO writer,
+                                           FanResponse.FanDTO user
+    ) {
         public PostInfoWithCommunityDTO(Post post, List<String> tags, Boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, Fan fan, Team team) {
             this(post.getId(), new CommunityResponse.CommunityDTO(team, null, null), post.getContent(), post.getCreatedAt(), post.getIsHide(), tags, isLike, likeCount, commentCount, images, new FanResponse.FanDTO(post.getWriter()), new FanResponse.FanDTO(fan));
         }
@@ -35,6 +48,5 @@ public class PostResponse {
         }
 
     }
-
     public record LikeResponseDTO(Boolean isLike, Long likeCount) { }
 }
