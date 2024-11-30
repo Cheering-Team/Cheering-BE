@@ -2,9 +2,12 @@ package com.cheering.match;
 
 import com.cheering._core.util.ApiUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +32,12 @@ public class MatchController {
     @GetMapping("/communities/{communityId}/matches/next")
     public ResponseEntity<?> getNextMatch(@PathVariable("communityId") Long communityId){
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "다음 경기 조회 완료", matchService.getNextMatch(communityId)));
+    }
+
+    // 일주일 전/후 경기 조회
+    @GetMapping("/communities/{communityId}/matches/near")
+    public ResponseEntity<?> getNearMatches(@PathVariable("communityId") Long communityId){
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "최근 경기 조회 완료", matchService.getNearMatches(communityId)));
     }
 
     // (일정 등록)

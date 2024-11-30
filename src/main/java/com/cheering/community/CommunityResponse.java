@@ -1,9 +1,7 @@
 package com.cheering.community;
 
-import com.cheering.chat.chatRoom.ChatRoomResponse;
 import com.cheering.fan.FanResponse;
 import com.cheering.player.Player;
-import com.cheering.post.PostResponse;
 import com.cheering.team.Team;
 import org.springframework.data.domain.Page;
 
@@ -28,7 +26,6 @@ public class CommunityResponse {
             this(player.getId(), "PLAYER", player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, curFan, null, null, player.getFirstTeam().getKoreanName(), officialRoomId, "#000000");
         }
     }
-    public record CommunitySectionDTO (String title, List<CommunityDTO> data) { }
 
     public record CommunityListDTO(List<CommunityDTO> players, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
         public CommunityListDTO(Page<?> page, List<CommunityDTO> players) {

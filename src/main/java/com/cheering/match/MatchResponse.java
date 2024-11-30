@@ -17,4 +17,6 @@ public class MatchResponse {
             this(match.getId(), match.getStatus(), match.getTime(), match.getLocation(), match.getHomeScore(), match.getAwayScore(), new TeamResponse.TeamDTO(match.getHomeTeam()), new TeamResponse.TeamDTO(match.getAwayTeam()), match.getHomeTeam().getLeague().getSport().getName());
         }
     }
+
+    public record VoteMatchDTO (Long id, String opponentImage, String shortName, LocalDateTime time) { }
 }

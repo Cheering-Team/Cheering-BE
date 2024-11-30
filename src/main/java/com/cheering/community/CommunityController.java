@@ -2,15 +2,11 @@ package com.cheering.community;
 
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
-import com.cheering.player.PlayerService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,16 +20,6 @@ public class CommunityController {
     @GetMapping("/communities/{communityId}")
     public ResponseEntity<?> getCommunityById(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails userDetails){
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 조회 완료", communityService.getCommunityById(communityId, userDetails.getUser())));
-    }
-
-    // 커뮤니티 검색
-    // 4.0.2 까지 사용
-    @GetMapping("/communities")
-    public ResponseEntity<?> getCommunities(
-            @RequestParam(name = "teamId", required = false) Long teamId,
-            @RequestParam(name = "name", required = false) String name,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 검색 완료", communityService.getCommunities(name, teamId, userDetails.getUser())));
     }
 
     // 커뮤니티 가입
