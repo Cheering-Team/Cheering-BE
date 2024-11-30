@@ -14,17 +14,19 @@ public class VoteResponse {
                            MatchResponse.VoteMatchDTO match,
                            List<VoteOptionDTO> options,
                            Boolean isVoted,
-                           long totalCount
+                           long totalCount,
+                           Boolean isClosed
+
     ) {
-        public VoteDTO(Vote vote, MatchResponse.VoteMatchDTO match, List<VoteOptionDTO> options, Boolean isVoted, long totalCount) {
-            this(vote.getId(), vote.getTitle(), vote.getEndTime(), match, options, isVoted, totalCount);
+        public VoteDTO(Vote vote, MatchResponse.VoteMatchDTO match, List<VoteOptionDTO> options, Boolean isVoted, long totalCount, Boolean isClosed) {
+            this(vote.getId(), vote.getTitle(), vote.getEndTime(), match, options, isVoted, totalCount, isClosed);
         }
     }
 
-    public record VoteOptionDTO (Long id, String name, String image, Long communityId, Long percent, Boolean isVoted) {
+    public record VoteOptionDTO (Long id, String name, String image, String backgroundImage, Long communityId, Long percent, Boolean isVoted) {
         public VoteOptionDTO(VoteOption voteOption, Long
                 percent, Boolean isVoted) {
-            this(voteOption.getId(), voteOption.getName(), voteOption.getImage(), voteOption.getCommunityId(), percent, isVoted);
+            this(voteOption.getId(), voteOption.getName(), voteOption.getImage(), voteOption.getBackgroundImage(), voteOption.getCommunityId(), percent, isVoted);
         }
     }
 }

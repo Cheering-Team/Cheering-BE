@@ -26,6 +26,9 @@ public class VoteOption {
     private String image;
 
     @Column
+    private String backgroundImage;
+
+    @Column
     private Long communityId;
 
     @ManyToOne
@@ -36,9 +39,10 @@ public class VoteOption {
     private List<FanVote> fanVotes = new ArrayList<>();
 
     @Builder
-    public VoteOption(String name, String image, Long communityId, Vote vote) {
+    public VoteOption(String name, String image, String backgroundImage, Long communityId, Vote vote) {
         this.name = name;
         this.image = image;
+        this.backgroundImage = backgroundImage;
         this.communityId = communityId;
         this.vote = vote;
     }

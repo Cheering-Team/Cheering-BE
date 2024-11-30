@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +45,8 @@ public class VoteService {
 
         Vote vote = post.get().getVote();
 
+        boolean isClosed = vote.getEndTime().isBefore(LocalDateTime.now());
+
         MatchResponse.VoteMatchDTO matchDTO = null;
         if(vote.getMatch() != null) {
             Match match = vote.getMatch();
@@ -64,17 +67,30 @@ public class VoteService {
 
         long totalCount = fanVoteRepository.countByVote(vote);
 
-        List<VoteResponse.VoteOptionDTO> options = vote.getOptions().stream().map(option -> {
-            long count = fanVoteRepository.countByVoteOption(option);
-            return new VoteResponse.VoteOptionDTO(option, votedFanVote.isPresent() ? totalCount != 0 ? (count * 100) / totalCount : 0 : null, option.equals(votedOption));
-        }).toList();
+        List<VoteResponse.VoteOptionDTO> options;
 
-        return new VoteResponse.VoteDTO(vote, matchDTO, options, votedFanVote.isPresent(), totalCount);
+        if(isClosed) {
+            options = vote.getOptions().stream().map(option -> {
+                long count = fanVoteRepository.countByVoteOption(option);
+                return new VoteResponse.VoteOptionDTO(option, totalCount != 0 ? (count * 100) / totalCount : 0, option.equals(votedOption));
+            }).sorted((dto1, dto2)-> Long.compare(dto2.percent(), dto1.percent())).toList();
+        } else {
+            options = vote.getOptions().stream().map(option -> {
+                long count = fanVoteRepository.countByVoteOption(option);
+                return new VoteResponse.VoteOptionDTO(option, votedFanVote.isPresent() ? totalCount != 0 ? (count * 100) / totalCount : 0 : null, option.equals(votedOption));
+            }).toList();
+        }
+
+        return new VoteResponse.VoteDTO(vote, matchDTO, options, votedFanVote.isPresent(), totalCount, isClosed);
     }
 
     @Transactional
     public void vote(Long voteOptionId, User user) {
         VoteOption voteOption = voteOptionRepository.findById(voteOptionId).orElseThrow(()-> new CustomException(ExceptionCode.POST_NOT_FOUND));
+
+        if(voteOption.getVote().getEndTime().isBefore(LocalDateTime.now())) {
+            throw new CustomException(ExceptionCode.VOTE_IS_CLOSED);
+        }
 
         Fan curFan = fanRepository.findByCommunityIdAndUser(voteOption.getVote().getPost().getWriter().getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
