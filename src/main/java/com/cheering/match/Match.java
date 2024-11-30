@@ -2,6 +2,7 @@ package com.cheering.match;
 
 import com.cheering.cheer.Cheer;
 import com.cheering.team.Team;
+import com.cheering.vote.Vote;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -46,6 +47,9 @@ public class Match {
 
     @OneToMany(mappedBy = "match", cascade = CascadeType.REMOVE)
     private List<Cheer> cheers = new ArrayList<>();
+
+    @OneToOne(mappedBy = "match", cascade = CascadeType.REMOVE)
+    private Vote vote;
 
     @Builder
     public Match(MatchStatus status, LocalDateTime time, String location, String radarId, Long homeScore, Long awayScore, Team homeTeam, Team awayTeam) {

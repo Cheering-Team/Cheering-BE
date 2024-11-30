@@ -2,7 +2,6 @@ package com.cheering.community;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
-import com.cheering._core.util.S3Util;
 import com.cheering.badword.BadWordService;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.chatRoom.ChatRoomRepository;
@@ -14,10 +13,8 @@ import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
-import com.cheering.team.relation.TeamPlayerRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,10 +26,8 @@ public class CommunityService {
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
     private final FanRepository fanRepository;
-    private final TeamPlayerRepository teamPlayerRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final BadWordService badWordService;
-    private final S3Util s3Util;
 
     // 커뮤니티 조회
     public CommunityResponse.CommunityDTO getCommunityById(Long communityId, User user) {
@@ -51,39 +46,6 @@ public class CommunityService {
         return null;
     }
 
-    // 커뮤니티 검색
-    // 4.0.2 까지 사용
-    public List<CommunityResponse.CommunitySectionDTO> getCommunities(String name, Long teamId, User user) {
-        name = name.replace(" ", "");
-
-        List<Team> teams = new ArrayList<>();
-        List<Player> players = new ArrayList<>();
-
-        if(teamId != null && name.isEmpty()) {
-            Team team = teamRepository.findById(teamId).orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
-            players = teamPlayerRepository.findByTeam(team);
-        } else if(teamId != null) {
-            players = playerRepository.findByNameAndTeamId(name, teamId);
-        } else if(!name.isEmpty()) {
-            teams = teamRepository.findByName(name);
-            players = playerRepository.findByNameOrTeamName(name);
-        }
-
-        List<CommunityResponse.CommunityDTO> teamDTOS = teams.stream().map((team) -> {
-            Long fanCount = fanRepository.countByCommunityId(team.getId());
-            Optional<Fan> fan = fanRepository.findByCommunityIdAndUser(team.getId(), user);
-            return new CommunityResponse.CommunityDTO(team, fanCount, fan.map(FanResponse.FanDTO::new).orElse(null));
-        }).toList();
-
-        List<CommunityResponse.CommunityDTO> playerDTOS = players.stream().map((player) -> {
-            Long fanCount = fanRepository.countByCommunityId(player.getId());
-            Optional<Fan> fan = fanRepository.findByCommunityIdAndUser(player.getId(), user);
-            return new CommunityResponse.CommunityDTO(player, fanCount, fan.map(FanResponse.FanDTO::new).orElse(null));
-        }).toList();
-
-        return List.of(new CommunityResponse.CommunitySectionDTO("teams", teamDTOS),
-                new CommunityResponse.CommunitySectionDTO("players", playerDTOS));
-    }
     // 커뮤니티 가입
     @Transactional
     public void joinCommunity(Long communityId, String name, User user) {

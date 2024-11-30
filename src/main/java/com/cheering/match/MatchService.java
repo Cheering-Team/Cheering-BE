@@ -6,12 +6,8 @@ import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
-import com.cheering.team.league.League;
-import com.cheering.team.league.LeagueRepository;
-import com.cheering.team.relation.TeamPlayer;
 import com.cheering.team.relation.TeamPlayerRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -94,6 +90,25 @@ public class MatchService {
             return new MatchResponse.MatchDetailDTO(nextMatch.get(0));
         }
 
+        return null;
+    }
+
+    public List<MatchResponse.MatchDetailDTO> getNearMatches(Long communityId) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime oneWeekAgo = today.minusWeeks(1).atStartOfDay();
+        LocalDateTime oneWeekLater = today.plusWeeks(1).atTime(23, 59, 59);
+
+        Optional<Team> team = teamRepository.findById(communityId);
+        Optional<Player> player = playerRepository.findById(communityId);
+
+        if(team.isPresent()) {
+            List<Match> matches = matchRepository.findByHomeTeamOrAwayTeam(team.get(), oneWeekAgo, oneWeekLater);
+            return matches.stream().map(MatchResponse.MatchDetailDTO::new).toList();
+        }
+        if(player.isPresent()) {
+            List<Match> matches = matchRepository.findByHomeTeamOrAwayTeam(player.get().getFirstTeam(), oneWeekAgo, oneWeekLater);
+            return matches.stream().map(MatchResponse.MatchDetailDTO::new).toList();
+        }
         return null;
     }
 

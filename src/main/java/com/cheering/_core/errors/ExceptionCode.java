@@ -14,6 +14,7 @@ public enum ExceptionCode {
     NOT_FOUND_MANAGER_ACCOUNT(2006, "존재하지 않는 매니저 계정"),
     DUPLICATE_NAME(2007, "중복된 이름"),
     ALREADY_HANDLED_APPLY(2008, "이미 처리된 신청"),
+    VOTE_IS_CLOSED(2009, "이미 마감된 투표"),
 
     // 404
     FAN_NOT_FOUND(404, "존재하지 않는 팬"),
