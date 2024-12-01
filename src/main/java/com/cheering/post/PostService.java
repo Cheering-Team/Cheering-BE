@@ -424,7 +424,7 @@ public class PostService {
     }
 
     @NotNull
-    private PostResponse.PostInfoWithCommunityDTO getPostInfo(Post post, Fan curFan) {
+    public PostResponse.PostInfoWithCommunityDTO getPostInfo(Post post, Fan curFan) {
         boolean isTeam = curFan.getType().equals(CommunityType.TEAM);
 
         List<PostTag> postTags = postTagRepository.findByPost(post);

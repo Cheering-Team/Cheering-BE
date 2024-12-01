@@ -2,15 +2,22 @@ package com.cheering.match;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanRepository;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
+import com.cheering.post.Post;
+import com.cheering.post.PostRepository;
+import com.cheering.post.PostResponse;
+import com.cheering.post.PostService;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
-import com.cheering.team.relation.TeamPlayerRepository;
+import com.cheering.user.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,8 +32,11 @@ import java.util.stream.Collectors;
 public class MatchService {
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
-    private final TeamPlayerRepository teamPlayerRepository;
+    private final PostRepository postRepository;
     private final MatchRepository matchRepository;
+    private final FanRepository fanRepository;
+    private final PostService postService;
+
     public Map<String, List<MatchResponse.MatchDTO>> getMatchSchedule(Long communityId, int year, int month) {
         YearMonth yearMonth = YearMonth.of(year, month);
         YearMonth previousMonth = yearMonth.minusMonths(2);
@@ -110,6 +120,22 @@ public class MatchService {
             return matches.stream().map(MatchResponse.MatchDetailDTO::new).toList();
         }
         return null;
+    }
+
+    // 특정 경기투표 포함 게시글 조회
+    @Transactional
+    public PostResponse.PostListDTO getVotes(Long matchId, Long communityId, String orderBy, Pageable pageable, User user) {
+        Fan curFan = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Page<Post> postList;
+        if(orderBy.equals("latest")){
+            postList = postRepository.findByMatchIdAndCommunityIdOrderByLatest(communityId, matchId, curFan, pageable);
+        } else {
+            postList = postRepository.findByMatchIdAndCommunityIdOrderByVotes(communityId, matchId, curFan, pageable);
+        }
+
+        List<PostResponse.PostInfoWithCommunityDTO> postInfoDTOS = postList.getContent().stream().map((post -> postService.getPostInfo(post, curFan))).toList();
+
+        return new PostResponse.PostListDTO(postList, postInfoDTOS);
     }
 
     @Transactional

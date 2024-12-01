@@ -32,4 +32,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 내 커뮤니티 인기 게시글
     @Query("SELECT p FROM Post p WHERE p.writer.communityId IN :communityIds AND p.isHide = false AND p.id NOT IN (SELECT pr.post.id FROM PostReport pr WHERE pr.writer IN :fans AND pr.post.id IS NOT NULL) AND p.writer NOT IN (SELECT b.to FROM Block b WHERE b.from IN :fans) AND (SELECT COUNT(l) FROM Like l WHERE l.post.id = p.id) >= 1 ORDER BY p.createdAt DESC")
     Page<Post> findMyHotPosts(@Param("communityIds") List<Long> communityIds, @Param("fans") List<Fan> fans, Pageable pageable);
+
+    @Query("SELECT v.post FROM Vote v WHERE v.post.writer.communityId = :communityId AND v.match.id = :matchId AND v.post.isHide = false AND v.post.id NOT IN (SELECT pr.post.id FROM PostReport pr WHERE pr.writer = :fan AND pr.post.id IS NOT NULL) AND v.post.writer NOT IN (SELECT b.to FROM Block b WHERE b.from = :fan) ORDER BY v.post.createdAt DESC")
+    Page<Post> findByMatchIdAndCommunityIdOrderByLatest(@Param("communityId") Long communityId, @Param("matchId") Long matchId, @Param("fan") Fan curFan, Pageable pageable);
+
+    @Query("SELECT p FROM Post p LEFT JOIN Vote v ON v.post = p LEFT JOIN FanVote fv ON fv.vote = v WHERE p.writer.communityId = :communityId AND v.match.id = :matchId AND p.isHide = false AND p.id NOT IN (SELECT pr.post.id FROM PostReport pr WHERE pr.writer = :fan AND pr.post.id IS NOT NULL) AND p.writer NOT IN (SELECT b.to FROM Block b WHERE b.from = :fan) GROUP BY p.id ORDER BY COUNT(fv) DESC")
+    Page<Post> findByMatchIdAndCommunityIdOrderByVotes(@Param("communityId") Long communityId, @Param("matchId") Long matchId, @Param("fan") Fan curFan, Pageable pageable);
 }
