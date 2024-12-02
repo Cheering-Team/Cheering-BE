@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.cheering.user.deviceToken.DeviceToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -68,8 +69,8 @@ public class CommentService {
             Notification notification = new Notification(NotificaitonType.COMMENT, post.getWriter(), curFan, post, comment);
 
             notificationRepository.save(notification);
-            if(notification.getTo().getUser().getDeviceToken() != null) {
-                fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), "댓글", comment.getWriter().getName() + "님이 댓글을 남겼습니다:\"" + comment.getContent() + "\"", postId, notification.getId());
+            for(DeviceToken deviceToken: notification.getTo().getUser().getDeviceTokens()){
+                fcmService.sendPostMessageTo(deviceToken.getToken(), "댓글", comment.getWriter().getName() + "님이 댓글을 남겼습니다:\"" + comment.getContent() + "\"", postId, notification.getId());
             }
 
         }

@@ -34,4 +34,9 @@ public class UserRequest {
             String phone,
             String code
     ) { }
+
+    public record SaveFCMDTO(
+            String deviceId,
+            String token
+    ) { }
 }

@@ -9,7 +9,6 @@ import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.notification.NotificaitonType;
 import com.cheering.notification.Notification;
 import com.cheering.notification.NotificationRepository;
-import com.cheering.player.Player;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanRepository;
 import com.cheering.post.PostRepository;
@@ -18,6 +17,7 @@ import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.user.User;
 
+import com.cheering.user.deviceToken.DeviceToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,8 +67,8 @@ public class ReCommentService {
         if(!toFan.equals(curFan) && blockRepository.findByFromAndTo(toFan, curFan).isEmpty()) {
             Notification notification = new Notification(NotificaitonType.RECOMMNET, toFan, curFan, comment.getPost(), reComment);
             notificationRepository.save(notification);
-            if(notification.getTo().getUser().getDeviceToken() != null) {
-                fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), curFan.getName(), "회원님의 댓글에 답글을 남겼습니다:\"" + reComment.getContent() + "\"", comment.getPost().getId(), notification.getId());
+            for(DeviceToken deviceToken: notification.getTo().getUser().getDeviceTokens()){
+                fcmService.sendPostMessageTo(deviceToken.getToken(), curFan.getName(), "회원님의 댓글에 답글을 남겼습니다:\"" + reComment.getContent() + "\"", comment.getPost().getId(), notification.getId());
             }
         }
 

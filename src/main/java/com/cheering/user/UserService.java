@@ -11,23 +11,19 @@ import com.cheering.badword.BadWordService;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 
-import com.cheering.player.Player;
-import com.cheering.player.PlayerRepository;
-import com.cheering.fan.Fan;
-import com.cheering.fan.FanRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
 import com.cheering.report.postReport.PostReportRepository;
 import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.report.reCommentReport.ReCommentReportRepository;
-import com.cheering.user.TempAppleUser.TempAppleUser;
-import com.cheering.user.TempAppleUser.TempAppleUserRepository;
+import com.cheering.user.deviceToken.DeviceToken;
+import com.cheering.user.deviceToken.DeviceTokenRepository;
+import com.cheering.user.tempAppleUser.TempAppleUser;
+import com.cheering.user.tempAppleUser.TempAppleUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -40,6 +36,7 @@ public class UserService {
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final TempAppleUserRepository tempAppleUserRepository;
+    private final DeviceTokenRepository deviceTokenRepository;
     private final BadWordService badWordService;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
@@ -359,19 +356,29 @@ public class UserService {
     }
 
     @Transactional
-    public void saveFCMToken(String token, User user) {
+    public void saveFCMToken(UserRequest.SaveFCMDTO requestDTO, User user) {
         User curUser = userRepository.findById(user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.USER_NOT_FOUND));
+        Optional<DeviceToken> deviceToken = deviceTokenRepository.findByDeviceIdAndUser(requestDTO.deviceId(), curUser);
 
-        curUser.setDeviceToken(token);
-        userRepository.save(curUser);
+        if(deviceToken.isEmpty()) {
+            DeviceToken newDeviceToken = DeviceToken.builder()
+                    .deviceId(requestDTO.deviceId())
+                    .token(requestDTO.token())
+                    .user(user)
+                    .build();
+            deviceTokenRepository.save(newDeviceToken);
+        }
+        else {
+            deviceToken.get().setToken(requestDTO.token());
+            deviceTokenRepository.save(deviceToken.get());
+        }
     }
 
     @Transactional
-    public void deleteFCMToken(User user) {
+    public void deleteFCMToken(String deviceId, User user) {
         User curUser = userRepository.findById(user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
-        curUser.setDeviceToken(null);
-        userRepository.save(curUser);
+        deviceTokenRepository.deleteByDeviceIdAndUser(deviceId, curUser);
     }
 
     private UserResponse.TokenDTO issueToken(User user) {

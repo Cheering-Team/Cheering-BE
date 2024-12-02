@@ -37,6 +37,8 @@ public class Match {
 
     private Long awayScore;
 
+    private Boolean isMatchNotified;
+
     @ManyToOne
     @JoinColumn(name = "home_team_id")
     private Team homeTeam;

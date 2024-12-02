@@ -10,7 +10,6 @@ import com.cheering.comment.reComment.ReCommentRepository;
 import com.cheering.fan.CommunityType;
 import com.cheering.match.Match;
 import com.cheering.match.MatchRepository;
-import com.cheering.match.MatchResponse;
 import com.cheering.player.Player;
 import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.notification.NotificaitonType;
@@ -39,6 +38,7 @@ import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
+import com.cheering.user.deviceToken.DeviceToken;
 import com.cheering.vote.Vote;
 import com.cheering.vote.VoteRepository;
 import com.cheering.vote.voteOption.VoteOption;
@@ -267,8 +267,8 @@ public class PostService {
                 Notification notification = new Notification(NotificaitonType.LIKE, post.getWriter(), curFan, post);
 
                 notificationRepository.save(notification);
-                if(notification.getTo().getUser().getDeviceToken() != null) {
-                    fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), curFan.getName(), "회원님의 게시글을 좋아합니다.", postId, notification.getId());
+                for(DeviceToken deviceToken: notification.getTo().getUser().getDeviceTokens()){
+                    fcmService.sendPostMessageTo(deviceToken.getToken(), curFan.getName(), "회원님의 게시글을 좋아합니다.", postId, notification.getId());
                 }
             }
             return new PostResponse.LikeResponseDTO(true, likeCount);

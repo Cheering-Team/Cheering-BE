@@ -4,6 +4,7 @@ import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanRepository;
+import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.post.Post;
@@ -13,6 +14,8 @@ import com.cheering.post.PostService;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
+import com.cheering.user.UserRepository;
+import com.cheering.user.deviceToken.DeviceToken;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +39,9 @@ public class MatchService {
     private final PostRepository postRepository;
     private final MatchRepository matchRepository;
     private final FanRepository fanRepository;
+    private final UserRepository userRepository;
     private final PostService postService;
+    private final FcmServiceImpl fcmService;
 
     public Map<String, List<MatchResponse.MatchDTO>> getMatchSchedule(Long communityId, int year, int month) {
         YearMonth yearMonth = YearMonth.of(year, month);
@@ -136,6 +142,51 @@ public class MatchService {
         List<PostResponse.PostInfoWithCommunityDTO> postInfoDTOS = postList.getContent().stream().map((post -> postService.getPostInfo(post, curFan))).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);
+    }
+
+    // 경기 시작 30분 알림
+    @Scheduled(cron = "0 * * * * ?")
+    @Transactional
+    public void notifyMatch() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime targetTime = now.plusMinutes(30);
+
+        List<Match> matches = matchRepository.findMatchesForReminder(now, targetTime);
+
+        for(Match match : matches) {
+            Team homeTeam = match.getHomeTeam();
+            Team awayTeam = match.getAwayTeam();
+
+            List<User> homeFans = userRepository.findByTeamId(homeTeam.getId());
+            for(User user : homeFans) {
+                for(DeviceToken deviceToken: user.getDeviceTokens()){
+                    Boolean isTeamFan = fanRepository.existsByCommunityIdAndUser(homeTeam.getId(), user);
+                    if(isTeamFan) {
+                        fcmService.sendMatchMessageTo(deviceToken.getToken(), homeTeam.getKoreanName(), "30분 후 vs " + awayTeam.getKoreanName() + "시작!\n응원의 메세지를 남겨보세요!", match.getId(), homeTeam.getId());
+                    } else {
+                        Pageable pageable = PageRequest.of(0, 1);
+                        Page<Fan> firstFan = fanRepository.findByFirstTeamIdAndUser(homeTeam.getId(), user, pageable);
+                        fcmService.sendMatchMessageTo(deviceToken.getToken(), homeTeam.getKoreanName(), "30분 후 vs " + awayTeam.getKoreanName() + "시작!\n응원의 메세지를 남겨보세요!", match.getId(), firstFan.getContent().get(0).getCommunityId());
+                    }
+
+                }
+            }
+            List<User> awayFans = userRepository.findByTeamId(awayTeam.getId());
+            for(User user : awayFans) {
+                for(DeviceToken deviceToken: user.getDeviceTokens()){
+                    Boolean isTeamFan = fanRepository.existsByCommunityIdAndUser(awayTeam.getId(), user);
+                    if(isTeamFan){
+                        fcmService.sendMatchMessageTo(deviceToken.getToken(), awayTeam.getKoreanName(), "30분 후 vs " + homeTeam.getKoreanName() + "시작!\n응원의 메세지를 남겨보세요!", match.getId(), awayTeam.getId());
+                    } else {
+                        Pageable pageable = PageRequest.of(0, 1);
+                        Page<Fan> firstFan = fanRepository.findByFirstTeamIdAndUser(awayTeam.getId(), user, pageable);
+                        fcmService.sendMatchMessageTo(deviceToken.getToken(), awayTeam.getKoreanName(), "30분 후 vs " + homeTeam.getKoreanName() + "시작!\n응원의 메세지를 남겨보세요!", match.getId(), firstFan.getContent().get(0).getCommunityId());
+                    }
+                }
+            }
+            match.setIsMatchNotified(true);
+            matchRepository.save(match);
+        }
     }
 
     @Transactional

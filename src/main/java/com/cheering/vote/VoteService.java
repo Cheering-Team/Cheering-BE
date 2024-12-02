@@ -34,16 +34,16 @@ public class VoteService {
     private final FanVoteRepository fanVoteRepository;
 
     public VoteResponse.VoteDTO getVote(Long postId, User user) {
-        Optional<Post> post = postRepository.findById(postId);
+        Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        if(post.isEmpty()) {
+        if(post.getVote() == null) {
             return null;
         }
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(post.get().getWriter().getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getWriter().getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
         boolean isTeam = curFan.getType().equals(CommunityType.TEAM);
 
-        Vote vote = post.get().getVote();
+        Vote vote = post.getVote();
 
         boolean isClosed = vote.getEndTime().isBefore(LocalDateTime.now());
 
