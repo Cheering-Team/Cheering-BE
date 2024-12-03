@@ -25,18 +25,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query("SELECT n FROM Notification n WHERE n.to.user = :user AND n.from NOT IN (SELECT b.to FROM Block b WHERE b.from.user = :user) ORDER BY n.createdAt DESC")
     Page<Notification> findByUser(@Param("user") User user, Pageable pageable);
 
-    @Modifying
-    @Query("DELETE FROM Notification n WHERE n.comment = :comment")
-    void deleteByComment(@Param("comment") Comment comment);
-
-    @Modifying
-    @Query("DELETE FROM Notification n WHERE n.reComment = :reComment")
-    void deleteByReComment(@Param("reComment") ReComment reComment);
-
-    @Modifying
-    @Query("DELETE FROM Notification n WHERE n.reComment.comment.id = :commentId")
-    void deleteByCommentId(@Param("commentId") Long commentId);
-
     @Query("SELECT CASE WHEN COUNT(n) > 0 THEN true ELSE false END FROM Notification n WHERE n.to.user = :user AND n.isRead = false")
     boolean isUnreadByUser(@Param("user") User user);
 

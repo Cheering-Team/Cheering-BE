@@ -6,6 +6,7 @@ import com.cheering.fan.FanResponse;
 import com.cheering.post.Post;
 import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.PostImage.PostImageResponse;
+import com.cheering.user.Role;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
@@ -53,4 +54,6 @@ public class NotificationResponse {
             this(notifications, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast());
         }
     }
+
+    public record IsUnreadDTO (Boolean isUnread, Role role) { }
 }

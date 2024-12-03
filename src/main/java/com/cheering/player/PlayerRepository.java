@@ -27,10 +27,6 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
     @Query(value = "SELECT p FROM Player p LEFT JOIN TeamPlayer tp ON p.id = tp.player.id LEFT JOIN Team t ON tp.team.id = t.id left join Fan f on f.communityId = p.id WHERE REPLACE(p.koreanName, ' ', '') LIKE %:name% OR REPLACE(p.englishName, ' ', '') LIKE %:name% OR REPLACE(t.koreanName , ' ', '') LIKE %:name% OR REPLACE(t.englishName , ' ', '') LIKE %:name% GROUP BY p ORDER BY count(f.id) DESC", countQuery = "select count(distinct p) FROM Player p LEFT JOIN TeamPlayer tp ON p.id = tp.player.id LEFT JOIN Team t ON tp.team.id = t.id WHERE REPLACE(p.koreanName, ' ', '') LIKE %:name% OR REPLACE(p.englishName, ' ', '') LIKE %:name% OR REPLACE(t.koreanName , ' ', '') LIKE %:name% OR REPLACE(t.englishName , ' ', '') LIKE %:name%")
     Page<Player> findByNameOrTeamName(@Param("name") String name, Pageable pageable);
 
-    // 4.0.2 까지 사용
-    @Query("SELECT DISTINCT p FROM Player p LEFT JOIN TeamPlayer tp ON p.id = tp.player.id LEFT JOIN Team t ON tp.team.id = t.id WHERE REPLACE(p.koreanName, ' ', '') LIKE %:name% OR REPLACE(p.englishName, ' ', '') LIKE %:name% OR REPLACE(t.koreanName , ' ', '') LIKE %:name% OR REPLACE(t.englishName , ' ', '') LIKE %:name%")
-    List<Player> findByNameOrTeamName(@Param("name") String name);
-
     @Query(value = "SELECT * FROM player_tb ORDER BY RANDOM() LIMIT 1", nativeQuery = true)
     Player findRandomPlayer();
 

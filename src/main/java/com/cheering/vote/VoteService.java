@@ -11,6 +11,8 @@ import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.post.Post;
 import com.cheering.post.PostRepository;
+import com.cheering.team.Team;
+import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
 import com.cheering.vote.fanVote.FanVote;
 import com.cheering.vote.fanVote.FanVoteRepository;
@@ -32,18 +34,18 @@ public class VoteService {
     private final PlayerRepository playerRepository;
     private final VoteOptionRepository voteOptionRepository;
     private final FanVoteRepository fanVoteRepository;
+    private final TeamRepository teamRepository;
 
     public VoteResponse.VoteDTO getVote(Long postId, User user) {
-        Optional<Post> post = postRepository.findById(postId);
+        Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        if(post.isEmpty()) {
+        if(post.getVote() == null) {
             return null;
         }
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(post.get().getWriter().getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-        boolean isTeam = curFan.getType().equals(CommunityType.TEAM);
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
-        Vote vote = post.get().getVote();
+        Vote vote = post.getVote();
 
         boolean isClosed = vote.getEndTime().isBefore(LocalDateTime.now());
 
@@ -51,11 +53,14 @@ public class VoteService {
         if(vote.getMatch() != null) {
             Match match = vote.getMatch();
 
+            Optional<Team> team = teamRepository.findById(post.getCommunityId());
+
             Long curTeamId;
-            if(isTeam) {
-                curTeamId = curFan.getCommunityId();
+
+            if(team.isPresent()) {
+                curTeamId = vote.getPost().getCommunityId();
             } else {
-                Player player = playerRepository.findById(curFan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+                Player player = playerRepository.findById(vote.getPost().getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
                 curTeamId = player.getFirstTeam().getId();
             }
             matchDTO = new MatchResponse.VoteMatchDTO(match.getId(), curTeamId.equals(match.getHomeTeam().getId()) ? match.getAwayTeam().getImage() : match.getHomeTeam().getImage(), curTeamId.equals(match.getHomeTeam().getId()) ? match.getAwayTeam().getShortName() : match.getHomeTeam().getShortName(), match.getTime());
@@ -92,7 +97,7 @@ public class VoteService {
             throw new CustomException(ExceptionCode.VOTE_IS_CLOSED);
         }
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(voteOption.getVote().getPost().getWriter().getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(voteOption.getVote().getPost().getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Optional<FanVote> fanVote = fanVoteRepository.findByVoteOptionAndFan(voteOption, curFan);
 

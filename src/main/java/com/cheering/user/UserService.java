@@ -11,23 +11,19 @@ import com.cheering.badword.BadWordService;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 
-import com.cheering.player.Player;
-import com.cheering.player.PlayerRepository;
-import com.cheering.fan.Fan;
-import com.cheering.fan.FanRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
 import com.cheering.report.postReport.PostReportRepository;
 import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.report.reCommentReport.ReCommentReportRepository;
-import com.cheering.user.TempAppleUser.TempAppleUser;
-import com.cheering.user.TempAppleUser.TempAppleUserRepository;
+import com.cheering.user.deviceToken.DeviceToken;
+import com.cheering.user.deviceToken.DeviceTokenRepository;
+import com.cheering.user.tempAppleUser.TempAppleUser;
+import com.cheering.user.tempAppleUser.TempAppleUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -40,6 +36,7 @@ public class UserService {
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
     private final TempAppleUserRepository tempAppleUserRepository;
+    private final DeviceTokenRepository deviceTokenRepository;
     private final BadWordService badWordService;
     private final SmsUtil smsUtil;
     private final RedisUtils redisUtils;
@@ -61,9 +58,10 @@ public class UserService {
 
         if(phone.equals("01062013110")) {
             verificationCode = "911911";
-            smsUtil.sendCode(phone, verificationCode);
         } else if(phone.equals("01912341234")) {
             verificationCode = "019123";
+        } else if(phone.equals("01911911911")) {
+            verificationCode = "019119";
         } else {
             verificationCode = String.valueOf((int) (Math.random() * 900000) + 100000);
             smsUtil.sendCode(phone, verificationCode);
@@ -359,19 +357,29 @@ public class UserService {
     }
 
     @Transactional
-    public void saveFCMToken(String token, User user) {
+    public void saveFCMToken(UserRequest.SaveFCMDTO requestDTO, User user) {
         User curUser = userRepository.findById(user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.USER_NOT_FOUND));
+        Optional<DeviceToken> deviceToken = deviceTokenRepository.findByDeviceIdAndUser(requestDTO.deviceId(), curUser);
 
-        curUser.setDeviceToken(token);
-        userRepository.save(curUser);
+        if(deviceToken.isEmpty()) {
+            DeviceToken newDeviceToken = DeviceToken.builder()
+                    .deviceId(requestDTO.deviceId())
+                    .token(requestDTO.token())
+                    .user(user)
+                    .build();
+            deviceTokenRepository.save(newDeviceToken);
+        }
+        else {
+            deviceToken.get().setToken(requestDTO.token());
+            deviceTokenRepository.save(deviceToken.get());
+        }
     }
 
     @Transactional
-    public void deleteFCMToken(User user) {
+    public void deleteFCMToken(String deviceId, User user) {
         User curUser = userRepository.findById(user.getId()).orElseThrow(()-> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
-        curUser.setDeviceToken(null);
-        userRepository.save(curUser);
+        deviceTokenRepository.deleteByDeviceIdAndUser(deviceId, curUser);
     }
 
     private UserResponse.TokenDTO issueToken(User user) {
@@ -391,63 +399,4 @@ public class UserService {
         userRepository.save(user);
         return isFirstLogin;
     }
-
-//    public void registerCommunityAccount(Long communityId, UserRequest.SendSMSDTO requestDTO) {
-//        Player player = playerRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-//
-//        if(userRepository.existsByCommunity(player)){
-//            throw new CustomException(ExceptionCode.ALREADY_MANAGER_ACCOUNT);
-//        } else {
-//            Random random = new Random();
-//            String phone;
-//
-//            do {
-//                phone = String.valueOf((long) 10000000000L + (long)(random.nextDouble() * 90000000000L));
-//            } while (userRepository.existsByPhone(phone));
-//
-//            String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
-//
-//            User newUser = User.builder()
-//                    .role(player.getTeam() == null ? Role.PLAYER : Role.TEAM)
-//                    .phone(phone)
-//                    .password(passwordEncoder.encode(code))
-//                    .name(player.getKoreanName())
-//                    .community(player)
-//                    .build();
-//
-//            userRepository.save(newUser);
-//
-//            smsUtil.sendAccount(requestDTO.phone(), phone, code);
-//        }
-//    }
-//
-//    public UserRequest.SendSMSDTO getManagerAccount(Long communityId, User user) {
-//        if(!user.getRole().equals(Role.ADMIN)) {
-//            throw new CustomException(ExceptionCode.USER_FORBIDDEN);
-//        }
-//
-//        Player player = playerRepository.findById(communityId).orElseThrow(()-> new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-//
-//        Optional<User> playerAccount = userRepository.findByCommunity(player);
-//
-//        if(playerAccount.isEmpty()) {
-//            throw new CustomException(ExceptionCode.NOT_FOUND_MANAGER_ACCOUNT);
-//        } else {
-//            return new UserRequest.SendSMSDTO(user.getPhone());
-//        }
-//    }
-//
-//    @Transactional
-//    public void reissueManagerAccountPassword(Long communityId, UserRequest.SendSMSDTO requestDTO) {
-//        Player player = playerRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-//
-//        User user = userRepository.findByCommunity(player).orElseThrow(()-> new CustomException(ExceptionCode.NOT_FOUND_MANAGER_ACCOUNT));
-//
-//        Random random = new Random();
-//        String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
-//        user.setPassword(passwordEncoder.encode(code));
-//        userRepository.save(user);
-//
-//        smsUtil.sendAccount(requestDTO.phone(), user.getPhone(), code);
-//    }
 }

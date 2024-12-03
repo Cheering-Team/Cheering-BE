@@ -1,9 +1,12 @@
 package com.cheering.match;
 
+import com.cheering.post.PostResponse;
 import com.cheering.team.Team;
 import com.cheering.team.TeamResponse;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class MatchResponse {
     public record MatchDTO (Long id, Boolean isHome, String opponentImage) {
@@ -19,4 +22,11 @@ public class MatchResponse {
     }
 
     public record VoteMatchDTO (Long id, String opponentImage, String shortName, LocalDateTime time) { }
+
+    public record MatchListDTO(List<MatchDetailDTO> matches, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
+        public MatchListDTO(Page<?> page, List<MatchDetailDTO> matches) {
+            this(matches, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
+        }
+
+    }
 }
