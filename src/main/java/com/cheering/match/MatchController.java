@@ -51,6 +51,22 @@ public class MatchController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "투표 목록 조회 완료", matchService.getVotes(matchId, communityId, orderBy, pageable, customUserDetails.getUser())));
     }
 
+    // 안끝난 경기 조회
+    @GetMapping("/matches/unfinished")
+    public ResponseEntity<?> getUnfinishedMatches(@RequestParam int page, @RequestParam int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "경기 목록 조회", matchService.getUnfinishedMatches(pageable)));
+
+    }
+
+    // 경기 수정
+    @PutMapping("/matches/{matchId}")
+    public ResponseEntity<?> editMatch(@PathVariable("matchId") Long matchId, @RequestBody MatchRequest.EditMatchDTO requestDTO) {
+        matchService.editMatch(matchId, requestDTO);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "경기 수정", null));
+    }
+
+
     // (일정 등록)
     @PostMapping("/matches")
     public ResponseEntity<?> addMatches(@RequestBody String jsonString){

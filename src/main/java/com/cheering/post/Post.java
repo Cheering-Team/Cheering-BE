@@ -34,6 +34,9 @@ public class Post extends BaseTimeEntity {
     @Column(nullable = false)
     private Boolean isHide = false;
 
+    @Column
+    private Long communityId;
+
     @ManyToOne
     @JoinColumn(name = "writer_id", nullable = false)
     private Fan writer;
@@ -60,9 +63,10 @@ public class Post extends BaseTimeEntity {
     private Vote vote;
 
     @Builder
-    public Post(Long postId, String content, Fan writer) {
+    public Post(Long postId, String content, Fan writer, Long communityId) {
         this.id = postId;
         this.content = content;
         this.writer = writer;
+        this.communityId = communityId;
     }
 }

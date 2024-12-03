@@ -27,11 +27,47 @@ public class FcmServiceImpl {
         }
     }
 
-    public void sendMatchMessageTo(String token, String title, String body, Long matchId, Long communityId) {
+    public void sendMatchStartMessageTo(String token, String title, String body, Long matchId, Long communityId) {
         Message message = Message.builder()
                 .setToken(token)
                 .putData("type", "MATCH")
                 .putData("matchId", matchId.toString())
+                .putData("communityId", communityId.toString())
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
+                .build();
+        try {
+            String response = FirebaseMessaging.getInstance().send(message);
+        } catch (FirebaseMessagingException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void sendMatchEndPostMessageTo(String token, String title, String body, Long postId) {
+        Message message = Message.builder()
+                .setToken(token)
+                .putData("type", "MATCH_END_POST")
+                .putData("postId", postId.toString())
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
+                .build();
+        try {
+            String response = FirebaseMessaging.getInstance().send(message);
+        } catch (FirebaseMessagingException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void sendMatchEndCommunityMessageTo(String token, String title, String body, Long communityId) {
+        Message message = Message.builder()
+                .setToken(token)
+                .putData("type", "MATCH_END_COMMUNITY")
                 .putData("communityId", communityId.toString())
                 .setNotification(Notification.builder()
                         .setTitle(title)

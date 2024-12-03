@@ -107,11 +107,11 @@ public class FanService {
             Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
 
             if(isTeam) {
-                Team team = teamRepository.findById(curFan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+                Team team = teamRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
 
                 return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team);
             } else {
-                Player player = playerRepository.findById(curFan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+                Player player = playerRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
                 return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player);
             }

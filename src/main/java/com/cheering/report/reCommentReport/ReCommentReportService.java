@@ -29,7 +29,7 @@ public class ReCommentReportService {
 
         ReComment reComment = reCommentRepository.findById(reCommentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(reComment.getWriter().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(reComment.getComment().getPost().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Optional<ReCommentReport> reCommentReport = reCommentReportRepository.findByReCommentAndWriter(reComment, curFan);
 

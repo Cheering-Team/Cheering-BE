@@ -55,7 +55,7 @@ public class CommentService {
 
         String content = requestDTO.content();
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getWriter().getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Comment comment = Comment.builder()
                 .content(content)
@@ -82,7 +82,7 @@ public class CommentService {
     public CommentResponse.CommentListDTO getComments(Long postId, Pageable pageable, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getWriter().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Page<Comment> commentList = commentRepository.findByPost(post, curFan, pageable);
 
@@ -115,7 +115,7 @@ public class CommentService {
 
         Fan writer = comment.getWriter();
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(writer.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(comment.getPost().getCommunityId(),user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);

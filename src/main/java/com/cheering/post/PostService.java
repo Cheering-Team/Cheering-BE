@@ -91,6 +91,7 @@ public class PostService {
         Post post = Post.builder()
                 .content(content)
                 .writer(writer)
+                .communityId(communityId)
                 .build();
 
         postRepository.save(post);
@@ -144,6 +145,7 @@ public class PostService {
         Post post = Post.builder()
                 .content(content)
                 .writer(writer)
+                .communityId(communityId)
                 .build();
 
         postRepository.save(post);
@@ -239,7 +241,7 @@ public class PostService {
 
         Fan writer = post.getWriter();
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(writer.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         return getPostInfo(post, curFan);
     }
@@ -249,7 +251,7 @@ public class PostService {
     public PostResponse.LikeResponseDTO toggleLike(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getWriter().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
 
@@ -293,7 +295,7 @@ public class PostService {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         Fan writer = post.getWriter();
-        Fan curFan = fanRepository.findByCommunityIdAndUser(writer.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);
@@ -353,7 +355,7 @@ public class PostService {
         Post post = postRepository.findById(postId).orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
 
         Fan writer = post.getWriter();
-        Fan curFan = fanRepository.findByCommunityIdAndUser(writer.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);
@@ -396,7 +398,7 @@ public class PostService {
         Page<Post> posts = postRepository.findMyHotPosts(communityIds, fans, pageable);
 
         List<PostResponse.PostInfoWithCommunityDTO> postInfoDTOS = posts.getContent().stream().map((post -> {
-            Fan curFan = fanRepository.findByCommunityIdAndUser(post.getWriter().getCommunityId(), user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+            Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
             return getPostInfo(post, curFan);
         })).toList();
@@ -425,8 +427,6 @@ public class PostService {
 
     @NotNull
     public PostResponse.PostInfoWithCommunityDTO getPostInfo(Post post, Fan curFan) {
-        boolean isTeam = curFan.getType().equals(CommunityType.TEAM);
-
         List<PostTag> postTags = postTagRepository.findByPost(post);
         List<String> tags = postTags.stream().map((postTag) -> {
             Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
@@ -442,14 +442,13 @@ public class PostService {
 
         Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
 
-        if(isTeam) {
-            Team team = teamRepository.findById(curFan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+        Optional<Team> team = teamRepository.findById(post.getCommunityId());
+        Optional<Player> player = playerRepository.findById(post.getCommunityId());
 
-            return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team);
+        if(team.isPresent()) {
+            return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team.get());
         } else {
-            Player player = playerRepository.findById(curFan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
-
-            return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player);
+            return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player.get());
         }
     }
 }

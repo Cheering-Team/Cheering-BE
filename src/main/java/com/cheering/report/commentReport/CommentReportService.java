@@ -29,7 +29,7 @@ public class CommentReportService {
 
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(comment.getWriter().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(comment.getPost().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Optional<CommentReport> commentReport = commentReportRepository.findByCommentAndWriter(comment, curFan);
 

@@ -58,9 +58,10 @@ public class UserService {
 
         if(phone.equals("01062013110")) {
             verificationCode = "911911";
-            smsUtil.sendCode(phone, verificationCode);
         } else if(phone.equals("01912341234")) {
             verificationCode = "019123";
+        } else if(phone.equals("01911911911")) {
+            verificationCode = "019119";
         } else {
             verificationCode = String.valueOf((int) (Math.random() * 900000) + 100000);
             smsUtil.sendCode(phone, verificationCode);
@@ -398,63 +399,4 @@ public class UserService {
         userRepository.save(user);
         return isFirstLogin;
     }
-
-//    public void registerCommunityAccount(Long communityId, UserRequest.SendSMSDTO requestDTO) {
-//        Player player = playerRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-//
-//        if(userRepository.existsByCommunity(player)){
-//            throw new CustomException(ExceptionCode.ALREADY_MANAGER_ACCOUNT);
-//        } else {
-//            Random random = new Random();
-//            String phone;
-//
-//            do {
-//                phone = String.valueOf((long) 10000000000L + (long)(random.nextDouble() * 90000000000L));
-//            } while (userRepository.existsByPhone(phone));
-//
-//            String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
-//
-//            User newUser = User.builder()
-//                    .role(player.getTeam() == null ? Role.PLAYER : Role.TEAM)
-//                    .phone(phone)
-//                    .password(passwordEncoder.encode(code))
-//                    .name(player.getKoreanName())
-//                    .community(player)
-//                    .build();
-//
-//            userRepository.save(newUser);
-//
-//            smsUtil.sendAccount(requestDTO.phone(), phone, code);
-//        }
-//    }
-//
-//    public UserRequest.SendSMSDTO getManagerAccount(Long communityId, User user) {
-//        if(!user.getRole().equals(Role.ADMIN)) {
-//            throw new CustomException(ExceptionCode.USER_FORBIDDEN);
-//        }
-//
-//        Player player = playerRepository.findById(communityId).orElseThrow(()-> new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-//
-//        Optional<User> playerAccount = userRepository.findByCommunity(player);
-//
-//        if(playerAccount.isEmpty()) {
-//            throw new CustomException(ExceptionCode.NOT_FOUND_MANAGER_ACCOUNT);
-//        } else {
-//            return new UserRequest.SendSMSDTO(user.getPhone());
-//        }
-//    }
-//
-//    @Transactional
-//    public void reissueManagerAccountPassword(Long communityId, UserRequest.SendSMSDTO requestDTO) {
-//        Player player = playerRepository.findById(communityId).orElseThrow(()->new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND));
-//
-//        User user = userRepository.findByCommunity(player).orElseThrow(()-> new CustomException(ExceptionCode.NOT_FOUND_MANAGER_ACCOUNT));
-//
-//        Random random = new Random();
-//        String code = String.valueOf((long) 100000L + (long)(random.nextDouble() * 900000L));
-//        user.setPassword(passwordEncoder.encode(code));
-//        userRepository.save(user);
-//
-//        smsUtil.sendAccount(requestDTO.phone(), user.getPhone(), code);
-//    }
 }

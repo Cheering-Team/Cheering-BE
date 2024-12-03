@@ -33,7 +33,7 @@ public class Vote extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDateTime endTime;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "match_id")
     private Match match;
 

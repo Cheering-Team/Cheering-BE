@@ -50,8 +50,8 @@ public class Match {
     @OneToMany(mappedBy = "match", cascade = CascadeType.REMOVE)
     private List<Cheer> cheers = new ArrayList<>();
 
-    @OneToOne(mappedBy = "match", cascade = CascadeType.REMOVE)
-    private Vote vote;
+    @OneToMany(mappedBy = "match", cascade = CascadeType.REMOVE)
+    private List<Vote> votes = new ArrayList<>();
 
     @Builder
     public Match(MatchStatus status, LocalDateTime time, String location, String radarId, Long homeScore, Long awayScore, Team homeTeam, Team awayTeam) {

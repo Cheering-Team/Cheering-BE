@@ -51,7 +51,7 @@ public class ReCommentService {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(comment.getWriter().getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(comment.getPost().getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Fan toFan = fanRepository.findById(toId).orElseThrow(()->new CustomException(ExceptionCode.COMMENT_WRITER_NOT_FOUND));
 
@@ -78,7 +78,7 @@ public class ReCommentService {
     public List<ReCommentResponse.ReCommentDTO> getReComments(Long commentId, User user) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(comment.getWriter().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(comment.getPost().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         List<ReComment> reCommentList = reCommentRepository.findByComment(comment, curFan);
 
@@ -95,7 +95,7 @@ public class ReCommentService {
 
         Fan writer = reComment.getWriter();
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(writer.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(reComment.getComment().getPost().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);

@@ -25,7 +25,7 @@ public class PostReportService {
     public void reportPost(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getWriter().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Optional<PostReport> report = postReportRepository.findByPostAndWriter(post, curFan);
 
