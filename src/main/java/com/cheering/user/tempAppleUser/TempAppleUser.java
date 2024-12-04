@@ -1,4 +1,4 @@
-package com.cheering.user.TempAppleUser;
+package com.cheering.user.tempAppleUser;
 
 import jakarta.persistence.*;
 import lombok.*;

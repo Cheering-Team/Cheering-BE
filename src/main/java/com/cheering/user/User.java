@@ -3,6 +3,7 @@ package com.cheering.user;
 import com.cheering.BaseTimeEntity;
 import com.cheering.apply.Apply;
 import com.cheering.fan.Fan;
+import com.cheering.user.deviceToken.DeviceToken;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -44,9 +45,6 @@ public class User extends BaseTimeEntity {
     private String appleId;
 
     @Column
-    private String deviceToken;
-
-    @Column
     private Boolean isFirstLogin;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
@@ -54,6 +52,9 @@ public class User extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "writer", cascade = CascadeType.REMOVE)
     private List<Apply> applies = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<DeviceToken> deviceTokens = new ArrayList<>();
 
     @Builder
     public User(String phone, String name, Role role, String kakaoId, String naverId, String appleId, String password) {

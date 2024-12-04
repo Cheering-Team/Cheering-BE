@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.cheering.user.deviceToken.DeviceToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -54,7 +55,7 @@ public class CommentService {
 
         String content = requestDTO.content();
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getWriter().getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Comment comment = Comment.builder()
                 .content(content)
@@ -68,8 +69,8 @@ public class CommentService {
             Notification notification = new Notification(NotificaitonType.COMMENT, post.getWriter(), curFan, post, comment);
 
             notificationRepository.save(notification);
-            if(notification.getTo().getUser().getDeviceToken() != null) {
-                fcmService.sendMessageTo(notification.getTo().getUser().getDeviceToken(), "댓글", comment.getWriter().getName() + "님이 댓글을 남겼습니다:\"" + comment.getContent() + "\"", postId, notification.getId());
+            for(DeviceToken deviceToken: notification.getTo().getUser().getDeviceTokens()){
+                fcmService.sendPostMessageTo(deviceToken.getToken(), "댓글", comment.getWriter().getName() + "님이 댓글을 남겼습니다:\"" + comment.getContent() + "\"", postId, notification.getId());
             }
 
         }
@@ -81,7 +82,7 @@ public class CommentService {
     public CommentResponse.CommentListDTO getComments(Long postId, Pageable pageable, User user) {
         Post post = postRepository.findById(postId).orElseThrow(()->new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getWriter().getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Page<Comment> commentList = commentRepository.findByPost(post, curFan, pageable);
 
@@ -114,7 +115,7 @@ public class CommentService {
 
         Fan writer = comment.getWriter();
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(writer.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(comment.getPost().getCommunityId(),user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         if(!writer.equals(curFan)) {
             throw new CustomException(ExceptionCode.NOT_WRITER);

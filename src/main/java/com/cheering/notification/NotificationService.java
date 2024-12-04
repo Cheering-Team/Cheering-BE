@@ -60,8 +60,8 @@ public class NotificationService {
         return new NotificationResponse.NotificationListDTO(notifications, notificationDTOS);
     }
 
-    public boolean isUnread(User user) {
-        return notificationRepository.isUnreadByUser(user);
+    public NotificationResponse.IsUnreadDTO isUnread(User user) {
+        return new NotificationResponse.IsUnreadDTO(notificationRepository.isUnreadByUser(user), user.getRole());
     }
 
     @Scheduled(cron = "0 0 0 * * ?")

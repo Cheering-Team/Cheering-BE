@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-
 @Slf4j
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -98,17 +97,17 @@ public class UserController {
     }
 
     @PostMapping("/fcm-token")
-    public ResponseEntity<?> saveFCMToken(@RequestParam String token, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        userService.saveFCMToken(token, customUserDetails.getUser());
+    public ResponseEntity<?> saveFCMToken(@RequestBody UserRequest.SaveFCMDTO requestDTO, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        userService.saveFCMToken(requestDTO, customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"FCM 토큰 저장 완료", null));
     }
 
     @DeleteMapping("/fcm-token")
-    public ResponseEntity<?> deleteFCMToken(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public ResponseEntity<?> deleteFCMToken(@RequestParam String deviceId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         if(customUserDetails == null){
             throw new CustomException(ExceptionCode.USER_NOT_FOUND);
         }
-        userService.deleteFCMToken(customUserDetails.getUser());
+        userService.deleteFCMToken(deviceId, customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"FCM 토큰 삭제 완료", null));
     }
 
@@ -116,21 +115,5 @@ public class UserController {
     public ResponseEntity<?> isFirstLogin(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"조회 완료", userService.isFirstLogin(customUserDetails.getUser())));
     }
-
-//    @PostMapping("/users/manager/{communityId}")
-//    public ResponseEntity<?> registerManagerAccount(@PathVariable("communityId") Long communityId, @RequestBody UserRequest.SendSMSDTO requestDTO) {
-//        userService.registerCommunityAccount(communityId, requestDTO);
-//        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "매니저 계정 등록 완료", null));
-//    }
-//
-//    @GetMapping("/users/manager/{communityId}")
-//    public ResponseEntity<?> getManagerAccount(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-//        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"매니저 계정 조회 완료", userService.getManagerAccount(communityId, customUserDetails.getUser())));
-//    }
-//
-//    @PutMapping("/users/manager/{communityId}")
-//    public ResponseEntity<?> reissueManagerAccountPassword(@PathVariable("communityId") Long communityId, @RequestBody UserRequest.SendSMSDTO requestDTO) {
-//        userService.reissueManagerAccountPassword(communityId, requestDTO);
-//        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "비밀번호 재발급 완료", null));
-//    }
 }
+

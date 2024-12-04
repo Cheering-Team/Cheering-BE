@@ -28,7 +28,7 @@ public class ChatRoomController {
     }
     // 대표 채팅방 조회
     @GetMapping("/communities/{communityId}/chatrooms/official")
-    public ResponseEntity<?> getOfficialChatRoom(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public ResponseEntity<?> getOfficialChatRoom(@PathVariable("communityId") Long communityId) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "대표 채팅방 조회 완료", chatRoomService.getOfficialChatRoom(communityId)));
     }
 

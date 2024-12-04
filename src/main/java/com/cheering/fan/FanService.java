@@ -85,6 +85,7 @@ public class FanService {
 
         // 현재 접속 유저
         Fan curFan = fanRepository.findByCommunityIdAndUser(fan.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        boolean isTeam = curFan.getType().equals(CommunityType.TEAM);
 
         // 유저의 글 목록
         Page<Post> postList = postRepository.findByFan(fan, curFan, pageable);
@@ -105,7 +106,15 @@ public class FanService {
 
             Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
 
-            return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan);
+            if(isTeam) {
+                Team team = teamRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+
+                return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team);
+            } else {
+                Player player = playerRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+
+                return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player);
+            }
         })).toList();
 
         return new PostResponse.PostListDTO(postList, postInfoDTOS);
