@@ -266,7 +266,7 @@ public class UserService {
 
             String kakaoId = response.getBody().get("id").toString();
             Map<String, Object> kakaoAccount = (Map<String, Object>) response.getBody().get("kakao_account");
-            String nickname = (String) ((Map<String, Object>) kakaoAccount.get("profile")).get("name");
+            String nickname = (String) ((Map<String, Object>) kakaoAccount.get("profile")).get("nickname");
 
             user = User.builder()
                     .name(nickname)
