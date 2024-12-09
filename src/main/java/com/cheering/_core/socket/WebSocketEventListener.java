@@ -4,8 +4,13 @@ import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.security.JWTUtil;
+import com.cheering.chat.Chat;
+import com.cheering.chat.ChatRepository;
+import com.cheering.chat.ChatResponse;
+import com.cheering.chat.ChatType;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.chatRoom.ChatRoomRepository;
+import com.cheering.chat.chatRoom.ChatRoomType;
 import com.cheering.chat.session.ChatSession;
 import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.fan.Fan;
@@ -19,9 +24,12 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.messaging.SessionConnectEvent;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Component
@@ -32,8 +40,8 @@ public class WebSocketEventListener {
     private final FanRepository fanRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatSessionRepository chatSessionRepository;
+    private final ChatRepository chatRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
-
 
     @EventListener
     public void handleWebSocketSubscribeListener(SessionSubscribeEvent event) {
@@ -68,12 +76,25 @@ public class WebSocketEventListener {
                                 .fan(fan)
                                 .build();
                         chatSessionRepository.save(newChatSession);
+
+                        if(chatRoom.getType().equals(ChatRoomType.PUBLIC)){
+                            Chat chat = Chat.builder()
+                                    .type(ChatType.SYSTEM_ENTER)
+                                    .chatRoom(chatRoom)
+                                    .writer(fan)
+                                    .content(fan.getName() + "님이 입장하였습니다")
+                                    .groupKey(fan.getId() + "_SYSTEM_ENTER")
+                                    .build();
+
+                            chatRepository.save(chat);
+                        }
+                        Integer count = chatSessionRepository.countByChatRoom(chatRoom);
+
+                        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", new ChatResponse.ChatResponseDTO("SYSTEM_ENTER", fan.getName() + "님이 입장하였습니다", LocalDateTime.now(), fan.getId(), fan.getImage(), fan.getName(), fan.getId() + "_SYSTEM_ENTER", count));
                     } else {
                         chatSession.get().setSessionId(sessionId);
                         chatSessionRepository.save(chatSession.get());
                     }
-                    Integer count = chatSessionRepository.countByChatRoom(chatRoom);
-                    simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", count);
                 } catch (ExpiredJwtException e) {
                     throw new MessageDeliveryException("Token expired");
                 }

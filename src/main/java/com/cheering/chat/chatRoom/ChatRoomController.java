@@ -11,10 +11,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class ChatRoomController {
+public class  ChatRoomController {
     private final ChatRoomService chatRoomService;
 
     // 채팅방 생성
@@ -45,11 +47,11 @@ public class ChatRoomController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "대표 채팅방 목록 조회 완료", chatRoomService.getMyOfficialChatRooms(customUserDetails.getUser())));
     }
 
-    // 참여중인 일반 채팅방 목록 조회
-    @GetMapping("/my/chatrooms")
-    public ResponseEntity<?> getMyChatRooms(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "참여 채팅방 목록 조회 완료", chatRoomService.getMyChatRooms(customUserDetails.getUser())));
-    }
+//    // 참여중인 일반 채팅방 목록 조회
+//    @GetMapping("/my/chatrooms")
+//    public ResponseEntity<?> getMyChatRooms(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+//        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "참여 채팅방 목록 조회 완료", chatRoomService.getMyChatRooms(customUserDetails.getUser())));
+//    }
 
     // 채팅방 정보 조회
     @GetMapping("/chatrooms/{chatRoomId}")
@@ -59,9 +61,11 @@ public class ChatRoomController {
 
     // 채팅 목록 조회
     @GetMapping("/chatrooms/{chatRoomId}/chats")
-    public ResponseEntity<?> getChats(@PathVariable("chatRoomId") Long chatRoomId, @RequestParam int page, @RequestParam int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅 목록 조회", chatRoomService.getChats(chatRoomId, pageable)));
+    public ResponseEntity<?> getChats(@PathVariable("chatRoomId") Long chatRoomId,
+                                      @RequestParam(required = false) LocalDateTime cursorDate,
+                                      @RequestParam(defaultValue = "20") int size,
+                                      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅 목록 조회", chatRoomService.getChats(chatRoomId, cursorDate, size, customUserDetails.getUser())));
     }
 
     // 채팅 참여자 조회

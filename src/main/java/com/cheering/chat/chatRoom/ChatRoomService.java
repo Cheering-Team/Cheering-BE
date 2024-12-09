@@ -4,12 +4,7 @@ import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.util.S3Util;
 import com.cheering.badword.BadWordService;
-import com.cheering.chat.Chat;
-import com.cheering.chat.ChatRepository;
-import com.cheering.chat.ChatRequest;
-import com.cheering.chat.ChatResponse;
-import com.cheering.chat.message.Message;
-import com.cheering.chat.message.MessageRepository;
+import com.cheering.chat.*;
 import com.cheering.chat.session.ChatSession;
 import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.fan.CommunityType;
@@ -21,19 +16,21 @@ import com.cheering.fan.FanResponse;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
-import com.cheering.user.UserRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -43,13 +40,13 @@ public class ChatRoomService {
     private final PlayerRepository playerRepository;
     private final FanRepository fanRepository;
     private final ChatRepository chatRepository;
-    private final MessageRepository messageRepository;
     private final ChatSessionRepository chatSessionRepository;
-    private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final BadWordService badWordService;
     private final S3Util s3Util;
+    private final EntityManager entityManager;
+    private final DateTimeFormatter groupKeyFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 
     public ChatRoomResponse.IdDTO createChatRoom(Long communityId, String name, String description, MultipartFile image, Integer max, User user) {
         if(badWordService.containsBadWords(name)) {
@@ -130,24 +127,25 @@ public class ChatRoomService {
         })).toList();
     }
 
-    public List<ChatRoomResponse.ChatRoomDTO> getMyChatRooms(User user) {
-        List<ChatRoom> publicChatRooms = chatRoomRepository.findPublicByUser(user);
-
-        return publicChatRooms.stream().map((chatRoom -> {
-            Fan fan = fanRepository.findByCommunityIdAndUser(chatRoom.getCommunityId(), user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-            ChatSession chatSession = chatSessionRepository.findByChatRoomAndFan(chatRoom, fan).orElseThrow(()-> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
-
-            Pageable pageable = PageRequest.of(0, 1);
-            List<Message> messages = messageRepository.findLastMessage(chatRoom, pageable);
-            String lastMessage = messages.isEmpty() ? null : messages.get(0).getContent();
-            LocalDateTime lastMessageTime = messages.isEmpty() ? null : messages.get(0).getCreatedAt();
-
-            Integer unreadCount = messageRepository.countUnreadMessages(chatRoom, chatSession.getLastExitTime());
-
-            Integer count = chatSessionRepository.countByChatRoom(chatRoom);
-            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, true, lastMessage, lastMessageTime, unreadCount);
-        })).toList();
-    }
+//    public List<ChatRoomResponse.ChatRoomDTO> getMyChatRooms(User user) {
+//        List<ChatRoom> publicChatRooms = chatRoomRepository.findPublicByUser(user);
+//
+//        return publicChatRooms.stream().map((chatRoom -> {
+//            Fan fan = fanRepository.findByCommunityIdAndUser(chatRoom.getCommunityId(), user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+//            ChatSession chatSession = chatSessionRepository.findByChatRoomAndFan(chatRoom, fan).orElseThrow(()-> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
+//
+//            Pageable pageable = PageRequest.of(0, 1);
+//
+//            List<Message> messages = messageRepository.findLastMessage(chatRoom, pageable);
+//            String lastMessage = messages.isEmpty() ? null : messages.get(0).getContent();
+//            LocalDateTime lastMessageTime = messages.isEmpty() ? null : messages.get(0).getCreatedAt();
+//
+//            Integer unreadCount = messageRepository.countUnreadMessages(chatRoom, chatSession.getLastExitTime());
+//
+//            Integer count = chatSessionRepository.countByChatRoom(chatRoom);
+//            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, true, "lastMessage", null, null);
+//        })).toList();
+//    }
 
     public ChatRoomResponse.ChatRoomDTO getChatRoomById(Long chatRoomId, User user) {
         // 존재하지 않는 채팅방 -> 뒤로가기
@@ -165,15 +163,39 @@ public class ChatRoomService {
         }
     }
 
-    public ChatResponse.ChatListDTO getChats(Long chatRoomId, Pageable pageable) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()->new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+    public ChatResponse.ChatListDTO getChats(Long chatRoomId, LocalDateTime cursorDate, int size, User user) {
+        Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Order.desc("createdAt")));
 
-        Page<Chat> chats = chatRepository.findByChatRoom(chatRoom, pageable);
+        Optional<ChatSession> chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoomId, user);
 
-        return new ChatResponse.ChatListDTO(chats, chats.getContent().stream().map((chat -> {
-            List<String> messages = messageRepository.findByChat(chat).stream().map((Message::getContent)).toList();
-            return new ChatResponse.ChatDTO(messages, chat.getCreatedAt(), chat.getWriter());
-        })).toList());
+        LocalDateTime enterDate = chatSession.isEmpty() ? LocalDateTime.now() : chatSession.get().getCreatedAt();
+
+        List<ChatGroup> chatGroups = new ArrayList<>();
+        List<Chat> chats = chatRepository.findByChatRoomIdAndCreatedAtBefore(chatRoomId, Objects.requireNonNullElseGet(cursorDate, LocalDateTime::now), enterDate, pageable);
+        if(chats.isEmpty()) {
+            return new ChatResponse.ChatListDTO(chatGroups, false);
+        }
+        Chat lastChat = chats.get(chats.size() - 1);
+        List<Chat> extraChats = chatRepository.findByGroupKeyAndCreatedAtBefore(chatRoomId, lastChat.getCreatedAt(), enterDate, lastChat.getGroupKey());
+        chats.addAll(extraChats);
+        lastChat = chats.get(chats.size() - 1);
+        boolean hasNext = chatRepository.existsByChatRoomIdAndBeforeLastChat(chatRoomId, lastChat.getCreatedAt(), enterDate);
+
+        ChatGroup curGroup = null;
+
+        for(Chat chat: chats) {
+            if(curGroup == null || !curGroup.getGroupKey().equals(chat.getGroupKey())){
+                List<String> messages = new ArrayList<>();
+                messages.add(chat.getContent());
+                curGroup = new ChatGroup(chat.getType(), chat.getCreatedAt(), new FanResponse.FanDTO(chat.getWriter()), messages, chat.getGroupKey());
+                chatGroups.add(curGroup);
+            } else {
+                curGroup.getMessages().add(0, chat.getContent());
+                curGroup.setCreatedAt(chat.getCreatedAt());
+            }
+        }
+
+        return new ChatResponse.ChatListDTO(chatGroups, hasNext);
     }
 
     public List<FanResponse.FanDTO> getParticipants(Long chatRoomId, User user) {
@@ -231,38 +253,27 @@ public class ChatRoomService {
     }
 
     // WS
-    public void sendMessage(ChatRequest.ChatRequestDTO chatDTO, Long chatRoomId, String sessionId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
-
-        ChatSession chatSession = chatSessionRepository.findByChatRoomAndSessionId(chatRoom, sessionId);
-        Fan curFan = chatSession.getFan();
-
+    @Transactional
+    public void sendMessage(ChatRequest.ChatRequestDTO requestDTO, Long chatRoomId) {
         LocalDateTime now = LocalDateTime.now();
+        String groupKey = generateGroupKey(requestDTO.writerId(), now);
 
-        // 비공식 채팅방만 채팅 저장
-        if(chatRoom.getType().equals(ChatRoomType.PUBLIC)){
-            Optional<Chat> chat = chatRepository.findByChatRoomAndWriterAndCreatedAtMinute(chatRoom.getId(), curFan.getId());
-            if(chat.isPresent()) {
-                Message message = Message.builder()
-                        .content(chatDTO.message())
-                        .chat(chat.get())
-                        .build();
-                messageRepository.save(message);
-            } else {
-                Chat newChat = Chat.builder()
-                        .chatRoom(chatRoom)
-                        .writer(curFan)
-                        .build();
-                chatRepository.save(newChat);
+        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId, new ChatResponse.ChatResponseDTO("MESSAGE", requestDTO.content(), now, requestDTO.writerId(), requestDTO.writerImage(), requestDTO.writerName(), groupKey, null));
 
-                Message message = Message.builder()
-                        .content(chatDTO.message())
-                        .chat(newChat)
-                        .build();
-                messageRepository.save(message);
-            }
+        if(requestDTO.chatRoomType().equals("PUBLIC")){
+            ChatRoom chatRoom = entityManager.getReference(ChatRoom.class, chatRoomId);
+            Fan fan = entityManager.getReference(Fan.class, requestDTO.writerId());
+
+            Chat chat = Chat.builder()
+                    .type(ChatType.MESSAGE)
+                    .chatRoom(chatRoom)
+                    .writer(fan)
+                    .content(requestDTO.content())
+                    .groupKey(groupKey)
+                    .build();
+
+            chatRepository.save(chat);
         }
-        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId, new ChatResponse.ChatResponseDTO(chatDTO.message(), now, curFan));
     }
 
     @Transactional
@@ -283,5 +294,9 @@ public class ChatRoomService {
             chatSession.setLastExitTime(LocalDateTime.now());
             chatSessionRepository.save(chatSession);
         }
+    }
+
+    private String generateGroupKey(Long writerId, LocalDateTime timestamp) {
+        return writerId + "_" + groupKeyFormatter.format(timestamp);
     }
 }

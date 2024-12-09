@@ -2,41 +2,47 @@ package com.cheering.chat;
 
 import com.cheering.BaseTimeEntity;
 import com.cheering.chat.chatRoom.ChatRoom;
-import com.cheering.chat.message.Message;
 import com.cheering.fan.Fan;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.*;
 
 @Entity
-@Table(name = "chat_tb")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "chat_tb", indexes = {
+        @Index(name = "idx_room_group", columnList = "chat_room_id, group_key")
+})
+@NoArgsConstructor
 @Getter
+@Setter
 public class Chat extends BaseTimeEntity{
     @Id
     @GeneratedValue
     @Column(name = "chat_id")
     private Long id;
 
-    @ManyToOne
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ChatType type;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id", nullable = false)
     private Fan writer;
 
-    @OneToMany(mappedBy = "chat", cascade = CascadeType.REMOVE)
-    private List<Message> messages = new ArrayList<>();
+    @Column(nullable = false)
+    private String content;
+
+    @Column(nullable = false)
+    private String groupKey;
 
     @Builder
-    public Chat(ChatRoom chatRoom, Fan writer) {
+    public Chat(ChatType type, ChatRoom chatRoom, Fan writer, String content, String groupKey) {
+        this.type = type;
         this.chatRoom = chatRoom;
         this.writer = writer;
+        this.content = content;
+        this.groupKey = groupKey;
     }
 }

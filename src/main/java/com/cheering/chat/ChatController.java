@@ -18,8 +18,8 @@ public class ChatController {
     private final ChatRoomService chatRoomService;
 
     @MessageMapping("/chatRooms/{chatRoomId}/sendMessage")
-    public void handleSendMessage(@Payload ChatRequest.ChatRequestDTO chatDTO, @DestinationVariable String chatRoomId, SimpMessageHeaderAccessor accessor) {
-        chatRoomService.sendMessage(chatDTO, Long.parseLong(chatRoomId), accessor.getSessionId());
+    public void handleSendMessage(@Payload ChatRequest.ChatRequestDTO requestDTO, @DestinationVariable String chatRoomId) {
+        chatRoomService.sendMessage(requestDTO, Long.parseLong(chatRoomId));
     }
 
     // 채팅방에서 떠날때 (영구적으로)
