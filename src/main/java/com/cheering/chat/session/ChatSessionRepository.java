@@ -17,10 +17,6 @@ public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> 
     @Query("SELECT COUNT(c) FROM ChatSession c WHERE c.chatRoom = :chatRoom")
     Integer countByChatRoom(@Param("chatRoom") ChatRoom chatRoom);
 
-    @Modifying
-    @Query("DELETE FROM ChatSession c WHERE c.chatRoom.id = :chatRoomId AND c.sessionId = :sessionId")
-    void deleteByChatRoomIdAndSessionId(@Param("chatRoomId") Long chatRoomId, @Param("sessionId") String sessionId);
-
     @Query("SELECT c FROM ChatSession c WHERE c.chatRoom = :chatRoom AND c.sessionId = :sessionId")
     ChatSession findByChatRoomAndSessionId(@Param("chatRoom") ChatRoom chatRoom, @Param("sessionId") String sessionId);
 

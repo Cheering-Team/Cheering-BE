@@ -278,10 +278,22 @@ public class ChatRoomService {
 
     @Transactional
     public void removeUserFromRoom(Long chatRoomId, String sessionId) {
-        chatSessionRepository.deleteByChatRoomIdAndSessionId(chatRoomId, sessionId);
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()->new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+        ChatSession chatSession = chatSessionRepository.findByChatRoomAndSessionId(chatRoom, sessionId);
+        Fan fan = chatSession.getFan();
         Integer count = chatSessionRepository.countByChatRoom(chatRoom);
-        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", count);
+        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", new ChatResponse.ChatResponseDTO("SYSTEM_EXIT", fan.getName() + "님이 나가셨습니다", LocalDateTime.now(), fan.getId(), fan.getImage(), fan.getName(), fan.getId() + "_SYSTEM_EXIT", count));
+
+        if(chatRoom.getType().equals(ChatRoomType.PUBLIC)){
+            Chat chat = Chat.builder()
+                    .type(ChatType.SYSTEM_EXIT)
+                    .chatRoom(chatRoom)
+                    .writer(fan)
+                    .content(fan.getName() + "님이 나가셨습니다")
+                    .groupKey(fan.getId() + "_SYSTEM_EXIT")
+                    .build();
+            chatRepository.save(chat);
+        }
     }
 
     @Transactional
