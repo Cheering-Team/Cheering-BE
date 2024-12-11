@@ -47,11 +47,11 @@ public class  ChatRoomController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "대표 채팅방 목록 조회 완료", chatRoomService.getMyOfficialChatRooms(customUserDetails.getUser())));
     }
 
-//    // 참여중인 일반 채팅방 목록 조회
-//    @GetMapping("/my/chatrooms")
-//    public ResponseEntity<?> getMyChatRooms(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-//        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "참여 채팅방 목록 조회 완료", chatRoomService.getMyChatRooms(customUserDetails.getUser())));
-//    }
+    // 참여중인 일반 채팅방 목록 조회
+    @GetMapping("/my/chatrooms")
+    public ResponseEntity<?> getMyChatRooms(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "참여 채팅방 목록 조회 완료", chatRoomService.getMyChatRooms(customUserDetails.getUser())));
+    }
 
     // 채팅방 정보 조회
     @GetMapping("/chatrooms/{chatRoomId}")
@@ -79,6 +79,19 @@ public class  ChatRoomController {
     public ResponseEntity<?> deleteChatRoom(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         chatRoomService.deleteChatRoom(chatRoomId, customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 삭제 완료", null));
+    }
+
+    // 채팅방 퇴장 시간 갱신
+    @PutMapping("/chat-rooms/{chatRoomId}/exit-time")
+    public ResponseEntity<?> updateExitTime(@PathVariable Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        chatRoomService.updateExitTime(chatRoomId, customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "퇴장 시간 갱신", null));
+    }
+
+    // 안읽은 전체 채팅 수
+    @GetMapping("/chats/unread")
+    public ResponseEntity<?> getUnreadChats(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "안읽은 채팅 수", chatRoomService.getUnreadChats(customUserDetails.getUser())));
     }
 
     // (공식 채팅방 만들기)

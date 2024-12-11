@@ -17,10 +17,13 @@ public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> 
     @Query("SELECT COUNT(c) FROM ChatSession c WHERE c.chatRoom = :chatRoom")
     Integer countByChatRoom(@Param("chatRoom") ChatRoom chatRoom);
 
-    @Query("SELECT c FROM ChatSession c WHERE c.chatRoom = :chatRoom AND c.sessionId = :sessionId")
-    ChatSession findByChatRoomAndSessionId(@Param("chatRoom") ChatRoom chatRoom, @Param("sessionId") String sessionId);
+    @Query("SELECT c FROM ChatSession c WHERE c.chatRoom.id = :chatRoomId AND c.sessionId = :sessionId")
+    Optional<ChatSession> findByChatRoomIdAndSessionId(Long chatRoomId, String sessionId);
 
     List<ChatSession> findByChatRoom(ChatRoom chatRoom);
+
+    @Query("SELECT c FROM ChatSession c WHERE c.fan.user = :user")
+    List<ChatSession> findByUser(User user);
 
     @Modifying
     @Query("DELETE FROM ChatSession c WHERE c.chatRoom.manager = :manager AND c.fan = :fan")
@@ -28,4 +31,7 @@ public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> 
 
     @Query("SELECT cs FROM ChatSession cs WHERE cs.chatRoom.id = :chatRoomId AND cs.fan.user = :user")
     Optional<ChatSession> findByChatRoomIdAndUser(Long chatRoomId, User user);
+
+    @Query("SELECT cs.fan.user FROM ChatSession cs WHERE cs.chatRoom = :chatRoom AND cs.fan.id != :myId")
+    List<User> findByChatRoomExceptMe(ChatRoom chatRoom, Long myId);
 }

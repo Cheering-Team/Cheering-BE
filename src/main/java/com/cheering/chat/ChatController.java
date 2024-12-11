@@ -28,11 +28,4 @@ public class ChatController {
                               @Header("simpSessionId") String sessionId) {
         chatRoomService.removeUserFromRoom(chatDisconnectDTO.chatRoomId(), sessionId);
     }
-
-    // 채팅방에서 나갈때
-    @MessageMapping("/chatRooms/exit")
-    public void exitChatRoom(@Payload ChatRequest.ChatDisconnectDTO chatDisconnectDTO,
-                              @Header("simpSessionId") String sessionId) {
-        chatRoomService.updateExitTime(chatDisconnectDTO.chatRoomId(), sessionId);
-    }
 }

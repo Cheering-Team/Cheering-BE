@@ -8,6 +8,7 @@ import com.cheering.chat.*;
 import com.cheering.chat.session.ChatSession;
 import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.fan.CommunityType;
+import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.fan.Fan;
@@ -46,6 +47,7 @@ public class ChatRoomService {
     private final BadWordService badWordService;
     private final S3Util s3Util;
     private final EntityManager entityManager;
+    private final FcmServiceImpl fcmService;
     private final DateTimeFormatter groupKeyFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 
     public ChatRoomResponse.IdDTO createChatRoom(Long communityId, String name, String description, MultipartFile image, Integer max, User user) {
@@ -57,7 +59,7 @@ public class ChatRoomService {
         }
         Fan curUser = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
-        String imageUrl = "";
+        String imageUrl;
         if(image == null) {
             imageUrl = "https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-chat-profile.png";
         } else {
@@ -127,25 +129,26 @@ public class ChatRoomService {
         })).toList();
     }
 
-//    public List<ChatRoomResponse.ChatRoomDTO> getMyChatRooms(User user) {
-//        List<ChatRoom> publicChatRooms = chatRoomRepository.findPublicByUser(user);
-//
-//        return publicChatRooms.stream().map((chatRoom -> {
-//            Fan fan = fanRepository.findByCommunityIdAndUser(chatRoom.getCommunityId(), user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-//            ChatSession chatSession = chatSessionRepository.findByChatRoomAndFan(chatRoom, fan).orElseThrow(()-> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
-//
-//            Pageable pageable = PageRequest.of(0, 1);
-//
-//            List<Message> messages = messageRepository.findLastMessage(chatRoom, pageable);
-//            String lastMessage = messages.isEmpty() ? null : messages.get(0).getContent();
-//            LocalDateTime lastMessageTime = messages.isEmpty() ? null : messages.get(0).getCreatedAt();
-//
-//            Integer unreadCount = messageRepository.countUnreadMessages(chatRoom, chatSession.getLastExitTime());
-//
-//            Integer count = chatSessionRepository.countByChatRoom(chatRoom);
-//            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, true, "lastMessage", null, null);
-//        })).toList();
-//    }
+    @Transactional
+    public List<ChatRoomResponse.ChatRoomDTO> getMyChatRooms(User user) {
+        List<ChatRoom> publicChatRooms = chatRoomRepository.findPublicByUser(user);
+
+        return publicChatRooms.stream().map((chatRoom -> {
+            ChatSession chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoom.getId(), user).orElseThrow(()-> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
+
+            Pageable pageable = PageRequest.of(0, 1);
+
+            List<Chat> chats = chatRepository.findLastChat(chatRoom, ChatType.MESSAGE, pageable);
+            String lastMessage = chats.isEmpty() ? null : chats.get(0).getContent();
+            LocalDateTime lastMessageTime = chats.isEmpty() ? null : chats.get(0).getCreatedAt();
+
+            Integer unreadCount = chatRepository.countUnreadMessages(chatRoom, ChatType.MESSAGE, chatSession.getLastExitTime());
+
+            Integer count = chatSessionRepository.countByChatRoom(chatRoom);
+
+            return new ChatRoomResponse.ChatRoomDTO(chatRoom, count, true, lastMessage, lastMessageTime, unreadCount);
+        })).toList();
+    }
 
     public ChatRoomResponse.ChatRoomDTO getChatRoomById(Long chatRoomId, User user) {
         // 존재하지 않는 채팅방 -> 뒤로가기
@@ -273,14 +276,25 @@ public class ChatRoomService {
                     .build();
 
             chatRepository.save(chat);
+
+            List<User> users = chatSessionRepository.findByChatRoomExceptMe(chatRoom, requestDTO.writerId());
+
+            users.forEach(user -> {
+                Integer count = getUnreadChats(user);
+                user.getDeviceTokens().forEach(deviceToken -> fcmService.sendChatMessageTo(deviceToken.getToken(), count));
+            });
         }
     }
 
     @Transactional
     public void removeUserFromRoom(Long chatRoomId, String sessionId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()->new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
-        ChatSession chatSession = chatSessionRepository.findByChatRoomAndSessionId(chatRoom, sessionId);
-        Fan fan = chatSession.getFan();
+        Optional<ChatSession> chatSession = chatSessionRepository.findByChatRoomIdAndSessionId(chatRoom.getId(), sessionId);
+        if(chatSession.isEmpty()) {
+            return;
+        }
+        Fan fan = chatSession.get().getFan();
+        chatSessionRepository.delete(chatSession.get());
         Integer count = chatSessionRepository.countByChatRoom(chatRoom);
         simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", new ChatResponse.ChatResponseDTO("SYSTEM_EXIT", fan.getName() + "님이 나가셨습니다", LocalDateTime.now(), fan.getId(), fan.getImage(), fan.getName(), fan.getId() + "_SYSTEM_EXIT", count));
 
@@ -294,18 +308,24 @@ public class ChatRoomService {
                     .build();
             chatRepository.save(chat);
         }
+
     }
 
     @Transactional
-    public void updateExitTime(Long chatRoomId, String sessionId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()->new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
-
-        if(chatRoom.getType().equals(ChatRoomType.PUBLIC)) {
-            ChatSession chatSession = chatSessionRepository.findByChatRoomAndSessionId(chatRoom, sessionId);
-
-            chatSession.setLastExitTime(LocalDateTime.now());
-            chatSessionRepository.save(chatSession);
+    public void updateExitTime(Long chatRoomId, User user) {
+        Optional<ChatSession> chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoomId, user);
+        if(chatSession.isEmpty()) {
+            return;
         }
+        chatSession.get().setLastExitTime(LocalDateTime.now());
+        chatSessionRepository.save(chatSession.get());
+    }
+
+    @Transactional
+    public Integer getUnreadChats(User user) {
+        List<ChatSession> chatSessions = chatSessionRepository.findByUser(user);
+
+        return chatSessions.stream().mapToInt(chatSession -> chatRepository.countUnreadMessages(chatSession.getChatRoom(), ChatType.MESSAGE, chatSession.getLastExitTime())).sum();
     }
 
     private String generateGroupKey(Long writerId, LocalDateTime timestamp) {

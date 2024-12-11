@@ -23,6 +23,12 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Chat c WHERE c.chatRoom.id = :chatRoomId AND c.createdAt < :createdAt AND c.createdAt > :enterDate")
     boolean existsByChatRoomIdAndBeforeLastChat(Long chatRoomId, LocalDateTime createdAt, LocalDateTime enterDate);
 
+    @Query("SELECT c FROM Chat c WHERE c.chatRoom = :chatRoom AND c.type = :type ORDER BY c.createdAt DESC")
+    List<Chat> findLastChat(ChatRoom chatRoom, ChatType type, Pageable pageable);
+
+    @Query("SELECT COUNT(c) FROM Chat c WHERE c.chatRoom = :chatRoom AND c.type = :type AND c.createdAt > :lastExitTime")
+    Integer countUnreadMessages(ChatRoom chatRoom, ChatType type, LocalDateTime lastExitTime);
+
 //    @Query(value = "SELECT * FROM chat_tb WHERE DATE_TRUNC('minute', created_at) = DATE_TRUNC('minute', CURRENT_TIMESTAMP) AND chat_room_id = :chatRoomId AND writer_id = :writerId", nativeQuery = true)
 //    Optional<Chat> findByChatRoomAndWriterAndCreatedAtMinute(@Param("chatRoomId") Long chatRoomId, @Param("writerId") Long writerId);
 }

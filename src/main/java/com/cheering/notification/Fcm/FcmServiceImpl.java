@@ -1,13 +1,16 @@
 package com.cheering.notification.Fcm;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
+import com.cheering.user.deviceToken.DeviceTokenRepository;
+import com.google.firebase.ErrorCode;
+import com.google.firebase.messaging.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class FcmServiceImpl {
+    private final DeviceTokenRepository deviceTokenRepository;
+
     public void sendPostMessageTo(String token, String title, String body, Long postId, Long notificationId) {
         Message message = Message.builder()
                 .setToken(token)
@@ -23,7 +26,6 @@ public class FcmServiceImpl {
             String response = FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
             System.err.println(e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -42,7 +44,6 @@ public class FcmServiceImpl {
             String response = FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
             System.err.println(e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -60,7 +61,6 @@ public class FcmServiceImpl {
             String response = FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
             System.err.println(e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -78,7 +78,23 @@ public class FcmServiceImpl {
             String response = FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
             System.err.println(e.getMessage());
-            e.printStackTrace();
+        }
+    }
+
+    public void sendChatMessageTo(String token, Integer count) {
+        Message message = Message.builder()
+                .setToken(token)
+                .putData("type", "CHAT")
+                .putData("count", count.toString())
+                .build();
+        try {
+            FirebaseMessaging.getInstance().send(message);
+        } catch (FirebaseMessagingException e) {
+            if (ErrorCode.NOT_FOUND.equals(e.getErrorCode())) {
+                deviceTokenRepository.deleteByToken(token);
+            } else {
+                System.err.println(e.getMessage());
+            }
         }
     }
 }
