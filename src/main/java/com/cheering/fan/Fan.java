@@ -117,4 +117,8 @@ public class Fan extends BaseTimeEntity {
         this.user = user;
         this.communityOrder = communityOrder;
     }
+
+    public Fan(Long fanId) {
+        this.id = fanId;
+    }
 }

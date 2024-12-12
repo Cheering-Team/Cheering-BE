@@ -67,4 +67,8 @@ public class ChatRoom extends BaseTimeEntity {
         this.communityId = communityId;
         this.manager = manager;
     }
+
+    public ChatRoom(Long chatRoomId) {
+        this.communityId = chatRoomId;
+    }
 }

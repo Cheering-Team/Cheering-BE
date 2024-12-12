@@ -11,10 +11,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class ChatRoomController {
+public class  ChatRoomController {
     private final ChatRoomService chatRoomService;
 
     // 채팅방 생성
@@ -59,9 +61,11 @@ public class ChatRoomController {
 
     // 채팅 목록 조회
     @GetMapping("/chatrooms/{chatRoomId}/chats")
-    public ResponseEntity<?> getChats(@PathVariable("chatRoomId") Long chatRoomId, @RequestParam int page, @RequestParam int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅 목록 조회", chatRoomService.getChats(chatRoomId, pageable)));
+    public ResponseEntity<?> getChats(@PathVariable("chatRoomId") Long chatRoomId,
+                                      @RequestParam(required = false) LocalDateTime cursorDate,
+                                      @RequestParam(defaultValue = "20") int size,
+                                      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅 목록 조회", chatRoomService.getChats(chatRoomId, cursorDate, size, customUserDetails.getUser())));
     }
 
     // 채팅 참여자 조회
@@ -75,6 +79,19 @@ public class ChatRoomController {
     public ResponseEntity<?> deleteChatRoom(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         chatRoomService.deleteChatRoom(chatRoomId, customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 삭제 완료", null));
+    }
+
+    // 채팅방 퇴장 시간 갱신
+    @PutMapping("/chat-rooms/{chatRoomId}/exit-time")
+    public ResponseEntity<?> updateExitTime(@PathVariable Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        chatRoomService.updateExitTime(chatRoomId, customUserDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "퇴장 시간 갱신", null));
+    }
+
+    // 안읽은 전체 채팅 수
+    @GetMapping("/chats/unread")
+    public ResponseEntity<?> getUnreadChats(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "안읽은 채팅 수", chatRoomService.getUnreadChats(customUserDetails.getUser())));
     }
 
     // (공식 채팅방 만들기)

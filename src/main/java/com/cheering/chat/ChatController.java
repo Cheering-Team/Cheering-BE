@@ -18,8 +18,8 @@ public class ChatController {
     private final ChatRoomService chatRoomService;
 
     @MessageMapping("/chatRooms/{chatRoomId}/sendMessage")
-    public void handleSendMessage(@Payload ChatRequest.ChatRequestDTO chatDTO, @DestinationVariable String chatRoomId, SimpMessageHeaderAccessor accessor) {
-        chatRoomService.sendMessage(chatDTO, Long.parseLong(chatRoomId), accessor.getSessionId());
+    public void handleSendMessage(@Payload ChatRequest.ChatRequestDTO requestDTO, @DestinationVariable String chatRoomId) {
+        chatRoomService.sendMessage(requestDTO, Long.parseLong(chatRoomId));
     }
 
     // 채팅방에서 떠날때 (영구적으로)
@@ -27,12 +27,5 @@ public class ChatController {
     public void leaveChatRoom(@Payload ChatRequest.ChatDisconnectDTO chatDisconnectDTO,
                               @Header("simpSessionId") String sessionId) {
         chatRoomService.removeUserFromRoom(chatDisconnectDTO.chatRoomId(), sessionId);
-    }
-
-    // 채팅방에서 나갈때
-    @MessageMapping("/chatRooms/exit")
-    public void exitChatRoom(@Payload ChatRequest.ChatDisconnectDTO chatDisconnectDTO,
-                              @Header("simpSessionId") String sessionId) {
-        chatRoomService.updateExitTime(chatDisconnectDTO.chatRoomId(), sessionId);
     }
 }

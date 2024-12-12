@@ -13,7 +13,21 @@ import java.util.List;
 public class ChatRoomResponse {
     public record IdDTO (Long id) { }
 
-    public record ChatRoomDTO (Long id, String name, String image, String description, Integer max, ChatRoomType type, Integer count, FanResponse.FanDTO user, CommunityResponse.CommunityDTO community, FanResponse.FanDTO manager, Boolean isParticipating, String lastMessage, LocalDateTime lastMessageTime, Integer unreadCount) {
+    public record ChatRoomDTO (Long id,
+                               String name,
+                               String image,
+                               String description,
+                               Integer max,
+                               ChatRoomType type,
+                               Integer count,
+                               FanResponse.FanDTO user,
+                               CommunityResponse.CommunityDTO community,
+                               FanResponse.FanDTO manager,
+                               Boolean isParticipating,
+                               String lastMessage,
+                               LocalDateTime lastMessageTime,
+                               Integer unreadCount
+    ) {
         // 목록에서 사용
         public ChatRoomDTO(ChatRoom chatRoom, Integer count, Boolean isParticipating) {
             this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType(), count, null, null, null, isParticipating, null, null, null);
