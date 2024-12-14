@@ -1,5 +1,6 @@
 package com.cheering.chat.session;
 
+import com.cheering.BaseTimeEntity;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.fan.Fan;
 import jakarta.persistence.*;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter
 @Getter
-public class ChatSession {
+public class ChatSession extends BaseTimeEntity {
     @Id
     @GeneratedValue
     @Column(name = "chat_session_id")

@@ -8,21 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class ChatResponse {
-    public record ChatDTO (List<String> messages, LocalDateTime createdAt, FanResponse.FanDTO sender) {
-        public ChatDTO (List<String> messages, LocalDateTime createdAt, Fan sender) {
-            this(messages, createdAt, new FanResponse.FanDTO(sender));
-        }
+    public record ChatResponseDTO (String type, String content, LocalDateTime createdAt, Long writerId, String writerImage, String writerName, String groupKey, Integer count) {
     }
-
-    public record ChatResponseDTO (String message, LocalDateTime createdAt, FanResponse.FanDTO sender) {
-        public ChatResponseDTO (String message, LocalDateTime createdAt, Fan sender) {
-            this(message, createdAt, new FanResponse.FanDTO(sender));
-        }
-    }
-
-    public record ChatListDTO(List<ChatDTO> chats, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last) {
-        public ChatListDTO(Page<?> page, List<ChatDTO> chats) {
-            this(chats, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast());
-        }
-    }
+    public record ChatListDTO(List<ChatGroup> chats, Boolean hasNext) { }
 }
