@@ -7,7 +7,6 @@ import com.cheering.badword.BadWordService;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
-import com.cheering.fan.CommunityType;
 import com.cheering.match.Match;
 import com.cheering.match.MatchRepository;
 import com.cheering.player.Player;
@@ -253,17 +252,18 @@ public class PostService {
 
         Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
-        Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
+        Optional<Like> like = likeRepository.findByTargetIdAndTargetTypeAndFan(post.getId(), "POST", curFan);
 
         if(like.isEmpty()) {
             Like newLike = Like.builder()
-                    .post(post)
+                    .targetId(post.getId())
+                    .targetType("POST")
                     .fan(curFan)
                     .build();
 
             likeRepository.save(newLike);
 
-            Long likeCount = likeRepository.countByPost(post);
+            Long likeCount = likeRepository.countByTargetIdAndTargetType(post.getId(), "POST");
 
             if(!post.getWriter().equals(curFan) && blockRepository.findByFromAndTo(post.getWriter(), curFan).isEmpty()){
                 Notification notification = new Notification(NotificaitonType.LIKE, post.getWriter(), curFan, post);
@@ -279,7 +279,7 @@ public class PostService {
                 notificationRepository.deleteLikeByPostAndFrom(post, curFan, NotificaitonType.LIKE);
             }
             likeRepository.delete(like.get());
-            Long likeCount = likeRepository.countByPost(post);
+            Long likeCount = likeRepository.countByTargetIdAndTargetType(post.getId(), "POST");
 
             return new PostResponse.LikeResponseDTO(false, likeCount);
         }
@@ -367,6 +367,9 @@ public class PostService {
             s3Util.deleteImageFromS3(postImage.getPath());
         }
 
+        // Like
+        likeRepository.deleteByTargetIdAndTargetType(postId, "POST");
+
         // Comment
         List<Comment> commentList = commentRepository.findByPost(post);
 
@@ -437,8 +440,8 @@ public class PostService {
         List<PostImage> postImages = postImageRepository.findByPost(post);
         List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-        Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
-        Long likeCount = likeRepository.countByPost(post);
+        Optional<Like> like = likeRepository.findByTargetIdAndTargetTypeAndFan(post.getId(), "POST", curFan);
+        Long likeCount = likeRepository.countByTargetIdAndTargetType(post.getId(), "POST");
 
         Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
 

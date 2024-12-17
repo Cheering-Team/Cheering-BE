@@ -101,8 +101,8 @@ public class FanService {
             List<PostImage> postImages = postImageRepository.findByPost(post);
             List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-            Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
-            Long likeCount = likeRepository.countByPost(post);
+            Optional<Like> like = likeRepository.findByTargetIdAndTargetTypeAndFan(post.getId(), "POST", curFan);
+            Long likeCount = likeRepository.countByTargetIdAndTargetType(post.getId(), "POST");
 
             Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
 

@@ -42,7 +42,7 @@ public class NotificationService {
         })).map((notification -> {
             List<PostImage> postImages = postImageRepository.findByPost(notification.getPost());
             if(notification.getType().equals(NotificaitonType.LIKE)) {
-                Long count = likeRepository.countByPost(notification.getPost());
+                Long count = likeRepository.countByTargetIdAndTargetType(notification.getPost().getId(), "POST");
                 return postImages.isEmpty() ? new NotificationResponse.NotificationDTO(notification, count) : new NotificationResponse.NotificationDTO(notification, count, postImages.get(0));
             } else if(notification.getType().equals(NotificaitonType.COMMENT)) {
                 return postImages.isEmpty() ? new NotificationResponse.NotificationDTO(notification, notification.getComment()) : new NotificationResponse.NotificationDTO(notification, notification.getComment(), postImages.get(0));

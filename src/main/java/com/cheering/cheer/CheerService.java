@@ -10,15 +10,23 @@ import com.cheering.fan.Fan;
 import com.cheering.fan.FanRepository;
 import com.cheering.match.Match;
 import com.cheering.match.MatchRepository;
+import com.cheering.notification.NotificaitonType;
+import com.cheering.notification.Notification;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
+import com.cheering.post.Like.Like;
+import com.cheering.post.Like.LikeRepository;
+import com.cheering.post.PostResponse;
+import com.cheering.report.block.BlockRepository;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
+import com.cheering.user.deviceToken.DeviceToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +40,8 @@ public class CheerService {
     private final FanRepository fanRepository;
     private final CheerRepository cheerRepository;
     private final BadWordService badWordService;
+    private final LikeRepository likeRepository;
+    private final BlockRepository blockRepository;
 
     public void writeCheer(Long matchId, Long communityId, CommentRequest.WriteCommentDTO requestDTO, User user) {
         Match match = matchRepository.findById(matchId).orElseThrow(()-> new CustomException(ExceptionCode.MATCH_NOT_FOUND));
@@ -76,7 +86,12 @@ public class CheerService {
 
         Page<Cheer> cheerList = cheerRepository.findByMatchAndCommunityId(match, communityId, pageable);
 
-        List<CheerResponse.CheerDTO> cheerDTOList = cheerList.getContent().stream().map((cheer -> new CheerResponse.CheerDTO(cheer, cheer.getWriter().equals(curFan)))).toList();
+        List<CheerResponse.CheerDTO> cheerDTOList = cheerList.getContent().stream().map((cheer -> {
+            Optional<Like> like = likeRepository.findByTargetIdAndTargetTypeAndFan(cheer.getId(), "CHEER", curFan);
+            Long likeCount = likeRepository.countByTargetIdAndTargetType(cheer.getId(), "CHEER");
+
+            return new CheerResponse.CheerDTO(cheer, cheer.getWriter().equals(curFan), like.isPresent(), likeCount);
+        })).toList();
 
         return new CheerResponse.CheerListDTO(cheerList, cheerDTOList);
     }
@@ -85,5 +100,37 @@ public class CheerService {
         Cheer cheer = cheerRepository.findById(cheerId).orElseThrow(()-> new CustomException(ExceptionCode.MATCH_NOT_FOUND));
 
         cheerRepository.delete(cheer);
+    }
+
+    @Transactional
+    // 응원 좋아요
+    public void likeCheer(Long communityId, Long cheerId, User user) {
+        Optional<Cheer> cheer = cheerRepository.findById(cheerId);
+
+        Fan curFan = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        if(cheer.isPresent()) {
+            Like newLike = Like.builder()
+                    .targetId(cheerId)
+                    .targetType("CHEER")
+                    .fan(curFan)
+                    .build();
+
+            likeRepository.save(newLike);
+        }
+    }
+
+    @Transactional
+    // 응원 좋아요 취소
+    public void deleteLikeCheer(Long communityId, Long cheerId, User user) {
+        Optional<Cheer> cheer = cheerRepository.findById(cheerId);
+
+        Fan curFan = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        if(cheer.isPresent()) {
+            Optional<Like> like = likeRepository.findByTargetIdAndTargetTypeAndFan(cheerId, "CHEER", curFan);
+
+            like.ifPresent(likeRepository::delete);
+        }
     }
 }
