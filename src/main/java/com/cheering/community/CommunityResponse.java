@@ -15,7 +15,7 @@ public class CommunityResponse {
         }
 
         public CommunityDTO(Player player, Long fanCount, FanResponse.FanDTO curFan) {
-            this(player.getId(), "PLAYER", player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, curFan, null, null, player.getFirstTeam().getKoreanName(), null, "#000000");
+            this(player.getId(), "PLAYER", player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, curFan, null, null, player.getFirstTeam().getKoreanName(), null, "#1B1B1F");
         }
 
         public CommunityDTO(Team team, Long fanCount, FanResponse.FanDTO curFan, Long officialRoomId) {
@@ -23,7 +23,7 @@ public class CommunityResponse {
         }
 
         public CommunityDTO(Player player, Long fanCount, FanResponse.FanDTO curFan, Long officialRoomId) {
-            this(player.getId(), "PLAYER", player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, curFan, null, null, player.getFirstTeam().getKoreanName(), officialRoomId, "#000000");
+            this(player.getId(), "PLAYER", player.getKoreanName(), player.getEnglishName(), player.getImage(), player.getBackgroundImage(), fanCount, curFan, null, null, player.getFirstTeam().getKoreanName(), officialRoomId, "#1B1B1F");
         }
     }
 

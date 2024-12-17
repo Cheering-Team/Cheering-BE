@@ -1,5 +1,7 @@
 package com.cheering.post.Like;
 
+import com.cheering.cheer.Cheer;
+import com.cheering.comment.Comment;
 import com.cheering.fan.Fan;
 import com.cheering.post.Post;
 import jakarta.persistence.*;
@@ -22,15 +24,18 @@ public class Like {
     @JoinColumn(name = "fan_id", nullable = false)
     private Fan fan;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+    @Column(name = "target_id", nullable = false)
+    private Long targetId;
+
+    @Column(name = "target_type", nullable = false)
+    private String targetType;
 
     @Builder
-    public Like(Long likeId, Fan fan, Post post) {
+    public Like(Long likeId, Fan fan, Long targetId, String targetType) {
         this.id = likeId;
         this.fan = fan;
-        this.post = post;
+        this.targetId = targetId;
+        this.targetType = targetType;
     }
 
 }
