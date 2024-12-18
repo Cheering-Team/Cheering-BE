@@ -79,12 +79,14 @@ public class CheerService {
         }
     }
 
+    // 응원 목록 가져오기
+    @Transactional
     public CheerResponse.CheerListDTO getCheers(Long matchId, Long communityId, Pageable pageable, User user) {
         Fan curFan = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Match match = matchRepository.findById(matchId).orElseThrow(()-> new CustomException(ExceptionCode.MATCH_NOT_FOUND));
 
-        Page<Cheer> cheerList = cheerRepository.findByMatchAndCommunityId(match, communityId, pageable);
+        Page<Cheer> cheerList = cheerRepository.findByMatchAndCommunityId(match, communityId, curFan, pageable);
 
         List<CheerResponse.CheerDTO> cheerDTOList = cheerList.getContent().stream().map((cheer -> {
             Optional<Like> like = likeRepository.findByTargetIdAndTargetTypeAndFan(cheer.getId(), "CHEER", curFan);

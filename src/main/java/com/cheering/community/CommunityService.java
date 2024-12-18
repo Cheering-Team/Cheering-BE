@@ -36,12 +36,12 @@ public class CommunityService {
 
         Long fanCount = fanRepository.countByCommunityId(communityId);
         Optional<Fan> fan = fanRepository.findByCommunityIdAndUser(communityId, user);
-
+        ChatRoom officialChatRoom = chatRoomRepository.findOfficialByCommunityId(communityId);
         if(team.isPresent()) {
-            return new CommunityResponse.CommunityDTO(team.get(), fanCount, fan.map(FanResponse.FanDTO::new).orElse(null));
+            return new CommunityResponse.CommunityDTO(team.get(), fanCount, fan.map(FanResponse.FanDTO::new).orElse(null), officialChatRoom.getId());
         }
         else if(player.isPresent()) {
-            return new CommunityResponse.CommunityDTO(player.get(), fanCount, fan.map(FanResponse.FanDTO::new).orElse(null));
+            return new CommunityResponse.CommunityDTO(player.get(), fanCount, fan.map(FanResponse.FanDTO::new).orElse(null), officialChatRoom.getId());
         }
         return null;
     }
