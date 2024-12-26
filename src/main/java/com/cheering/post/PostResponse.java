@@ -21,7 +21,6 @@ public class PostResponse {
                                            CommunityResponse.CommunityDTO community,
                                            String content, LocalDateTime createdAt,
                                            Boolean isHide,
-                                           List<String> tags,
                                            Boolean isLike,
                                            Long likeCount,
                                            Long commentCount,
@@ -29,16 +28,16 @@ public class PostResponse {
                                            FanResponse.FanDTO writer,
                                            FanResponse.FanDTO user
     ) {
-        public PostInfoWithCommunityDTO(Post post, List<String> tags, Boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, Fan fan, Team team) {
-            this(post.getId(), new CommunityResponse.CommunityDTO(team, null, null), post.getContent(), post.getCreatedAt(), post.getIsHide(), tags, isLike, likeCount, commentCount, images, new FanResponse.FanDTO(post.getWriter()), new FanResponse.FanDTO(fan));
+        public PostInfoWithCommunityDTO(Post post, Boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, Fan fan, Team team) {
+            this(post.getId(), new CommunityResponse.CommunityDTO(team, null, null), post.getContent(), post.getCreatedAt(), post.getIsHide(), isLike, likeCount, commentCount, images, new FanResponse.FanDTO(post.getWriter()), new FanResponse.FanDTO(fan));
         }
 
-        public PostInfoWithCommunityDTO(Post post, List<String> tags, Boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, Fan fan, Player player) {
-            this(post.getId(), new CommunityResponse.CommunityDTO(player, null, null), post.getContent(), post.getCreatedAt(), post.getIsHide(), tags, isLike, likeCount, commentCount, images, new FanResponse.FanDTO(post.getWriter()), new FanResponse.FanDTO(fan));
+        public PostInfoWithCommunityDTO(Post post, Boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, Fan fan, Player player) {
+            this(post.getId(), new CommunityResponse.CommunityDTO(player, null, null), post.getContent(), post.getCreatedAt(), post.getIsHide(), isLike, likeCount, commentCount, images, new FanResponse.FanDTO(post.getWriter()), new FanResponse.FanDTO(fan));
         }
 
-        public PostInfoWithCommunityDTO(Post post, List<String> tags, Boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, Fan fan) {
-            this(post.getId(), null, post.getContent(), post.getCreatedAt(), post.getIsHide(), tags, isLike, likeCount, commentCount, images, new FanResponse.FanDTO(post.getWriter()), new FanResponse.FanDTO(fan));
+        public PostInfoWithCommunityDTO(Post post, Boolean isLike, Long likeCount, Long commentCount, List<PostImageResponse.ImageDTO> images, Fan fan) {
+            this(post.getId(), null, post.getContent(), post.getCreatedAt(), post.getIsHide(), isLike, likeCount, commentCount, images, new FanResponse.FanDTO(post.getWriter()), new FanResponse.FanDTO(fan));
         }
     }
 

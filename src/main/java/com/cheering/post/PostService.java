@@ -23,10 +23,6 @@ import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.PostImage.PostImageRepository;
 import com.cheering.post.PostImage.PostImageResponse;
 import com.cheering.post.PostImage.PostImageType;
-import com.cheering.post.Tag.Tag;
-import com.cheering.post.Tag.TagRepository;
-import com.cheering.post.relation.PostTag;
-import com.cheering.post.relation.PostTagRepository;
 import com.cheering.report.block.BlockRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
@@ -60,8 +56,6 @@ public class PostService {
     private final FanRepository fanRepository;
     private final TeamRepository teamRepository;
     private final PostImageRepository postImageRepository;
-    private final TagRepository tagRepository;
-    private final PostTagRepository postTagRepository;
     private final LikeRepository likeRepository;
     private final CommentRepository commentRepository;
     private final ReCommentRepository reCommentRepository;
@@ -219,7 +213,7 @@ public class PostService {
 
     // 게시글 수정
     @Transactional
-    public void editPost(Long postId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, List<String> tags, User user) {
+    public void editPost(Long postId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, User user) {
         if(badWordService.containsBadWords(content)) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
@@ -235,21 +229,6 @@ public class PostService {
 
         post.setContent(content);
         postRepository.save(post);
-
-        postTagRepository.deleteByPost(post);
-
-        if(tags != null) {
-            tags.forEach((tagName) -> {
-                Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> new CustomException(ExceptionCode.TAG_NOT_FOUND));
-
-                PostTag postTag = PostTag.builder()
-                        .post(post)
-                        .tag(tag)
-                        .build();
-
-                postTagRepository.save(postTag);
-            });
-        }
 
         List<PostImage> postImages = postImageRepository.findByPost(post);
 
@@ -362,13 +341,6 @@ public class PostService {
 
     @NotNull
     public PostResponse.PostInfoWithCommunityDTO getPostInfo(Post post, Fan curFan) {
-        List<PostTag> postTags = postTagRepository.findByPost(post);
-        List<String> tags = postTags.stream().map((postTag) -> {
-            Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
-
-            return tag.getName();
-        }).toList();
-
         List<PostImage> postImages = postImageRepository.findByPost(post);
         List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
@@ -381,9 +353,9 @@ public class PostService {
         Optional<Player> player = playerRepository.findById(post.getCommunityId());
 
         if(team.isPresent()) {
-            return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team.get());
+            return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team.get());
         } else {
-            return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player.get());
+            return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player.get());
         }
     }
 }

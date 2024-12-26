@@ -62,9 +62,8 @@ public class PostController {
                                       @RequestParam(value = "images", required = false) List<MultipartFile> images,
                                       @RequestParam(value = "widthDatas", required = false) List<Integer> widthDatas,
                                       @RequestParam(value = "heightDatas", required = false) List<Integer> heightDatas,
-                                      @RequestParam(value = "tags", required = false) List<String> tags,
                                       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        postService.editPost(postId, content, images, widthDatas, heightDatas, tags, customUserDetails.getUser());
+        postService.editPost(postId, content, images, widthDatas, heightDatas, customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 수정 완료", null));
     }
 

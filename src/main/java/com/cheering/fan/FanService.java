@@ -16,10 +16,6 @@ import com.cheering.post.PostImage.PostImageRepository;
 import com.cheering.post.PostImage.PostImageResponse;
 import com.cheering.post.PostRepository;
 import com.cheering.post.PostResponse;
-import com.cheering.post.Tag.Tag;
-import com.cheering.post.Tag.TagRepository;
-import com.cheering.post.relation.PostTag;
-import com.cheering.post.relation.PostTagRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
@@ -47,8 +43,6 @@ public class FanService {
     private final PlayerRepository playerRepository;
     private final TeamRepository teamRepository;
     private final PostRepository postRepository;
-    private final PostTagRepository postTagRepository;
-    private final TagRepository tagRepository;
     private final LikeRepository likeRepository;
     private final CommentRepository commentRepository;
     private final ReCommentRepository reCommentRepository;
@@ -91,13 +85,6 @@ public class FanService {
         Page<Post> postList = postRepository.findByFan(fan, curFan, pageable);
 
         List<PostResponse.PostInfoWithCommunityDTO> postInfoDTOS = postList.stream().map((post -> {
-            List<PostTag> postTags = postTagRepository.findByPost(post);
-            List<String> tags = postTags.stream().map((postTag) -> {
-                Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
-
-                return tag.getName();
-            }).toList();
-
             List<PostImage> postImages = postImageRepository.findByPost(post);
             List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
@@ -109,11 +96,11 @@ public class FanService {
             if(isTeam) {
                 Team team = teamRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
 
-                return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team);
+                return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team);
             } else {
                 Player player = playerRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
-                return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player);
+                return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player);
             }
         })).toList();
 

@@ -4,9 +4,7 @@ import com.cheering.BaseTimeEntity;
 import com.cheering.comment.Comment;
 import com.cheering.notification.Notification;
 import com.cheering.fan.Fan;
-import com.cheering.post.Like.Like;
 import com.cheering.post.PostImage.PostImage;
-import com.cheering.post.relation.PostTag;
 import com.cheering.report.postReport.PostReport;
 import com.cheering.vote.Vote;
 import jakarta.persistence.*;
@@ -40,9 +38,6 @@ public class Post extends BaseTimeEntity {
     @ManyToOne
     @JoinColumn(name = "writer_id", nullable = false)
     private Fan writer;
-
-    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
-    private List<PostTag> postTags = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
     private List<PostImage> postImages = new ArrayList<>();
