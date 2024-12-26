@@ -11,6 +11,9 @@ alter table public.like_tb
 alter table public.like_tb
     add target_type varchar(255) not null;
 
+UPDATE public.like_tb
+SET target_id = post_id;
+
 alter table public.like_tb
 drop constraint fkp67wcdups4fk9jt8xmmirqink;
 
