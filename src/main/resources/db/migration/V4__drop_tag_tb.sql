@@ -6,13 +6,16 @@ alter table public.user_tb
     add unique (phone);
 
 alter table public.like_tb
-    add target_id bigint not null;
+    add target_id bigint;
 
 alter table public.like_tb
     add target_type varchar(255) not null;
 
 UPDATE public.like_tb
 SET target_id = post_id;
+
+ALTER TABLE public.like_tb
+    ALTER COLUMN target_id SET NOT NULL;
 
 alter table public.like_tb
 drop constraint fkp67wcdups4fk9jt8xmmirqink;
