@@ -78,9 +78,8 @@ public class PostService {
     private final S3Util s3Util;
     private final FcmServiceImpl fcmService;
 
-    // ~4.1.0
     @Transactional
-    public PostResponse.PostIdDTO writePost(Long communityId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, List<String> tags, User user) {
+    public PostResponse.PostIdDTO writePostV2(Long communityId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, PostRequest.VoteDTO vote, User user) {
         if(badWordService.containsBadWords(content)) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
@@ -94,73 +93,6 @@ public class PostService {
                 .build();
 
         postRepository.save(post);
-
-        if(tags != null) {
-            tags.forEach((tagName) -> {
-                Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> new CustomException(ExceptionCode.TAG_NOT_FOUND));
-
-                PostTag postTag = PostTag.builder()
-                        .post(post)
-                        .tag(tag)
-                        .build();
-
-                postTagRepository.save(postTag);
-            });
-        }
-
-        if(images != null) {
-            for(int i=0; i<images.size(); i++) {
-                MultipartFile image = images.get(i);
-                Integer width = widthDatas.get(i);
-                Integer height = heightDatas.get(i);
-
-                String imageUrl = s3Util.upload(image);
-
-                PostImageType type = getPostImageType(image);
-
-                PostImage postImage = PostImage.builder()
-                        .path(imageUrl)
-                        .width(width)
-                        .height(height)
-                        .post(post)
-                        .type(type)
-                        .build();
-
-                postImageRepository.save(postImage);
-            }
-        }
-        return new PostResponse.PostIdDTO(post.getId());
-    }
-
-
-    @Transactional
-    public PostResponse.PostIdDTO writePostV2(Long communityId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, List<String> tags, PostRequest.VoteDTO vote, User user) {
-        if(badWordService.containsBadWords(content)) {
-            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
-        }
-
-        Fan writer = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-
-        Post post = Post.builder()
-                .content(content)
-                .writer(writer)
-                .communityId(communityId)
-                .build();
-
-        postRepository.save(post);
-
-        if(tags != null) {
-            tags.forEach((tagName) -> {
-                Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> new CustomException(ExceptionCode.TAG_NOT_FOUND));
-
-                PostTag postTag = PostTag.builder()
-                        .post(post)
-                        .tag(tag)
-                        .build();
-
-                postTagRepository.save(postTag);
-            });
-        }
 
         if(images != null) {
             for(int i=0; i<images.size(); i++) {
@@ -221,12 +153,12 @@ public class PostService {
 
         Fan curFan = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException((ExceptionCode.CUR_FAN_NOT_FOUND)));
 
-        if(tagName.isEmpty()) {
-            postList = postRepository.findByCommunityId(communityId, curFan, pageable);
-        } else if(tagName.equals("hot")) {
+        if(tagName.equals("hot")) {
             postList = postRepository.findHotPosts(communityId, curFan, pageable);
+        } else if(tagName.equals("vote")){
+            postList = postRepository.findHasVotePosts(communityId, curFan, pageable);
         } else {
-            postList = postRepository.findByCommunityAndTagName(communityId, tagName, curFan, pageable);
+            postList = postRepository.findByCommunityId(communityId, curFan, pageable);
         }
 
         List<PostResponse.PostInfoWithCommunityDTO> postInfoDTOS = postList.getContent().stream().map((post -> getPostInfo(post, curFan))).toList();
