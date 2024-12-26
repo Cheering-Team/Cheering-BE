@@ -24,29 +24,15 @@ public class PostController {
     private final PostService postService;
 
     // 게시글 작성
-    // ~4.1.0
-    @PostMapping("/communities/{communityId}/posts")
-    public ResponseEntity<?> writePost(@PathVariable("communityId") Long communityId,
-                                       @RequestParam(value = "content", required = false) String content,
-                                       @RequestParam(value = "images", required = false) List<MultipartFile> images,
-                                       @RequestParam(value = "widthDatas", required = false) List<Integer> widthDatas,
-                                       @RequestParam(value = "heightDatas", required = false) List<Integer> heightDatas,
-                                       @RequestParam(value = "tags", required = false) List<String> tags,
-                                       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 작성 완료", postService.writePost(communityId, content, images, widthDatas, heightDatas, tags, customUserDetails.getUser())));
-    }
-
-    // 게시글 작성
     @PostMapping(value = "/v2/communities/{communityId}/posts", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<?> writePostV2(@PathVariable("communityId") Long communityId,
                                        @RequestPart(value = "content", required = false) String content,
                                        @RequestPart(value = "images", required = false) List<MultipartFile> images,
                                        @RequestPart(value = "widthDatas", required = false) List<Integer> widthDatas,
                                        @RequestPart(value = "heightDatas", required = false) List<Integer> heightDatas,
-                                       @RequestPart(value = "tags", required = false) List<String> tags,
                                        @RequestPart(value = "vote", required = false) PostRequest.VoteDTO vote,
                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 작성 완료", postService.writePostV2(communityId, content, images, widthDatas, heightDatas, tags, vote, customUserDetails.getUser())));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 작성 완료", postService.writePostV2(communityId, content, images, widthDatas, heightDatas, vote, customUserDetails.getUser())));
     }
 
     // 커뮤니티 게시글 불러오기 (무한 스크롤)
@@ -76,9 +62,8 @@ public class PostController {
                                       @RequestParam(value = "images", required = false) List<MultipartFile> images,
                                       @RequestParam(value = "widthDatas", required = false) List<Integer> widthDatas,
                                       @RequestParam(value = "heightDatas", required = false) List<Integer> heightDatas,
-                                      @RequestParam(value = "tags", required = false) List<String> tags,
                                       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        postService.editPost(postId, content, images, widthDatas, heightDatas, tags, customUserDetails.getUser());
+        postService.editPost(postId, content, images, widthDatas, heightDatas, customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 수정 완료", null));
     }
 

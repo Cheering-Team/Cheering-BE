@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface MatchRepository extends JpaRepository<Match, Long> {
-    @Query("SELECT m FROM Match m WHERE (m.homeTeam = :team OR m.awayTeam = :team) AND m.time BETWEEN :startDateTime AND :endDateTime")
+    @Query("SELECT m FROM Match m WHERE (m.homeTeam = :team OR m.awayTeam = :team) AND m.time BETWEEN :startDateTime AND :endDateTime ORDER BY m.time ASC")
     List<Match> findByHomeTeamOrAwayTeam(@Param("team") Team team, @Param("startDateTime") LocalDateTime startDateTime,
                                          @Param("endDateTime") LocalDateTime endDateTime);
 
