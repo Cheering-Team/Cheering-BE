@@ -12,7 +12,7 @@ alter table public.like_tb
     add target_type varchar(255);
 
 UPDATE public.like_tb
-SET target_id = post_id
+SET target_id = post_id;
 
 UPDATE public.like_tb
 SET target_type = 'POST';
