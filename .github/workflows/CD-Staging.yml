@@ -42,7 +42,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build Docker
-        run: docker buildx build --no-cache --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/stardium-staging .
+        run: docker buildx build --no-cache --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/stardium-staging --push .
       - name: Push Docker
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/stardium-staging:latest
 
