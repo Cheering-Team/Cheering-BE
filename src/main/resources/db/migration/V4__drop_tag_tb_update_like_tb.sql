@@ -33,7 +33,5 @@ drop table public.post_tag_tb;
 
 drop table public.tag_tb;
 
-drop schema pg_catalog;
-
 alter table public.user_tb
 drop constraint user_tb_phone_key1;
