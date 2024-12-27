@@ -26,6 +26,8 @@ import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
 import com.cheering.user.UserRequest;
+import com.cheering.vote.VoteResponse;
+import com.cheering.vote.VoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +54,7 @@ public class FanService {
     private final ReCommentReportRepository reCommentReportRepository;
     private final BadWordService badWordService;
     private final S3Util s3Util;
+    private final VoteService voteService;
 
     public FanResponse.ProfileDTO getFanInfo(Long fanId, User user) {
         // 유저
@@ -93,14 +96,16 @@ public class FanService {
 
             Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
 
+            VoteResponse.VoteDTO voteDTO = post.getVote() != null ? voteService.getVoteInfo(post.getVote(), curFan) : null;
+
             if(isTeam) {
                 Team team = teamRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
 
-                return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team);
+                return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team, voteDTO);
             } else {
                 Player player = playerRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
-                return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player);
+                return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player, voteDTO);
             }
         })).toList();
 
