@@ -16,7 +16,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByCommunityId(@Param("communityId") Long communityId, @Param("fan") Fan fan, Pageable pageable);
 
     @Query("SELECT p FROM Post p WHERE p.communityId = :communityId AND p.isHide = false AND " +
-            "(SELECT COUNT(l) FROM Like l WHERE l.targetId = p.id AND l.targetType = 'POST') >= 3 " +
+            "(SELECT COUNT(l) FROM Like l WHERE l.targetId = p.id AND l.targetType = 'POST') >= 1 " +
             "AND p.id NOT IN (SELECT pr.post.id FROM PostReport pr WHERE pr.writer = :fan AND pr.post.id IS NOT NULL)" +
             "AND p.writer NOT IN (SELECT b.to FROM Block b WHERE b.from = :fan)" +
             "ORDER BY p.createdAt DESC")

@@ -36,6 +36,8 @@ import com.cheering.user.User;
 import com.cheering.user.deviceToken.DeviceToken;
 import com.cheering.vote.Vote;
 import com.cheering.vote.VoteRepository;
+import com.cheering.vote.VoteResponse;
+import com.cheering.vote.VoteService;
 import com.cheering.vote.voteOption.VoteOption;
 import com.cheering.vote.voteOption.VoteOptionRepository;
 import lombok.RequiredArgsConstructor;
@@ -71,6 +73,7 @@ public class PostService {
     private final BadWordService badWordService;
     private final S3Util s3Util;
     private final FcmServiceImpl fcmService;
+    private final VoteService voteService;
 
     @Transactional
     public PostResponse.PostIdDTO writePost(Long communityId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, PostRequest.VoteDTO vote, User user) {
@@ -352,10 +355,12 @@ public class PostService {
         Optional<Team> team = teamRepository.findById(post.getCommunityId());
         Optional<Player> player = playerRepository.findById(post.getCommunityId());
 
+        VoteResponse.VoteDTO voteDTO = post.getVote() != null ? voteService.getVoteInfo(post.getVote(), curFan) : null;
+
         if(team.isPresent()) {
-            return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team.get());
+            return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team.get(), voteDTO);
         } else {
-            return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player.get());
+            return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player.get(), voteDTO);
         }
     }
 }
