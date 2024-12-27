@@ -30,7 +30,7 @@ jobs:
           cat ./src/main/resources/application-secret.yml
           echo ${{secrets.FIREBASE_JSON}} | base64 --decode > ./src/main/resources/firebase.json
           cat ./src/main/resources/firebase.json
-          cat ./src/main/resources/db/migation/V4__drop_tag_tb_update_like_tb.sql
+          cat ./src/main/resources/db/migration/V4__drop_tag_tb_update_like_tb.sql
           ./gradlew build
 
       - name: Login to DockerHub
