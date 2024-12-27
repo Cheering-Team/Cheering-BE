@@ -107,3 +107,7 @@ jobs:
           script: |
             sudo docker stop ${{env.CURRENT_UPSTREAM}}
             sudo docker rm ${{env.CURRENT_UPSTREAM}}
+
+      - name: Clean up unused Docker images
+        run: |
+          docker image prune -f
