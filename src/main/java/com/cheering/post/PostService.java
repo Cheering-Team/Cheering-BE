@@ -73,7 +73,7 @@ public class PostService {
     private final FcmServiceImpl fcmService;
 
     @Transactional
-    public PostResponse.PostIdDTO writePostV2(Long communityId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, PostRequest.VoteDTO vote, User user) {
+    public PostResponse.PostIdDTO writePost(Long communityId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, PostRequest.VoteDTO vote, User user) {
         if(badWordService.containsBadWords(content)) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }

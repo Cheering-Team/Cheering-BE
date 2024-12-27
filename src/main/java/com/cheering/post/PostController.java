@@ -25,14 +25,14 @@ public class PostController {
 
     // 게시글 작성
     @PostMapping(value = "/v2/communities/{communityId}/posts", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<?> writePostV2(@PathVariable("communityId") Long communityId,
+    public ResponseEntity<?> writePost(@PathVariable("communityId") Long communityId,
                                        @RequestPart(value = "content", required = false) String content,
                                        @RequestPart(value = "images", required = false) List<MultipartFile> images,
                                        @RequestPart(value = "widthDatas", required = false) List<Integer> widthDatas,
                                        @RequestPart(value = "heightDatas", required = false) List<Integer> heightDatas,
                                        @RequestPart(value = "vote", required = false) PostRequest.VoteDTO vote,
                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 작성 완료", postService.writePostV2(communityId, content, images, widthDatas, heightDatas, vote, customUserDetails.getUser())));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "게시글 작성 완료", postService.writePost(communityId, content, images, widthDatas, heightDatas, vote, customUserDetails.getUser())));
     }
 
     // 커뮤니티 게시글 불러오기 (무한 스크롤)
