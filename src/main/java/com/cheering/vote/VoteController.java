@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.*;
 public class VoteController {
     private final VoteService voteService;
 
-    @GetMapping("/posts/{postId}/votes")
-    public ResponseEntity<?> getVote(@PathVariable("postId") Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "투표 조회 완료", voteService.getVote(postId, customUserDetails.getUser())));
-    }
-
     @PostMapping("/votes/{voteOptionId}")
     public ResponseEntity<?> vote(@PathVariable("voteOptionId") Long voteOptionId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         voteService.vote(voteOptionId, customUserDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "투표 완료", null));
+    }
+
+    @GetMapping("/communities/{communityId}/votes/hot")
+    public ResponseEntity<?> getHotVote(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "투표 조회 완료", voteService.getHotVote(communityId, customUserDetails.getUser())));
     }
 }

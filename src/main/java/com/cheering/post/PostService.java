@@ -7,7 +7,6 @@ import com.cheering.badword.BadWordService;
 import com.cheering.comment.Comment;
 import com.cheering.comment.CommentRepository;
 import com.cheering.comment.reComment.ReCommentRepository;
-import com.cheering.fan.CommunityType;
 import com.cheering.match.Match;
 import com.cheering.match.MatchRepository;
 import com.cheering.player.Player;
@@ -24,10 +23,6 @@ import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.PostImage.PostImageRepository;
 import com.cheering.post.PostImage.PostImageResponse;
 import com.cheering.post.PostImage.PostImageType;
-import com.cheering.post.Tag.Tag;
-import com.cheering.post.Tag.TagRepository;
-import com.cheering.post.relation.PostTag;
-import com.cheering.post.relation.PostTagRepository;
 import com.cheering.report.block.BlockRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
@@ -41,6 +36,8 @@ import com.cheering.user.User;
 import com.cheering.user.deviceToken.DeviceToken;
 import com.cheering.vote.Vote;
 import com.cheering.vote.VoteRepository;
+import com.cheering.vote.VoteResponse;
+import com.cheering.vote.VoteService;
 import com.cheering.vote.voteOption.VoteOption;
 import com.cheering.vote.voteOption.VoteOptionRepository;
 import lombok.RequiredArgsConstructor;
@@ -61,8 +58,6 @@ public class PostService {
     private final FanRepository fanRepository;
     private final TeamRepository teamRepository;
     private final PostImageRepository postImageRepository;
-    private final TagRepository tagRepository;
-    private final PostTagRepository postTagRepository;
     private final LikeRepository likeRepository;
     private final CommentRepository commentRepository;
     private final ReCommentRepository reCommentRepository;
@@ -78,10 +73,10 @@ public class PostService {
     private final BadWordService badWordService;
     private final S3Util s3Util;
     private final FcmServiceImpl fcmService;
+    private final VoteService voteService;
 
-    // ~4.1.0
     @Transactional
-    public PostResponse.PostIdDTO writePost(Long communityId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, List<String> tags, User user) {
+    public PostResponse.PostIdDTO writePost(Long communityId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, PostRequest.VoteDTO vote, User user) {
         if(badWordService.containsBadWords(content)) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
@@ -95,73 +90,6 @@ public class PostService {
                 .build();
 
         postRepository.save(post);
-
-        if(tags != null) {
-            tags.forEach((tagName) -> {
-                Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> new CustomException(ExceptionCode.TAG_NOT_FOUND));
-
-                PostTag postTag = PostTag.builder()
-                        .post(post)
-                        .tag(tag)
-                        .build();
-
-                postTagRepository.save(postTag);
-            });
-        }
-
-        if(images != null) {
-            for(int i=0; i<images.size(); i++) {
-                MultipartFile image = images.get(i);
-                Integer width = widthDatas.get(i);
-                Integer height = heightDatas.get(i);
-
-                String imageUrl = s3Util.upload(image);
-
-                PostImageType type = getPostImageType(image);
-
-                PostImage postImage = PostImage.builder()
-                        .path(imageUrl)
-                        .width(width)
-                        .height(height)
-                        .post(post)
-                        .type(type)
-                        .build();
-
-                postImageRepository.save(postImage);
-            }
-        }
-        return new PostResponse.PostIdDTO(post.getId());
-    }
-
-
-    @Transactional
-    public PostResponse.PostIdDTO writePostV2(Long communityId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, List<String> tags, PostRequest.VoteDTO vote, User user) {
-        if(badWordService.containsBadWords(content)) {
-            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
-        }
-
-        Fan writer = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-
-        Post post = Post.builder()
-                .content(content)
-                .writer(writer)
-                .communityId(communityId)
-                .build();
-
-        postRepository.save(post);
-
-        if(tags != null) {
-            tags.forEach((tagName) -> {
-                Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> new CustomException(ExceptionCode.TAG_NOT_FOUND));
-
-                PostTag postTag = PostTag.builder()
-                        .post(post)
-                        .tag(tag)
-                        .build();
-
-                postTagRepository.save(postTag);
-            });
-        }
 
         if(images != null) {
             for(int i=0; i<images.size(); i++) {
@@ -222,12 +150,12 @@ public class PostService {
 
         Fan curFan = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException((ExceptionCode.CUR_FAN_NOT_FOUND)));
 
-        if(tagName.isEmpty()) {
-            postList = postRepository.findByCommunityId(communityId, curFan, pageable);
-        } else if(tagName.equals("hot")) {
+        if(tagName.equals("hot")) {
             postList = postRepository.findHotPosts(communityId, curFan, pageable);
+        } else if(tagName.equals("vote")){
+            postList = postRepository.findHasVotePosts(communityId, curFan, pageable);
         } else {
-            postList = postRepository.findByCommunityAndTagName(communityId, tagName, curFan, pageable);
+            postList = postRepository.findByCommunityId(communityId, curFan, pageable);
         }
 
         List<PostResponse.PostInfoWithCommunityDTO> postInfoDTOS = postList.getContent().stream().map((post -> getPostInfo(post, curFan))).toList();
@@ -253,17 +181,18 @@ public class PostService {
 
         Fan curFan = fanRepository.findByCommunityIdAndUser(post.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
-        Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
+        Optional<Like> like = likeRepository.findByTargetIdAndTargetTypeAndFan(post.getId(), "POST", curFan);
 
         if(like.isEmpty()) {
             Like newLike = Like.builder()
-                    .post(post)
+                    .targetId(post.getId())
+                    .targetType("POST")
                     .fan(curFan)
                     .build();
 
             likeRepository.save(newLike);
 
-            Long likeCount = likeRepository.countByPost(post);
+            Long likeCount = likeRepository.countByTargetIdAndTargetType(post.getId(), "POST");
 
             if(!post.getWriter().equals(curFan) && blockRepository.findByFromAndTo(post.getWriter(), curFan).isEmpty()){
                 Notification notification = new Notification(NotificaitonType.LIKE, post.getWriter(), curFan, post);
@@ -279,7 +208,7 @@ public class PostService {
                 notificationRepository.deleteLikeByPostAndFrom(post, curFan, NotificaitonType.LIKE);
             }
             likeRepository.delete(like.get());
-            Long likeCount = likeRepository.countByPost(post);
+            Long likeCount = likeRepository.countByTargetIdAndTargetType(post.getId(), "POST");
 
             return new PostResponse.LikeResponseDTO(false, likeCount);
         }
@@ -287,7 +216,7 @@ public class PostService {
 
     // 게시글 수정
     @Transactional
-    public void editPost(Long postId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, List<String> tags, User user) {
+    public void editPost(Long postId, String content, List<MultipartFile> images, List<Integer> widthDatas, List<Integer> heightDatas, User user) {
         if(badWordService.containsBadWords(content)) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
@@ -303,21 +232,6 @@ public class PostService {
 
         post.setContent(content);
         postRepository.save(post);
-
-        postTagRepository.deleteByPost(post);
-
-        if(tags != null) {
-            tags.forEach((tagName) -> {
-                Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> new CustomException(ExceptionCode.TAG_NOT_FOUND));
-
-                PostTag postTag = PostTag.builder()
-                        .post(post)
-                        .tag(tag)
-                        .build();
-
-                postTagRepository.save(postTag);
-            });
-        }
 
         List<PostImage> postImages = postImageRepository.findByPost(post);
 
@@ -366,6 +280,9 @@ public class PostService {
         for(PostImage postImage : postImages) {
             s3Util.deleteImageFromS3(postImage.getPath());
         }
+
+        // Like
+        likeRepository.deleteByTargetIdAndTargetType(postId, "POST");
 
         // Comment
         List<Comment> commentList = commentRepository.findByPost(post);
@@ -427,28 +344,23 @@ public class PostService {
 
     @NotNull
     public PostResponse.PostInfoWithCommunityDTO getPostInfo(Post post, Fan curFan) {
-        List<PostTag> postTags = postTagRepository.findByPost(post);
-        List<String> tags = postTags.stream().map((postTag) -> {
-            Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
-
-            return tag.getName();
-        }).toList();
-
         List<PostImage> postImages = postImageRepository.findByPost(post);
         List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-        Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
-        Long likeCount = likeRepository.countByPost(post);
+        Optional<Like> like = likeRepository.findByTargetIdAndTargetTypeAndFan(post.getId(), "POST", curFan);
+        Long likeCount = likeRepository.countByTargetIdAndTargetType(post.getId(), "POST");
 
         Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
 
         Optional<Team> team = teamRepository.findById(post.getCommunityId());
         Optional<Player> player = playerRepository.findById(post.getCommunityId());
 
+        VoteResponse.VoteDTO voteDTO = post.getVote() != null ? voteService.getVoteInfo(post.getVote(), curFan) : null;
+
         if(team.isPresent()) {
-            return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team.get());
+            return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team.get(), voteDTO);
         } else {
-            return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player.get());
+            return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player.get(), voteDTO);
         }
     }
 }

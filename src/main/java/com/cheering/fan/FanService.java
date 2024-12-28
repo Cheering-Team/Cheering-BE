@@ -16,10 +16,6 @@ import com.cheering.post.PostImage.PostImageRepository;
 import com.cheering.post.PostImage.PostImageResponse;
 import com.cheering.post.PostRepository;
 import com.cheering.post.PostResponse;
-import com.cheering.post.Tag.Tag;
-import com.cheering.post.Tag.TagRepository;
-import com.cheering.post.relation.PostTag;
-import com.cheering.post.relation.PostTagRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
@@ -30,6 +26,8 @@ import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
 import com.cheering.user.UserRequest;
+import com.cheering.vote.VoteResponse;
+import com.cheering.vote.VoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,8 +45,6 @@ public class FanService {
     private final PlayerRepository playerRepository;
     private final TeamRepository teamRepository;
     private final PostRepository postRepository;
-    private final PostTagRepository postTagRepository;
-    private final TagRepository tagRepository;
     private final LikeRepository likeRepository;
     private final CommentRepository commentRepository;
     private final ReCommentRepository reCommentRepository;
@@ -58,6 +54,7 @@ public class FanService {
     private final ReCommentReportRepository reCommentReportRepository;
     private final BadWordService badWordService;
     private final S3Util s3Util;
+    private final VoteService voteService;
 
     public FanResponse.ProfileDTO getFanInfo(Long fanId, User user) {
         // 유저
@@ -91,29 +88,24 @@ public class FanService {
         Page<Post> postList = postRepository.findByFan(fan, curFan, pageable);
 
         List<PostResponse.PostInfoWithCommunityDTO> postInfoDTOS = postList.stream().map((post -> {
-            List<PostTag> postTags = postTagRepository.findByPost(post);
-            List<String> tags = postTags.stream().map((postTag) -> {
-                Tag tag = tagRepository.findById(postTag.getTag().getId()).orElseThrow(()-> new CustomException(ExceptionCode.TAG_NOT_FOUND));
-
-                return tag.getName();
-            }).toList();
-
             List<PostImage> postImages = postImageRepository.findByPost(post);
             List<PostImageResponse.ImageDTO> imageDTOS = postImages.stream().map((PostImageResponse.ImageDTO::new)).toList();
 
-            Optional<Like> like = likeRepository.findByPostAndFan(post, curFan);
-            Long likeCount = likeRepository.countByPost(post);
+            Optional<Like> like = likeRepository.findByTargetIdAndTargetTypeAndFan(post.getId(), "POST", curFan);
+            Long likeCount = likeRepository.countByTargetIdAndTargetType(post.getId(), "POST");
 
             Long commentCount = commentRepository.countByPost(post) + reCommentRepository.countByPost(post);
+
+            VoteResponse.VoteDTO voteDTO = post.getVote() != null ? voteService.getVoteInfo(post.getVote(), curFan) : null;
 
             if(isTeam) {
                 Team team = teamRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
 
-                return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team);
+                return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, team, voteDTO);
             } else {
                 Player player = playerRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
 
-                return new PostResponse.PostInfoWithCommunityDTO(post, tags, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player);
+                return new PostResponse.PostInfoWithCommunityDTO(post, like.isPresent(), likeCount, commentCount, imageDTOS, curFan, player, voteDTO);
             }
         })).toList();
 

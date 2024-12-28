@@ -9,7 +9,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface LikeRepository extends JpaRepository<Like, Long> {
-    Long countByPost(Post post);
-    @Query("select like from Like like where like.post=:post and like.fan=:fan")
-    Optional<Like> findByPostAndFan(@Param("post") Post post, @Param("fan") Fan fan );
+    Long countByTargetIdAndTargetType(Long targetId, String targetType);
+    Optional<Like> findByTargetIdAndTargetTypeAndFan(Long targetId, String targetType, Fan fan);
+
+    void deleteByTargetIdAndTargetType(Long targetId, String targetType);
 }

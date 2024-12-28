@@ -15,9 +15,9 @@ public class CheerResponse {
         }
     }
 
-    public record CheerDTO(Long id, String content, LocalDateTime createdAt, FanResponse.FanDTO writer, Boolean isWriter) {
-        public CheerDTO(Cheer cheer, Boolean isWriter) {
-            this(cheer.getId(), cheer.getContent(), cheer.getCreatedAt(), new FanResponse.FanDTO(cheer.getWriter()), isWriter);
+    public record CheerDTO(Long id, String content, LocalDateTime createdAt, FanResponse.FanDTO writer, Boolean isWriter, Boolean isLike, Long likeCount) {
+        public CheerDTO(Cheer cheer, Boolean isWriter, Boolean isLike, Long likeCount) {
+            this(cheer.getId(), cheer.getContent(), cheer.getCreatedAt(), new FanResponse.FanDTO(cheer.getWriter()), isWriter, isLike, likeCount);
         }
     }
 }

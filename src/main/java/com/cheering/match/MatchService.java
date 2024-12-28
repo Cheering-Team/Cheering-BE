@@ -51,11 +51,9 @@ public class MatchService {
 
     public Map<String, List<MatchResponse.MatchDTO>> getMatchSchedule(Long communityId, int year, int month) {
         YearMonth yearMonth = YearMonth.of(year, month);
-        YearMonth previousMonth = yearMonth.minusMonths(2);
-        YearMonth nextMonth = yearMonth.plusMonths(2);
 
-        LocalDateTime startDateTime = previousMonth.atDay(1).atStartOfDay();
-        LocalDateTime endDateTime = nextMonth.atEndOfMonth().atTime(23, 59, 59);
+        LocalDateTime startDateTime = yearMonth.atDay(1).atStartOfDay();
+        LocalDateTime endDateTime = yearMonth.atEndOfMonth().atTime(23, 59, 59);
 
         Optional<Team> team = teamRepository.findById(communityId);
         Optional<Player> player = playerRepository.findById(communityId);
