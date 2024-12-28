@@ -1,5 +1,5 @@
 package com.cheering.chat.chatRoom;
 
 public enum ChatRoomType {
-    OFFICIAL, PUBLIC
+    OFFICIAL, PUBLIC, CONFIRM, PRIVATE
 }

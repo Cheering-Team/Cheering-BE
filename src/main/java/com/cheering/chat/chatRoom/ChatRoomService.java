@@ -298,7 +298,7 @@ public class ChatRoomService {
         Integer count = chatSessionRepository.countByChatRoom(chatRoom);
         simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", new ChatResponse.ChatResponseDTO("SYSTEM_EXIT", fan.getName() + "님이 나가셨습니다", LocalDateTime.now(), fan.getId(), fan.getImage(), fan.getName(), fan.getId() + "_SYSTEM_EXIT", count));
 
-        if(chatRoom.getType().equals(ChatRoomType.PUBLIC)){
+        if (chatRoom.getType().equals(ChatRoomType.PUBLIC) || chatRoom.getType().equals(ChatRoomType.CONFIRM)) {
             Chat chat = Chat.builder()
                     .type(ChatType.SYSTEM_EXIT)
                     .chatRoom(chatRoom)
@@ -331,4 +331,25 @@ public class ChatRoomService {
     private String generateGroupKey(Long writerId, LocalDateTime timestamp) {
         return writerId + "_" + groupKeyFormatter.format(timestamp);
     }
+
+    @Transactional
+    public ChatRoomResponse.IdDTO createConfirmedChatRoom(Long communityId, Integer max, User user) {
+
+        Fan curUser = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        ChatRoom chatRoom = ChatRoom.builder()
+                .communityId(communityId)
+                .name("모임 확정 채팅방")
+                .description("확정된 멤버들이 대화하는 채팅방입니다.")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-confirm-chatroom.png") // Default image
+                .type(ChatRoomType.CONFIRM)
+                .manager(curUser) // Manager of the chat room
+                .communityType(curUser.getType())
+                .max(max)
+                .build();
+
+        chatRoomRepository.save(chatRoom);
+        return new ChatRoomResponse.IdDTO(chatRoom.getId());
+    }
+
 }

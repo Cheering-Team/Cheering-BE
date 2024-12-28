@@ -1,0 +1,274 @@
+package com.cheering.meet;
+
+import com.cheering._core.errors.CustomException;
+import com.cheering._core.errors.ExceptionCode;
+import com.cheering._core.util.ApiUtils;
+import com.cheering.chat.ChatResponse;
+import com.cheering.chat.chatRoom.*;
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanRepository;
+import com.cheering.fan.FanResponse;
+import com.cheering.match.Match;
+import com.cheering.match.MatchRepository;
+import com.cheering.meet.MeetFan;
+import com.cheering.meetfan.MeetFanRepository;
+import com.cheering.meetfan.MeetFanRole;
+import com.cheering.post.PostResponse;
+import com.cheering.user.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class MeetService {
+
+    private final MeetRepository meetRepository;
+    private final MatchRepository matchRepository;
+    private final FanRepository fanRepository;
+    private final MeetFanRepository meetFanRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatRoomService chatRoomService;
+
+    @Transactional
+    public MeetResponse.MeetIdDTO createMeet(Long communityId, MeetRequest.CreateMeetDTO requestDto, User user) {
+
+        boolean isMember = fanRepository.existsByCommunityIdAndUser(communityId, user);
+        if (!isMember) {
+            throw new CustomException(ExceptionCode.FAN_NOT_FOUND);
+        }
+
+        Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        boolean alreadyExists = meetRepository.existsByMatchIdAndFanIdAsManager(requestDto.matchId(), fan.getId());
+        if (alreadyExists) {
+            throw new CustomException(ExceptionCode.DUPLICATE_MEET);
+        }
+
+        Match match = matchRepository.findById(requestDto.matchId())
+                .orElseThrow(() -> new CustomException(ExceptionCode.MATCH_NOT_FOUND));
+
+        if (!isMatchRelatedToCommunity(match, communityId)) {
+            throw new CustomException(ExceptionCode.MATCH_NOT_RELATED_TO_COMMUNITY);
+        }
+
+        // 확정 채팅방 생성
+        ChatRoomResponse.IdDTO confirmedChatRoomIdDTO = chatRoomService.createConfirmedChatRoom(communityId, requestDto.max(), user);
+
+        // ChatRoom ID로 ChatRoom 엔티티 조회
+        ChatRoom confirmedChatRoom = chatRoomRepository.findById(confirmedChatRoomIdDTO.id())
+                .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
+        chatRoomRepository.save(confirmedChatRoom);
+
+        Meet meet = Meet.builder()
+                .communityId(communityId)
+                .communityType(requestDto.communityType())
+                .title(requestDto.title())
+                .description(requestDto.description())
+                .max(requestDto.max())
+                .gender(requestDto.gender())
+                .ageMin(requestDto.ageMin())
+                .ageMax(requestDto.ageMax())
+                .place(requestDto.place())
+                .type(requestDto.type())
+                .hasTicket(requestDto.hasTicket() != null && requestDto.hasTicket())
+                .match(match)
+                .chatRoom(confirmedChatRoom)
+                .build();
+
+        meetRepository.save(meet);
+
+        MeetFan meetFan = MeetFan.builder()
+                .role(MeetFanRole.MANAGER)
+                .meet(meet)
+                .fan(fan)
+                .build();
+
+        meetFanRepository.save(meetFan);
+
+        return new MeetResponse.MeetIdDTO(meet.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public MeetResponse.MeetListDTO findAllMeets(MeetRequest.MeetSearchRequest request) {
+
+        PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Meet> meetPage = meetRepository.findByFilters(
+                request.getType(),
+                request.getGender(),
+                request.getMinAge(),
+                request.getMaxAge(),
+                request.getMatchId(),
+                request.getHasTicket(),
+                request.getLocation(),
+                pageRequest
+        );
+
+        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meetPage.getContent().stream()
+                .map(meet -> {
+                    int currentCount = calculateCurrentCount(meet.getId());
+                    ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
+                            meet.getChatRoom(),
+                            currentCount,
+                            true // 참여 여부, 필요에 따라 로직 변경 가능
+                    );
+                    return new MeetResponse.MeetInfoDTO(
+                            meet.getId(),
+                            meet.getTitle(),
+                            meet.getDescription(),
+                            chatRoomDTO,
+                            currentCount,
+                            meet.getMax(),
+                            meet.isHasTicket(),
+                            meet.getGender(),
+                            meet.getAgeMin(),
+                            meet.getAgeMax(),
+                            meet.getMatch() != null ? new MeetResponse.MeetMatchDTO(meet.getMatch()) : null
+                    );
+                })
+                .collect(Collectors.toList());
+
+        // MeetListDTO 반환
+        return new MeetResponse.MeetListDTO(meetPage, meetInfoDTOs);
+    }
+
+    @Transactional(readOnly = true)
+    public MeetResponse.MeetDetailDTO getMeetDetail(Long meetId, User user) {
+
+        Meet meet = meetRepository.findById(meetId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
+
+        boolean isMember = fanRepository.existsByCommunityIdAndUser(meet.getCommunityId(), user);
+        if (!isMember) {
+            throw new CustomException(ExceptionCode.FAN_NOT_FOUND);
+        }
+
+        MeetFan managerFan = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        // 현재 참가자 수 계산
+        int currentCount = meetFanRepository.countByMeet(meet);
+
+
+        Fan writer = managerFan.getFan();
+
+        ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
+                meet.getChatRoom(),
+                currentCount, // 현재 참가자 수
+                true // 사용자 참여 여부를 true로 설정 (필요 시 로직으로 변경 가능)
+        );
+
+        return new MeetResponse.MeetDetailDTO(
+                meet.getTitle(),
+                meet.getDescription(),
+                chatRoomDTO,
+                currentCount,
+                meet.getMax(),
+                meet.isHasTicket(),
+                meet.getGender(),
+                meet.getAgeMin(),
+                meet.getAgeMax(),
+                new MeetResponse.MeetDetailDTO.MeetWriterDTO(
+                        writer.getId()
+                        //writer.getAge(),
+                        //writer.getGender().toString()
+                ),
+                meet.getMatch() != null
+                        ? new MeetResponse.MeetMatchDTO(
+                        meet.getMatch().getId(),
+                        meet.getMatch().getAwayTeam().getImage(),
+                        meet.getMatch().getTime()
+                )
+                        : null
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<MeetResponse.MeetInfoDTO> findAllMeetsByCommunity(Long communityId, User user) {
+
+        boolean isMember = fanRepository.existsByCommunityIdAndUser(communityId, user);
+        if (!isMember) {
+            throw new CustomException(ExceptionCode.FAN_NOT_FOUND);
+        }
+
+        Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        List<Meet> meets = meetRepository.findByCommunityId(communityId);
+
+        return meets.stream()
+                .map(meet -> {
+                    int currentCount = calculateCurrentCount(meet.getId());
+                    ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
+                            meet.getChatRoom(),
+                            currentCount,
+                            true // 참여 여부, 필요에 따라 로직 변경 가능
+                    );
+                    return new MeetResponse.MeetInfoDTO(
+                            meet.getId(),
+                            meet.getTitle(),
+                            meet.getDescription(),
+                            chatRoomDTO,
+                            currentCount,
+                            meet.getMax(),
+                            meet.isHasTicket(),
+                            meet.getGender(),
+                            meet.getAgeMin(),
+                            meet.getAgeMax(),
+                            meet.getMatch() != null ? new MeetResponse.MeetMatchDTO(meet.getMatch()) : null
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    private boolean isMatchRelatedToCommunity(Match match, Long communityId) {
+        return match.getHomeTeam().getId().equals(communityId) ||
+                match.getAwayTeam().getId().equals(communityId);
+    }
+
+    public int calculateCurrentCount(Long meetId) {
+        Meet meet = meetRepository.findById(meetId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
+
+        // 현재 참가자 수 계산
+        int currentParticipants = meetFanRepository.countByMeet(meet);
+
+        return currentParticipants;
+    }
+
+    @Transactional
+    public void deleteMeet(Long meetId, User user) {
+
+        Meet meet = meetRepository.findById(meetId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
+
+        MeetFan managerFan = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_FORBIDDEN));
+
+        if (!managerFan.getFan().getUser().getId().equals(user.getId())) {
+            throw new CustomException(ExceptionCode.USER_FORBIDDEN);
+        }
+
+        ChatRoom chatRoom = meet.getChatRoom();
+        if (chatRoom != null) {
+            chatRoomRepository.delete(chatRoom);
+        }
+
+        meetFanRepository.deleteByMeet(meet);
+
+        meetRepository.delete(meet);
+    }
+
+}
