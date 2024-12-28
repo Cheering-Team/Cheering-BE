@@ -5,6 +5,7 @@ import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
 import com.cheering.user.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -74,7 +75,14 @@ public class MeetController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 삭제 완료", null));
     }
 
+    @PutMapping("/meets/{meetId}")
+    public ResponseEntity<?> updateMeet(
+            @PathVariable Long meetId,
+            @RequestBody @Valid MeetRequest.UpdateMeetDTO updateMeetDTO,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-
+        meetService.updateMeet(meetId, updateMeetDTO, userDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 수정 완료", null));
+    }
 
 }

@@ -271,4 +271,29 @@ public class MeetService {
         meetRepository.delete(meet);
     }
 
+    @Transactional
+    public void updateMeet(Long meetId, MeetRequest.UpdateMeetDTO updateMeetDTO, User user) {
+
+        Meet meet = meetRepository.findById(meetId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
+
+        MeetFan managerFan = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_FORBIDDEN));
+
+        if (!managerFan.getFan().getUser().getId().equals(user.getId())) {
+            throw new CustomException(ExceptionCode.USER_FORBIDDEN);
+        }
+
+        meet.setTitle(updateMeetDTO.title());
+        meet.setDescription(updateMeetDTO.description());
+        meet.setMax(updateMeetDTO.max());
+        meet.setHasTicket(updateMeetDTO.hasTicket());
+        meet.setGender(updateMeetDTO.gender());
+        meet.setAgeMin(updateMeetDTO.ageMin());
+        meet.setAgeMax(updateMeetDTO.ageMax());
+        meet.setPlace(updateMeetDTO.place());
+
+        meetRepository.save(meet);
+    }
+
 }

@@ -43,6 +43,27 @@ public class MeetRequest {
         CommunityType communityType
     ) { }
 
+    public record UpdateMeetDTO(
+            @NotNull
+            String title,
+
+            String description,
+
+            @NotNull
+            Integer max,
+
+            @NotNull
+            MeetGender gender, // 성별 (MALE, FEMALE, ANY)
+
+            Integer ageMin,
+
+            Integer ageMax,
+
+            String place,
+
+            Boolean hasTicket
+    ) { }
+
     @Getter
     @Setter
     public class MeetSearchRequest {
