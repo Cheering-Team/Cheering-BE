@@ -267,7 +267,10 @@ public class ChatRoomService {
 
         simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId, new ChatResponse.ChatResponseDTO("MESSAGE", requestDTO.content(), now, requestDTO.writerId(), requestDTO.writerImage(), requestDTO.writerName(), groupKey, null));
 
-        if(requestDTO.chatRoomType().equals("PUBLIC")){
+        if(requestDTO.chatRoomType().equals("PUBLIC") ||
+                requestDTO.chatRoomType().equals("PRIVATE") ||
+                requestDTO.chatRoomType().equals("CONFIRM")) {
+
             ChatRoom chatRoom = entityManager.getReference(ChatRoom.class, chatRoomId);
             Fan fan = entityManager.getReference(Fan.class, requestDTO.writerId());
 
@@ -364,25 +367,21 @@ public class ChatRoomService {
     @Transactional
     public ChatRoomResponse.IdDTO createPrivateChatRoom(Long communityId, Long meetId, User user) {
 
-        // 1. 모임의 방장 정보 가져오기
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
         Fan manager = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND))
                 .getFan();
 
-        // 2. 현재 사용자의 팬 정보 가져오기
         Fan applicant = fanRepository.findByCommunityIdAndUser(communityId, user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
-        // 3. 기존에 동일한 Private 1:1 채팅방이 있는지 확인 (meetId 포함)
         Optional<ChatRoom> existingPrivateRoom = chatRoomRepository.findPrivateChatRoomByParticipantsAndMeet(
                 manager, applicant, ChatRoomType.PRIVATE, meetId);
         if (existingPrivateRoom.isPresent()) {
             throw new CustomException(ExceptionCode.DUPLICATE_CHAT_ROOM);
         }
 
-        // 4. 새로운 Private 채팅방 생성
         ChatRoom privateChatRoom = ChatRoom.builder()
                 .communityId(communityId)
                 .name("방장과의 1:1 채팅방")
@@ -392,11 +391,10 @@ public class ChatRoomService {
                 .manager(manager)
                 .communityType(manager.getType())
                 .max(2)
-                .meet(meet) // Meet 연관 설정
+                .meet(meet)
                 .build();
         chatRoomRepository.save(privateChatRoom);
 
-        // 5. Private 채팅방의 참가자 정보 저장
         chatSessionRepository.save(
                 ChatSession.builder()
                         .sessionId(UUID.randomUUID().toString()) // 임시 세션 ID

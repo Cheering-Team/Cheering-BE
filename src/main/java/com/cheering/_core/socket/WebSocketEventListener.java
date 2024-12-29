@@ -77,7 +77,9 @@ public class WebSocketEventListener {
                                 .build();
                         chatSessionRepository.save(newChatSession);
 
-                        if(chatRoom.getType().equals(ChatRoomType.PUBLIC)){
+                        if(chatRoom.getType().equals(ChatRoomType.PUBLIC) ||
+                            chatRoom.getType().equals(ChatRoomType.PRIVATE) ||
+                            chatRoom.getType().equals(ChatRoomType.CONFIRM)) {
                             Chat chat = Chat.builder()
                                     .type(ChatType.SYSTEM_ENTER)
                                     .chatRoom(chatRoom)
