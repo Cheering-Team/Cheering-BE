@@ -4,7 +4,9 @@ import com.cheering.community.CommunityResponse;
 import com.cheering.fan.CommunityType;
 import com.cheering.match.Match;
 import com.google.firebase.database.annotations.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;

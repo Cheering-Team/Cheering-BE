@@ -100,4 +100,17 @@ public class  ChatRoomController {
         chatRoomService.autoCreateChatRooms();
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방들이 생성되었습니다.", null));
     }
+
+    // 1:1 채팅방 만들기(모임)
+    @PostMapping("/communities/{communityId}/meets/{meetId}/talk")
+    public ResponseEntity<?> createPrivateChatRoom(
+            @PathVariable Long communityId,
+            @PathVariable Long meetId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        ChatRoomResponse.IdDTO chatRoomId = chatRoomService.createPrivateChatRoom(communityId, meetId, userDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 생성 완료", chatRoomId));
+    }
+
+
 }

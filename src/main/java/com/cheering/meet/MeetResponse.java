@@ -5,6 +5,8 @@ import com.cheering.chat.chatRoom.ChatRoomResponse;
 import com.cheering.match.Match;
 import com.cheering.match.MatchResponse;
 import com.cheering.fan.FanResponse;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
@@ -77,4 +79,5 @@ public class MeetResponse {
         //public record MeetWriterDTO(Long id, int age, String gender) { }
         public record MeetWriterDTO(Long id) { }
     }
+
 }

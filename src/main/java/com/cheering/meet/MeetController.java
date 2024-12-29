@@ -1,14 +1,12 @@
 package com.cheering.meet;
 
-import com.cheering._core.errors.CustomException;
-import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
+import com.cheering.chat.chatRoom.ChatRoomResponse;
+import com.cheering.chat.chatRoom.ChatRoomService;
 import com.cheering.user.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,6 +20,7 @@ import java.util.List;
 public class MeetController {
 
     private final MeetService meetService;
+    private final ChatRoomService chatRoomService;
 
     @PostMapping("/communities/{communityId}/meets")
     public ResponseEntity<?> createMeet(
@@ -83,6 +82,16 @@ public class MeetController {
 
         meetService.updateMeet(meetId, updateMeetDTO, userDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 수정 완료", null));
+    }
+
+    @PostMapping("/communities/{communityId}/meets/{meetId}/private-chat")
+    public ResponseEntity<?> createPrivateChatRoom(
+            @PathVariable Long communityId,
+            @PathVariable Long meetId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        ChatRoomResponse.IdDTO chatRoomId = chatRoomService.createPrivateChatRoom(communityId, meetId, userDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 생성 완료", chatRoomId));
     }
 
 }

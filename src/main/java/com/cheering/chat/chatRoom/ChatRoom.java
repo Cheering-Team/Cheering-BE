@@ -4,6 +4,7 @@ import com.cheering.BaseTimeEntity;
 import com.cheering.chat.Chat;
 import com.cheering.chat.session.ChatSession;
 import com.cheering.fan.CommunityType;
+import com.cheering.meet.Meet;
 import com.cheering.player.Player;
 import com.cheering.fan.Fan;
 import jakarta.persistence.*;
@@ -55,8 +56,13 @@ public class ChatRoom extends BaseTimeEntity {
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
     private List<ChatSession> chatSessions = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "meet_id", nullable = false)
+    private Meet meet;
+
     @Builder
-    public ChatRoom(Long chatRoomId, String name, String image, String description, Long communityId, Integer max, ChatRoomType type, CommunityType communityType, Fan manager) {
+    public ChatRoom(Long chatRoomId, String name, String image, String description, Long communityId,
+                    Integer max, ChatRoomType type, CommunityType communityType, Fan manager, Meet meet) {
         this.id = chatRoomId;
         this.name = name;
         this.image = image;
@@ -66,6 +72,7 @@ public class ChatRoom extends BaseTimeEntity {
         this.communityType = communityType;
         this.communityId = communityId;
         this.manager = manager;
+        this.meet = meet;
     }
 
     public ChatRoom(Long chatRoomId) {

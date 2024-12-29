@@ -36,4 +36,33 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
     @Query("SELECT cr FROM ChatRoom cr LEFT JOIN Fan f ON f.communityId = cr.communityId WHERE f.user = :user AND cr.type = 'OFFICIAL' ORDER BY f.communityOrder ASC")
     List<ChatRoom> findMyOfficial(@Param("user") User user);
+
+    @Query("""
+SELECT c FROM ChatRoom c 
+WHERE c.type = :type 
+  AND c.meet.id = :meetId
+""")
+    Optional<ChatRoom> findConfirmedChatRoomByMeetId(
+            @Param("meetId") Long meetId,
+            @Param("type") ChatRoomType type
+    );
+
+    @Query("""
+SELECT c FROM ChatRoom c
+WHERE c.type = :type
+  AND c.meet.id = :meetId
+  AND c.id IN (
+      SELECT cs.chatRoom.id FROM ChatSession cs
+      WHERE cs.fan = :manager OR cs.fan = :applicant
+      GROUP BY cs.chatRoom.id
+      HAVING COUNT(cs.chatRoom.id) = 2
+  )
+""")
+    Optional<ChatRoom> findPrivateChatRoomByParticipantsAndMeet(
+            @Param("manager") Fan manager,
+            @Param("applicant") Fan applicant,
+            @Param("type") ChatRoomType type,
+            @Param("meetId") Long meetId
+    );
+
 }

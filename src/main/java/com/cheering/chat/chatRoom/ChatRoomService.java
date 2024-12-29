@@ -8,6 +8,11 @@ import com.cheering.chat.*;
 import com.cheering.chat.session.ChatSession;
 import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.fan.CommunityType;
+import com.cheering.meet.Meet;
+import com.cheering.meet.MeetFan;
+import com.cheering.meet.MeetRepository;
+import com.cheering.meetfan.MeetFanRepository;
+import com.cheering.meetfan.MeetFanRole;
 import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
@@ -29,10 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +45,8 @@ public class ChatRoomService {
     private final ChatRepository chatRepository;
     private final ChatSessionRepository chatSessionRepository;
     private final TeamRepository teamRepository;
+    private final MeetRepository meetRepository;
+    private final MeetFanRepository meetFanRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final BadWordService badWordService;
     private final S3Util s3Util;
@@ -298,7 +302,7 @@ public class ChatRoomService {
         Integer count = chatSessionRepository.countByChatRoom(chatRoom);
         simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", new ChatResponse.ChatResponseDTO("SYSTEM_EXIT", fan.getName() + "님이 나가셨습니다", LocalDateTime.now(), fan.getId(), fan.getImage(), fan.getName(), fan.getId() + "_SYSTEM_EXIT", count));
 
-        if (chatRoom.getType().equals(ChatRoomType.PUBLIC) || chatRoom.getType().equals(ChatRoomType.CONFIRM)) {
+        if (chatRoom.getType().equals(ChatRoomType.PUBLIC) || chatRoom.getType().equals(ChatRoomType.CONFIRM) || chatRoom.getType().equals(ChatRoomType.PRIVATE)) {
             Chat chat = Chat.builder()
                     .type(ChatType.SYSTEM_EXIT)
                     .chatRoom(chatRoom)
@@ -337,11 +341,16 @@ public class ChatRoomService {
 
         Fan curUser = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
+        Optional<ChatRoom> existingConfirmedRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(communityId, ChatRoomType.CONFIRM );
+        if (existingConfirmedRoom.isPresent()) {
+            throw new CustomException(ExceptionCode.DUPLICATE_CHAT_ROOM);
+        }
+
         ChatRoom chatRoom = ChatRoom.builder()
                 .communityId(communityId)
                 .name("모임 확정 채팅방")
                 .description("확정된 멤버들이 대화하는 채팅방입니다.")
-                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-confirm-chatroom.png") // Default image
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-confirm-chatroom.png")
                 .type(ChatRoomType.CONFIRM)
                 .manager(curUser) // Manager of the chat room
                 .communityType(curUser.getType())
@@ -350,6 +359,61 @@ public class ChatRoomService {
 
         chatRoomRepository.save(chatRoom);
         return new ChatRoomResponse.IdDTO(chatRoom.getId());
+    }
+
+    @Transactional
+    public ChatRoomResponse.IdDTO createPrivateChatRoom(Long communityId, Long meetId, User user) {
+
+        // 1. 모임의 방장 정보 가져오기
+        Meet meet = meetRepository.findById(meetId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
+        Fan manager = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND))
+                .getFan();
+
+        // 2. 현재 사용자의 팬 정보 가져오기
+        Fan applicant = fanRepository.findByCommunityIdAndUser(communityId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        // 3. 기존에 동일한 Private 1:1 채팅방이 있는지 확인 (meetId 포함)
+        Optional<ChatRoom> existingPrivateRoom = chatRoomRepository.findPrivateChatRoomByParticipantsAndMeet(
+                manager, applicant, ChatRoomType.PRIVATE, meetId);
+        if (existingPrivateRoom.isPresent()) {
+            throw new CustomException(ExceptionCode.DUPLICATE_CHAT_ROOM);
+        }
+
+        // 4. 새로운 Private 채팅방 생성
+        ChatRoom privateChatRoom = ChatRoom.builder()
+                .communityId(communityId)
+                .name("방장과의 1:1 채팅방")
+                .description("방장과 자유롭게 이야기해보세요")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-private-chatroom.png")
+                .type(ChatRoomType.PRIVATE)
+                .manager(manager)
+                .communityType(manager.getType())
+                .max(2)
+                .meet(meet) // Meet 연관 설정
+                .build();
+        chatRoomRepository.save(privateChatRoom);
+
+        // 5. Private 채팅방의 참가자 정보 저장
+        chatSessionRepository.save(
+                ChatSession.builder()
+                        .sessionId(UUID.randomUUID().toString()) // 임시 세션 ID
+                        .chatRoom(privateChatRoom)
+                        .fan(manager)
+                        .build()
+        );
+
+        chatSessionRepository.save(
+                ChatSession.builder()
+                        .sessionId(UUID.randomUUID().toString()) // 임시 세션 ID
+                        .chatRoom(privateChatRoom)
+                        .fan(applicant)
+                        .build()
+        );
+
+        return new ChatRoomResponse.IdDTO(privateChatRoom.getId());
     }
 
 }

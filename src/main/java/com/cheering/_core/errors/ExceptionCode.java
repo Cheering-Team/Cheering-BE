@@ -73,7 +73,11 @@ public enum ExceptionCode {
 
     // MEET
     DUPLICATE_MEET(2010, "이미 해당 경기에 대해 생성된 모임이 있습니다."),
+    DUPLICATE_CHAT_ROOM(2011, "이미 채팅방이 있습니다."),
+
+    //MATCH
     MATCH_NOT_RELATED_TO_COMMUNITY(403, "커뮤니티와 관련 없는 경기입니다.");
+
 
 
     private final int code;
