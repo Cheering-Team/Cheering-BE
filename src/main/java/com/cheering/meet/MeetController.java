@@ -5,8 +5,10 @@ import com.cheering._core.util.ApiUtils;
 import com.cheering.chat.chatRoom.ChatRoomResponse;
 import com.cheering.chat.chatRoom.ChatRoomService;
 import com.cheering.user.User;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,6 +19,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
+@Tag(name = "Meet API", description = "Operations related to Meet management")
 public class MeetController {
 
     private final MeetService meetService;
