@@ -1,5 +1,6 @@
 package com.cheering.meet;
 
+import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.community.CommunityResponse;
 import com.cheering.fan.CommunityType;
 import com.cheering.match.Match;
@@ -42,7 +43,9 @@ public class MeetRequest {
         Long matchId,
 
         @NotNull
-        CommunityType communityType
+        CommunityType communityType,
+
+        ChatRoom chatroom
     ) { }
 
     public record UpdateMeetDTO(

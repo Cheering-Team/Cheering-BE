@@ -22,6 +22,7 @@ import com.cheering.fan.FanResponse;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
+import io.sentry.SystemOutLogger;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -340,7 +342,7 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public ChatRoomResponse.IdDTO createConfirmedChatRoom(Long communityId, Integer max, User user) {
+    public ChatRoomResponse.IdDTO createConfirmedChatRoom(Long communityId, Meet meet, Integer max, User user) {
 
         Fan curUser = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
@@ -349,6 +351,8 @@ public class ChatRoomService {
             throw new CustomException(ExceptionCode.DUPLICATE_CHAT_ROOM);
         }
 
+        Optional<Player> player = playerRepository.findById(communityId);
+
         ChatRoom chatRoom = ChatRoom.builder()
                 .communityId(communityId)
                 .name("모임 확정 채팅방")
@@ -356,8 +360,9 @@ public class ChatRoomService {
                 .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-confirm-chatroom.png")
                 .type(ChatRoomType.CONFIRM)
                 .manager(curUser) // Manager of the chat room
-                .communityType(curUser.getType())
+                .communityType(player.isPresent() ? CommunityType.PLAYER : CommunityType.TEAM)
                 .max(max)
+                .meet(meet) // Meet 정보 설정
                 .build();
 
         chatRoomRepository.save(chatRoom);
@@ -412,6 +417,20 @@ public class ChatRoomService {
         );
 
         return new ChatRoomResponse.IdDTO(privateChatRoom.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> getPrivateChatRoomIdsForManager(Long meetId, User user) {
+
+        MeetFan manager = meetFanRepository.findByMeetIdAndRole(meetId, MeetFanRole.MANAGER)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        // PRIVATE 타입 채팅방 ID 조회
+        List<Long> privateChatRoomIds = chatRoomRepository.findPrivateChatRoomIdsByManagerAndMeet(manager.getFan().getId(), ChatRoomType.PRIVATE, meetId);
+
+        // 로그 추가
+        System.out.println(privateChatRoomIds);
+        return privateChatRoomIds;
     }
 
 }

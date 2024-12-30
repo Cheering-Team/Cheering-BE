@@ -42,11 +42,6 @@ public class MeetService {
     @Transactional
     public MeetResponse.MeetIdDTO createMeet(Long communityId, MeetRequest.CreateMeetDTO requestDto, User user) {
 
-        boolean isMember = fanRepository.existsByCommunityIdAndUser(communityId, user);
-        if (!isMember) {
-            throw new CustomException(ExceptionCode.FAN_NOT_FOUND);
-        }
-
         Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
@@ -58,19 +53,12 @@ public class MeetService {
         Match match = matchRepository.findById(requestDto.matchId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.MATCH_NOT_FOUND));
 
+        // Match가 해당 커뮤니티와 관련이 있는지 확인
         if (!isMatchRelatedToCommunity(match, communityId)) {
             throw new CustomException(ExceptionCode.MATCH_NOT_RELATED_TO_COMMUNITY);
         }
 
-        // 확정 채팅방 생성
-        ChatRoomResponse.IdDTO confirmedChatRoomIdDTO = chatRoomService.createConfirmedChatRoom(communityId, requestDto.max(), user);
-
-        // ChatRoom ID로 ChatRoom 엔티티 조회
-        ChatRoom confirmedChatRoom = chatRoomRepository.findById(confirmedChatRoomIdDTO.id())
-                .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
-
-        chatRoomRepository.save(confirmedChatRoom);
-
+        // Meet 생성
         Meet meet = Meet.builder()
                 .communityId(communityId)
                 .communityType(requestDto.communityType())
@@ -84,9 +72,17 @@ public class MeetService {
                 .type(requestDto.type())
                 .hasTicket(requestDto.hasTicket() != null && requestDto.hasTicket())
                 .match(match)
-                .chatRoom(confirmedChatRoom)
+                .chatRoom(null)
                 .build();
 
+        meetRepository.save(meet);
+
+        ChatRoomResponse.IdDTO confirmedChatRoomIdDTO = chatRoomService.createConfirmedChatRoom(communityId, meet, requestDto.max(), user);
+
+        ChatRoom confirmedChatRoom = chatRoomRepository.findById(confirmedChatRoomIdDTO.id())
+                .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
+        meet.setChatRoom(confirmedChatRoom);
         meetRepository.save(meet);
 
         MeetFan meetFan = MeetFan.builder()
@@ -100,6 +96,7 @@ public class MeetService {
         return new MeetResponse.MeetIdDTO(meet.getId());
     }
 
+
     @Transactional(readOnly = true)
     public MeetResponse.MeetListDTO findAllMeets(MeetRequest.MeetSearchRequest request) {
 
@@ -108,8 +105,8 @@ public class MeetService {
         Page<Meet> meetPage = meetRepository.findByFilters(
                 request.getType(),
                 request.getGender(),
-                request.getMinAge(),
-                request.getMaxAge(),
+                request.getMinAge() != null ? request.getMinAge() : null,
+                request.getMaxAge() != null ? request.getMaxAge() : null,
                 request.getMatchId(),
                 request.getHasTicket(),
                 request.getLocation(),
@@ -161,7 +158,6 @@ public class MeetService {
         // 현재 참가자 수 계산
         int currentCount = meetFanRepository.countByMeet(meet);
 
-
         Fan writer = managerFan.getFan();
 
         ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
@@ -196,26 +192,43 @@ public class MeetService {
     }
 
     @Transactional(readOnly = true)
-    public List<MeetResponse.MeetInfoDTO> findAllMeetsByCommunity(Long communityId, User user) {
+    public MeetResponse.MeetListDTO findAllMeetsByCommunity(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
 
+        // 사용자가 해당 커뮤니티에 속해 있는지 확인
         boolean isMember = fanRepository.existsByCommunityIdAndUser(communityId, user);
         if (!isMember) {
             throw new CustomException(ExceptionCode.FAN_NOT_FOUND);
         }
 
-        Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
-                .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        // 페이지 요청 생성
+        PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        List<Meet> meets = meetRepository.findByCommunityId(communityId);
+        // 필터 조건에 따라 모임 검색
+        Page<Meet> meetPage = meetRepository.findByFilters(
+                request.getType(),
+                request.getGender(),
+                request.getMinAge(),
+                request.getMaxAge(),
+                request.getMatchId(),
+                request.getHasTicket(),
+                request.getLocation(),
+                pageRequest
+        );
 
-        return meets.stream()
+        // DTO로 변환
+        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meetPage.getContent().stream()
                 .map(meet -> {
                     int currentCount = calculateCurrentCount(meet.getId());
-                    ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
-                            meet.getChatRoom(),
-                            currentCount,
-                            true // 참여 여부, 필요에 따라 로직 변경 가능
-                    );
+                    ChatRoomResponse.ChatRoomDTO chatRoomDTO = null;
+
+                    if (meet.getChatRoom() != null) {
+                        chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
+                                meet.getChatRoom(),
+                                currentCount,
+                                true // 참여 여부는 필요 시 로직 추가 가능
+                        );
+                    }
+
                     return new MeetResponse.MeetInfoDTO(
                             meet.getId(),
                             meet.getTitle(),
@@ -231,6 +244,10 @@ public class MeetService {
                     );
                 })
                 .collect(Collectors.toList());
+
+        // MeetListDTO 반환
+        return new MeetResponse.MeetListDTO(meetPage, meetInfoDTOs);
+
     }
 
     private boolean isMatchRelatedToCommunity(Match match, Long communityId) {

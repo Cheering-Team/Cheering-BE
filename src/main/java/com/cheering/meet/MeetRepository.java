@@ -14,11 +14,13 @@ import java.util.Optional;
 
 public interface MeetRepository extends JpaRepository<Meet, Long> {
 
-    List<Meet> findByCommunityId(Long communityId);
+    @Query("SELECT m FROM Meet m WHERE m.communityId = :communityId")
+    List<Meet> findByCommunityId(@Param("communityId") Long communityId);
 
     //List<Meet> findByMatchId(Long matchId);
 
-    @Query("SELECT m FROM Meet m WHERE (:type IS NULL OR m.type = :type) AND (:gender IS NULL OR m.gender = :gender) AND (:minAge IS NULL OR m.ageMin <= :minAge) AND (:maxAge IS NULL OR m.ageMax >= :maxAge) AND (:matchId IS NULL OR m.match.id = :matchId) AND (:hasTicket IS NULL OR m.hasTicket = :hasTicket) AND (:location IS NULL OR m.place LIKE :location) ORDER BY m.createdAt DESC")
+    /*
+    @Query("SELECT m FROM Meet m WHERE (:type IS NULL OR m.type = :type) AND (:gender IS NULL OR m.gender = :gender) AND (:minAge IS NULL OR m.ageMin >= :minAge) AND (:maxAge IS NULL OR m.ageMax <= :maxAge) AND (:matchId IS NULL OR m.match.id = :matchId) AND (:hasTicket IS NULL OR m.hasTicket = :hasTicket) AND (:location IS NULL OR m.place LIKE :location) ORDER BY m.createdAt DESC")
     Page<Meet> findByFilters(
             @Param("type") MeetType type,
             @Param("gender") MeetGender gender,
@@ -29,6 +31,27 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             @Param("location") String location,
             Pageable pageable
     );
+     */
+
+    @Query("SELECT m FROM Meet m " +
+            "WHERE (:type IS NULL OR m.type = :type) " +
+            "AND (:gender IS NULL OR m.gender = :gender) " +
+            "AND (:minAge IS NULL OR m.ageMin >= :minAge) " +
+            "AND (:maxAge IS NULL OR m.ageMax <= :maxAge) " +
+            "AND (:matchId IS NULL OR m.match.id = :matchId) " +
+            "AND (:hasTicket IS NULL OR m.hasTicket = :hasTicket) " +
+            "AND (:location IS NULL OR m.place LIKE %:location%)")
+    Page<Meet> findByFilters(
+            @Param("type") MeetType type,
+            @Param("gender") MeetGender gender,
+            @Param("minAge") Integer minAge,
+            @Param("maxAge") Integer maxAge,
+            @Param("matchId") Long matchId,
+            @Param("hasTicket") Boolean hasTicket,
+            @Param("location") String location,
+            Pageable pageable
+    );
+
 
     @Query("SELECT COUNT(mf) > 0 " +
             "FROM MeetFan mf " +

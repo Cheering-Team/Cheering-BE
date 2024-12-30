@@ -22,6 +22,10 @@ public interface MeetFanRepository extends JpaRepository<com.cheering.meet.MeetF
 
     Optional<MeetFan> findByMeetAndRole(Meet meet, MeetFanRole role);
 
+    @Query("SELECT mf FROM MeetFan mf " +
+            "WHERE mf.meet.id = :meetId AND mf.role = :role")
+    Optional<MeetFan> findByMeetIdAndRole(@Param("meetId") Long meetId, @Param("role") MeetFanRole role);
+
     @Modifying
     @Query("DELETE FROM MeetFan mf WHERE mf.meet = :meet")
     void deleteByMeet(@Param("meet") Meet meet);

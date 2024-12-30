@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -110,6 +111,13 @@ public class  ChatRoomController {
 
         ChatRoomResponse.IdDTO chatRoomId = chatRoomService.createPrivateChatRoom(communityId, meetId, userDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 생성 완료", chatRoomId));
+    }
+
+    @GetMapping("/meets/{meetId}/private")
+    public ResponseEntity<?> getPrivateChatRoomIdsForManager(
+            @PathVariable Long meetId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 목록 조회 완료", chatRoomService.getPrivateChatRoomIdsForManager(meetId, userDetails.getUser())));
     }
 
 

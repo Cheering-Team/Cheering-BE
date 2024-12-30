@@ -30,7 +30,6 @@ public class MeetController {
 
         User user = userDetails.getUser();
 
-        // 응답 반환
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임생성완료", meetService.createMeet(communityId, requestDto, user)));
     }
 
@@ -57,12 +56,13 @@ public class MeetController {
 
     @GetMapping("/communities/{communityId}/meets")
     public ResponseEntity<?> getAllMeetsByCommunity(
+            MeetRequest.MeetSearchRequest request,
                 @PathVariable("communityId") Long communityId,
                 @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         User user = userDetails.getUser();
 
-        List<MeetResponse.MeetInfoDTO> meetList = meetService.findAllMeetsByCommunity(communityId, user);
+        MeetResponse.MeetListDTO meetList = meetService.findAllMeetsByCommunity(request, communityId, user);
 
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 내 모든 모임 조회 완료", meetList));
     }
