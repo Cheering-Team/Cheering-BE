@@ -5,6 +5,7 @@ import com.cheering.chat.chatRoom.ChatRoomResponse;
 import com.cheering.match.Match;
 import com.cheering.match.MatchResponse;
 import com.cheering.fan.FanResponse;
+import com.cheering.team.Team;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
@@ -31,7 +32,7 @@ public class MeetResponse {
                               MeetMatchDTO match
     ) {
 
-        public MeetInfoDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoomDTO) { //currentCount
+        public MeetInfoDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoomDTO, Team curTeam) { //currentCount
             this(
                     meet.getId(),
                     meet.getTitle(),
@@ -44,17 +45,25 @@ public class MeetResponse {
                     meet.getGender(),
                     meet.getAgeMin(),
                     meet.getAgeMax(),
-                    meet.getMatch() != null ? new MeetMatchDTO(meet.getMatch()) : null
+                    meet.getMatch() != null ? new MeetMatchDTO(meet.getMatch(), curTeam) : null
             );
         }
     }
 
     // Match 정보 DTO
-    public record MeetMatchDTO(Long id, String opponentImage, LocalDateTime time) {
-        public MeetMatchDTO(Match match) {
-            this(match.getId(),match.getAwayTeam().getImage(), match.getTime());
+    public record MeetMatchDTO(Long id, Boolean isHome, String opponentShortName, String opponentImage, LocalDateTime time) {
+        public MeetMatchDTO(Match match, Team curTeam) {
+            this(
+                    match.getId(),
+                    match.getHomeTeam().equals(curTeam),
+                    match.getHomeTeam().equals(curTeam) ? match.getAwayTeam().getShortName() : match.getHomeTeam().getShortName(),
+                    match.getHomeTeam().equals(curTeam) ? match.getAwayTeam().getImage() : match.getHomeTeam().getImage(),
+                    match.getTime()
+            );
         }
     }
+
+
 
     // Meet 목록 반환 DTO
     public record MeetListDTO(List<MeetInfoDTO> meets, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
@@ -67,6 +76,7 @@ public class MeetResponse {
     public record MeetDetailDTO(
             String title,
             String description,
+            MeetType meetType,
             ChatRoomResponse.ChatRoomDTO chatRoomDTO,
             Integer currentCount,
             Integer max,

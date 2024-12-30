@@ -14,6 +14,8 @@ import com.cheering.meet.MeetFan;
 import com.cheering.meetfan.MeetFanRepository;
 import com.cheering.meetfan.MeetFanRole;
 import com.cheering.post.PostResponse;
+import com.cheering.team.Team;
+import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.cheering.meet.MeetRequest.TicketOption.HAS;
@@ -38,6 +41,7 @@ public class MeetService {
     private final MeetRepository meetRepository;
     private final MatchRepository matchRepository;
     private final FanRepository fanRepository;
+    private final TeamRepository teamRepository;
     private final MeetFanRepository meetFanRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomService chatRoomService;
@@ -99,52 +103,6 @@ public class MeetService {
         return new MeetResponse.MeetIdDTO(meet.getId());
     }
 
-/*
-    @Transactional(readOnly = true)
-    public MeetResponse.MeetListDTO findAllMeets(MeetRequest.MeetSearchRequest request) {
-
-        PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
-
-        Page<Meet> meetPage = meetRepository.findByFilters(
-                request.getType(),
-                request.getGender(),
-                request.getMinAge() != null ? request.getMinAge() : null,
-                request.getMaxAge() != null ? request.getMaxAge() : null,
-                request.getMatchId(),
-                request.getHasTicket(),
-                request.getLocation(),
-                pageRequest
-        );
-
-        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meetPage.getContent().stream()
-                .map(meet -> {
-                    int currentCount = calculateCurrentCount(meet.getId());
-                    ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
-                            meet.getChatRoom(),
-                            currentCount,
-                            true // 참여 여부, 필요에 따라 로직 변경 가능
-                    );
-                    return new MeetResponse.MeetInfoDTO(
-                            meet.getId(),
-                            meet.getTitle(),
-                            meet.getDescription(),
-                            chatRoomDTO,
-                            currentCount,
-                            meet.getMax(),
-                            meet.isHasTicket(),
-                            meet.getGender(),
-                            meet.getAgeMin(),
-                            meet.getAgeMax(),
-                            meet.getMatch() != null ? new MeetResponse.MeetMatchDTO(meet.getMatch()) : null
-                    );
-                })
-                .collect(Collectors.toList());
-
-        // MeetListDTO 반환
-        return new MeetResponse.MeetListDTO(meetPage, meetInfoDTOs);
-    }
- */
-
     @Transactional(readOnly = true)
     public MeetResponse.MeetDetailDTO getMeetDetail(Long meetId, User user) {
 
@@ -158,6 +116,12 @@ public class MeetService {
 
         MeetFan managerFan = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        Team curTeam = teamRepository.findById(meet.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+
+        Team opponentTeam = meet.getMatch().getHomeTeam().equals(curTeam)
+                ? meet.getMatch().getAwayTeam()
+                : meet.getMatch().getHomeTeam();
 
         // 현재 참가자 수 계산
         int currentCount = meetFanRepository.countByMeet(meet);
@@ -173,6 +137,7 @@ public class MeetService {
         return new MeetResponse.MeetDetailDTO(
                 meet.getTitle(),
                 meet.getDescription(),
+                meet.getType(),
                 chatRoomDTO,
                 currentCount,
                 meet.getMax(),
@@ -188,7 +153,9 @@ public class MeetService {
                 meet.getMatch() != null
                         ? new MeetResponse.MeetMatchDTO(
                         meet.getMatch().getId(),
-                        meet.getMatch().getAwayTeam().getImage(),
+                        meet.getMatch().getHomeTeam().equals(curTeam),
+                        opponentTeam.getShortName(),
+                        opponentTeam.getImage(),
                         meet.getMatch().getTime()
                 )
                         : null
@@ -197,25 +164,23 @@ public class MeetService {
 
     @Transactional(readOnly = true)
     public MeetResponse.MeetListDTO findAllMeetsByCommunity(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
-
-        // 사용자가 해당 커뮤니티에 속해 있는지 확인
         boolean isMember = fanRepository.existsByCommunityIdAndUser(communityId, user);
         if (!isMember) {
             throw new CustomException(ExceptionCode.FAN_NOT_FOUND);
         }
 
-        // 페이지 요청 생성
+        Team curTeam = teamRepository.findById(communityId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        // 티켓 필터링 조건 처리
         Boolean hasTicket = null;
-        if (request.getTicketOption() == HAS) { // Fully qualify TicketOption
+        if (request.getTicketOption() == HAS) {
             hasTicket = true;
-        } else if (request.getTicketOption() == NOT) { // Fully qualify TicketOption
+        } else if (request.getTicketOption() == NOT) {
             hasTicket = false;
         }
 
-        // 필터 조건에 따라 모임 검색
         Page<Meet> meetPage = meetRepository.findByFilters(
                 request.getType(),
                 request.getGender(),
@@ -227,7 +192,6 @@ public class MeetService {
                 pageRequest
         );
 
-        // DTO로 변환
         List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meetPage.getContent().stream()
                 .map(meet -> {
                     int currentCount = calculateCurrentCount(meet.getId());
@@ -237,31 +201,17 @@ public class MeetService {
                         chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
                                 meet.getChatRoom(),
                                 currentCount,
-                                true // 참여 여부는 필요 시 로직 추가 가능
+                                true
                         );
                     }
 
-                    return new MeetResponse.MeetInfoDTO(
-                            meet.getId(),
-                            meet.getTitle(),
-                            meet.getDescription(),
-                            meet.getType(),
-                            chatRoomDTO,
-                            currentCount,
-                            meet.getMax(),
-                            meet.isHasTicket(),
-                            meet.getGender(),
-                            meet.getAgeMin(),
-                            meet.getAgeMax(),
-                            meet.getMatch() != null ? new MeetResponse.MeetMatchDTO(meet.getMatch()) : null
-                    );
+                    return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam);
                 })
                 .collect(Collectors.toList());
 
-        // MeetListDTO 반환
         return new MeetResponse.MeetListDTO(meetPage, meetInfoDTOs);
-
     }
+
 
     private boolean isMatchRelatedToCommunity(Match match, Long communityId) {
         return match.getHomeTeam().getId().equals(communityId) ||
