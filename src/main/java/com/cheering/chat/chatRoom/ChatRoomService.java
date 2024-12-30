@@ -425,11 +425,8 @@ public class ChatRoomService {
         MeetFan manager = meetFanRepository.findByMeetIdAndRole(meetId, MeetFanRole.MANAGER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        // PRIVATE 타입 채팅방 ID 조회
         List<Long> privateChatRoomIds = chatRoomRepository.findPrivateChatRoomIdsByManagerAndMeet(manager.getFan().getId(), ChatRoomType.PRIVATE, meetId);
 
-        // 로그 추가
-        System.out.println(privateChatRoomIds);
         return privateChatRoomIds;
     }
 

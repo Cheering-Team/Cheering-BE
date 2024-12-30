@@ -2,6 +2,7 @@ package com.cheering.match;
 
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
+import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -72,5 +74,12 @@ public class MatchController {
     public ResponseEntity<?> addMatches(@RequestBody String jsonString){
         matchService.addMatches(jsonString);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "일정 등록 완료", null));
+    }
+
+    @GetMapping("/communities/{communityId}/matches/twoweeks")
+    public ResponseEntity<?> getTwoWeeksMatches(@PathVariable("communityId") Long communityId
+    ,CustomUserDetails userDetails) {
+        User user = userDetails.getUser();
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티의 2주 내 경기 조회 완료", matchService.getTwoWeeksMatches(communityId, user)));
     }
 }
