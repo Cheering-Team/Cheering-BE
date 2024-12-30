@@ -36,14 +36,14 @@ public class MeetController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임생성완료", meetService.createMeet(communityId, requestDto, user)));
     }
 
-
+/*
     // 모임 목록 조회
     @GetMapping("/meets")
     public ResponseEntity<?> getAllMeets(MeetRequest.MeetSearchRequest request) {
         MeetResponse.MeetListDTO meetList = meetService.findAllMeets(request);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 목록 조회 완료", meetList));
     }
-
+*/
     //모임 상세 조회
     @GetMapping("/meets/{meetId}")
     public ResponseEntity<?> getMeetDetail(

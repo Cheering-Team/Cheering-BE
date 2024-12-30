@@ -57,4 +57,5 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             "FROM MeetFan mf " +
             "WHERE mf.meet.match.id = :matchId AND mf.fan.id = :fanId AND mf.role = 'MANAGER'")
     boolean existsByMatchIdAndFanIdAsManager(@Param("matchId") Long matchId, @Param("fanId") Long fanId);
+
 }

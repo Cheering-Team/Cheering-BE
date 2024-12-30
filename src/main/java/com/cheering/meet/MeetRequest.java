@@ -78,10 +78,13 @@ public class MeetRequest {
         private Integer minAge;       // 최소 나이
         private Integer maxAge;       // 최대 나이
         private Long matchId;         // 매치 ID
-        private Boolean hasTicket;    // 티켓 여부
+        private TicketOption ticketOption = TicketOption.ALL;
         private String location;      // 장소 (nullable)
         private Integer page = 0;     // 페이지 번호 (기본값 0)
         private Integer size = 10;    // 페이지 크기 (기본값 10)
+    }
+    public enum TicketOption {
+        ALL, HAS, NOT
     }
 
 }

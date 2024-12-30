@@ -28,6 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.cheering.meet.MeetRequest.TicketOption.HAS;
+import static com.cheering.meet.MeetRequest.TicketOption.NOT;
+
 @Service
 @RequiredArgsConstructor
 public class MeetService {
@@ -96,7 +99,7 @@ public class MeetService {
         return new MeetResponse.MeetIdDTO(meet.getId());
     }
 
-
+/*
     @Transactional(readOnly = true)
     public MeetResponse.MeetListDTO findAllMeets(MeetRequest.MeetSearchRequest request) {
 
@@ -140,6 +143,7 @@ public class MeetService {
         // MeetListDTO 반환
         return new MeetResponse.MeetListDTO(meetPage, meetInfoDTOs);
     }
+ */
 
     @Transactional(readOnly = true)
     public MeetResponse.MeetDetailDTO getMeetDetail(Long meetId, User user) {
@@ -203,6 +207,14 @@ public class MeetService {
         // 페이지 요청 생성
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
 
+        // 티켓 필터링 조건 처리
+        Boolean hasTicket = null;
+        if (request.getTicketOption() == HAS) { // Fully qualify TicketOption
+            hasTicket = true;
+        } else if (request.getTicketOption() == NOT) { // Fully qualify TicketOption
+            hasTicket = false;
+        }
+
         // 필터 조건에 따라 모임 검색
         Page<Meet> meetPage = meetRepository.findByFilters(
                 request.getType(),
@@ -210,7 +222,7 @@ public class MeetService {
                 request.getMinAge(),
                 request.getMaxAge(),
                 request.getMatchId(),
-                request.getHasTicket(),
+                hasTicket,
                 request.getLocation(),
                 pageRequest
         );
@@ -233,6 +245,7 @@ public class MeetService {
                             meet.getId(),
                             meet.getTitle(),
                             meet.getDescription(),
+                            meet.getType(),
                             chatRoomDTO,
                             currentCount,
                             meet.getMax(),
