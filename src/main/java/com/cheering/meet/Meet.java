@@ -64,8 +64,8 @@ public class Meet extends BaseTimeEntity {
     @Column
     private Integer ageMax;
 
-    @Column(nullable = false)
-    private boolean hasTicket;
+    @Column
+    private Boolean hasTicket;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -73,7 +73,7 @@ public class Meet extends BaseTimeEntity {
 
     @Builder
     public Meet(MeetType type, String title, String description, CommunityType communityType, Long communityId, Match match, ChatRoom chatRoom,
-                String place, MeetGender gender, Integer max, Integer ageMin, Integer ageMax, boolean hasTicket, LocalDateTime createdAt) {
+                String place, MeetGender gender, Integer max, Integer ageMin, Integer ageMax, Boolean hasTicket, LocalDateTime createdAt) {
 
         this.type = type;
         this.title = title;

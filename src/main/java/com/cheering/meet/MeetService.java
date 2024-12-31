@@ -60,9 +60,19 @@ public class MeetService {
         Match match = matchRepository.findById(requestDto.matchId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.MATCH_NOT_FOUND));
 
-        // Match가 해당 커뮤니티와 관련이 있는지 확인
         if (!isMatchRelatedToCommunity(match, communityId)) {
             throw new CustomException(ExceptionCode.MATCH_NOT_RELATED_TO_COMMUNITY);
+        }
+
+        Boolean hasTicket = null;
+
+        if (requestDto.type() == MeetType.LIVE) {
+            if (requestDto.hasTicket() == null) {
+                throw new CustomException(ExceptionCode.HAS_TICKET_REQUIRED_FOR_LIVE);
+            }
+            hasTicket = requestDto.hasTicket();
+        } else if (requestDto.type() == MeetType.BOOKING) {
+            hasTicket = null;
         }
 
         // Meet 생성
@@ -77,7 +87,7 @@ public class MeetService {
                 .ageMax(requestDto.ageMax())
                 .place(requestDto.place())
                 .type(requestDto.type())
-                .hasTicket(requestDto.hasTicket() != null && requestDto.hasTicket())
+                .hasTicket(hasTicket)
                 .match(match)
                 .chatRoom(null)
                 .build();
@@ -141,7 +151,7 @@ public class MeetService {
                 chatRoomDTO,
                 currentCount,
                 meet.getMax(),
-                meet.isHasTicket(),
+                meet.getHasTicket(),
                 meet.getGender(),
                 meet.getAgeMin(),
                 meet.getAgeMax(),
