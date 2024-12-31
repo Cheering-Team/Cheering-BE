@@ -43,9 +43,9 @@ public class MeetRequest {
         Long matchId,
 
         @NotNull
-        CommunityType communityType,
+        CommunityType communityType
 
-        ChatRoom chatroom
+        //ChatRoom confirmChatRoom
     ) { }
 
     public record UpdateMeetDTO(

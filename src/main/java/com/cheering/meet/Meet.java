@@ -1,6 +1,7 @@
 package com.cheering.meet;
 
 import com.cheering.BaseTimeEntity;
+import com.cheering.chat.Chat;
 import com.cheering.fan.CommunityType;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.match.Match;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "meet_tb")
@@ -44,10 +47,6 @@ public class Meet extends BaseTimeEntity {
     @JoinColumn(name = "match_id")
     private Match match;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "chat_room_id")
-    private ChatRoom chatRoom;
-
     @Column
     private String place;
 
@@ -67,12 +66,19 @@ public class Meet extends BaseTimeEntity {
     @Column
     private Boolean hasTicket;
 
+    @OneToMany(mappedBy = "meet", cascade = CascadeType.REMOVE)
+    private List<ChatRoom> chatRooms = new ArrayList<>();
+
+    @OneToOne
+    @JoinColumn(name = "confirm_chat_room_id")
+    private ChatRoom confirmChatRoom;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
 
     @Builder
-    public Meet(MeetType type, String title, String description, CommunityType communityType, Long communityId, Match match, ChatRoom chatRoom,
+    public Meet(MeetType type, String title, String description, CommunityType communityType, Long communityId, Match match, ChatRoom confirmChatRoom,
                 String place, MeetGender gender, Integer max, Integer ageMin, Integer ageMax, Boolean hasTicket, LocalDateTime createdAt) {
 
         this.type = type;
@@ -81,7 +87,7 @@ public class Meet extends BaseTimeEntity {
         this.communityType = communityType;
         this.communityId = communityId;
         this.match = match;
-        this.chatRoom = chatRoom;
+        this.confirmChatRoom = confirmChatRoom;
         this.place = place;
         this.gender = gender;
         this.max = max;

@@ -1,7 +1,7 @@
 package com.cheering.meetfan;
 
 import com.cheering.meet.Meet;
-import com.cheering.meet.MeetFan;
+import com.cheering.meetfan.MeetFan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface MeetFanRepository extends JpaRepository<com.cheering.meet.MeetFan, Long> {
+public interface MeetFanRepository extends JpaRepository<com.cheering.meetfan.MeetFan, Long> {
 
     @Query("SELECT COUNT(mf) > 0 " +
             "FROM MeetFan mf " +

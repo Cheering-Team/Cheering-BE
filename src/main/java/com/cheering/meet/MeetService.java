@@ -2,18 +2,14 @@ package com.cheering.meet;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
-import com.cheering._core.util.ApiUtils;
-import com.cheering.chat.ChatResponse;
 import com.cheering.chat.chatRoom.*;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanRepository;
-import com.cheering.fan.FanResponse;
 import com.cheering.match.Match;
 import com.cheering.match.MatchRepository;
-import com.cheering.meet.MeetFan;
+import com.cheering.meetfan.MeetFan;
 import com.cheering.meetfan.MeetFanRepository;
 import com.cheering.meetfan.MeetFanRole;
-import com.cheering.post.PostResponse;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
@@ -89,7 +85,7 @@ public class MeetService {
                 .type(requestDto.type())
                 .hasTicket(hasTicket)
                 .match(match)
-                .chatRoom(null)
+//                .confirmChatRoom(null)
                 .build();
 
         meetRepository.save(meet);
@@ -99,7 +95,7 @@ public class MeetService {
         ChatRoom confirmedChatRoom = chatRoomRepository.findById(confirmedChatRoomIdDTO.id())
                 .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
 
-        meet.setChatRoom(confirmedChatRoom);
+        meet.setConfirmChatRoom(confirmedChatRoom);
         meetRepository.save(meet);
 
         MeetFan meetFan = MeetFan.builder()
@@ -139,9 +135,9 @@ public class MeetService {
         Fan writer = managerFan.getFan();
 
         ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
-                meet.getChatRoom(),
-                currentCount, // 현재 참가자 수
-                true // 사용자 참여 여부를 true로 설정 (필요 시 로직으로 변경 가능)
+                meet.getConfirmChatRoom(),
+                currentCount,
+                true
         );
 
         return new MeetResponse.MeetDetailDTO(
@@ -207,9 +203,9 @@ public class MeetService {
                     int currentCount = calculateCurrentCount(meet.getId());
                     ChatRoomResponse.ChatRoomDTO chatRoomDTO = null;
 
-                    if (meet.getChatRoom() != null) {
+                    if (meet.getConfirmChatRoom() != null) {
                         chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
-                                meet.getChatRoom(),
+                                meet.getConfirmChatRoom(),
                                 currentCount,
                                 true
                         );
@@ -251,7 +247,7 @@ public class MeetService {
             throw new CustomException(ExceptionCode.USER_FORBIDDEN);
         }
 
-        ChatRoom chatRoom = meet.getChatRoom();
+        ChatRoom chatRoom = meet.getConfirmChatRoom();
         if (chatRoom != null) {
             chatRoomRepository.delete(chatRoom);
         }

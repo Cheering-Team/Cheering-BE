@@ -9,7 +9,7 @@ import com.cheering.chat.session.ChatSession;
 import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.fan.CommunityType;
 import com.cheering.meet.Meet;
-import com.cheering.meet.MeetFan;
+import com.cheering.meetfan.MeetFan;
 import com.cheering.meet.MeetRepository;
 import com.cheering.meetfan.MeetFanRepository;
 import com.cheering.meetfan.MeetFanRole;

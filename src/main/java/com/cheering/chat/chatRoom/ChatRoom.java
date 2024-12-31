@@ -5,7 +5,6 @@ import com.cheering.chat.Chat;
 import com.cheering.chat.session.ChatSession;
 import com.cheering.fan.CommunityType;
 import com.cheering.meet.Meet;
-import com.cheering.player.Player;
 import com.cheering.fan.Fan;
 import jakarta.persistence.*;
 import lombok.*;
@@ -57,7 +56,7 @@ public class ChatRoom extends BaseTimeEntity {
     private List<ChatSession> chatSessions = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "meet_id", nullable = false)
+    @JoinColumn(name = "meet_id")
     private Meet meet;
 
     @Builder

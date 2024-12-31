@@ -1,7 +1,8 @@
-package com.cheering.meet;
+package com.cheering.meetfan;
 
 import com.cheering.BaseTimeEntity;
 import com.cheering.fan.Fan;
+import com.cheering.meet.Meet;
 import com.cheering.meetfan.MeetFanRole;
 import jakarta.persistence.*;
 import lombok.Builder;
