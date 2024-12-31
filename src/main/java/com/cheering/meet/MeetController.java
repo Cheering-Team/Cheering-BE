@@ -5,6 +5,11 @@ import com.cheering._core.util.ApiUtils;
 import com.cheering.chat.chatRoom.ChatRoomResponse;
 import com.cheering.chat.chatRoom.ChatRoomService;
 import com.cheering.user.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +31,18 @@ public class MeetController {
     private final ChatRoomService chatRoomService;
 
     @PostMapping("/communities/{communityId}/meets")
+    @Operation(summary = "Create Meet", description = "해당 커뮤니티에 모임을 생성한다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "모임 생성 성공", content = {
+                    @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MeetResponse.MeetIdDTO.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
     public ResponseEntity<?> createMeet(
             @PathVariable("communityId") Long communityId,
-            @RequestBody MeetRequest.CreateMeetDTO requestDto,
+            @Valid @RequestBody MeetRequest.CreateMeetDTO requestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         User user = userDetails.getUser();
@@ -36,16 +50,16 @@ public class MeetController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임생성완료", meetService.createMeet(communityId, requestDto, user)));
     }
 
-/*
-    // 모임 목록 조회
-    @GetMapping("/meets")
-    public ResponseEntity<?> getAllMeets(MeetRequest.MeetSearchRequest request) {
-        MeetResponse.MeetListDTO meetList = meetService.findAllMeets(request);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 목록 조회 완료", meetList));
-    }
-*/
     //모임 상세 조회
     @GetMapping("/meets/{meetId}")
+    @Operation(summary = "Get Meet Details", description = "특정 모임의 상세 정보를 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "모임 상세 조회 성공", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = MeetResponse.MeetDetailDTO.class))
+            }),
+            @ApiResponse(responseCode = "404", description = "모임을 찾을 수 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
     public ResponseEntity<?> getMeetDetail(
             @PathVariable("meetId") Long meetId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -58,6 +72,14 @@ public class MeetController {
     }
 
     @GetMapping("/communities/{communityId}/meets")
+    @Operation(summary = "Get All Meets by Community", description = "특정 커뮤니티의 모든 모임을 조회한다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "커뮤니티 내 모든 모임 조회 성공", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = MeetResponse.MeetListDTO.class))
+            }),
+            @ApiResponse(responseCode = "404", description = "커뮤니티를 찾을 수 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
     public ResponseEntity<?> getAllMeetsByCommunity(
             MeetRequest.MeetSearchRequest request,
                 @PathVariable("communityId") Long communityId,
@@ -71,6 +93,13 @@ public class MeetController {
     }
 
     @DeleteMapping("/meets/{meetId}")
+    @Operation(summary = "Delete Meet", description = "특정 모임을 삭제한다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "모임 삭제 성공"),
+            @ApiResponse(responseCode = "403", description = "삭제 권한 없음"),
+            @ApiResponse(responseCode = "404", description = "모임을 찾을 수 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
     public ResponseEntity<?> deleteMeet(@PathVariable Long meetId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userDetails.getUser();
         meetService.deleteMeet(meetId, user);
@@ -78,6 +107,13 @@ public class MeetController {
     }
 
     @PutMapping("/meets/{meetId}")
+    @Operation(summary = "Update Meet", description = "특정 모임의 정보를 수정한다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "모임 수정 성공"),
+            @ApiResponse(responseCode = "403", description = "수정 권한 없음"),
+            @ApiResponse(responseCode = "404", description = "모임을 찾을 수 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
     public ResponseEntity<?> updateMeet(
             @PathVariable Long meetId,
             @RequestBody @Valid MeetRequest.UpdateMeetDTO updateMeetDTO,
@@ -87,6 +123,7 @@ public class MeetController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 수정 완료", null));
     }
 
+    /*
     @PostMapping("/communities/{communityId}/meets/{meetId}/private-chat")
     public ResponseEntity<?> createPrivateChatRoom(
             @PathVariable Long communityId,
@@ -96,5 +133,5 @@ public class MeetController {
         ChatRoomResponse.IdDTO chatRoomId = chatRoomService.createPrivateChatRoom(communityId, meetId, userDetails.getUser());
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 생성 완료", chatRoomId));
     }
-
+    */
 }

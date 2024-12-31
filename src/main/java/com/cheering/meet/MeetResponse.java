@@ -6,6 +6,7 @@ import com.cheering.match.Match;
 import com.cheering.match.MatchResponse;
 import com.cheering.fan.FanResponse;
 import com.cheering.team.Team;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
@@ -15,21 +16,24 @@ import java.util.List;
 
 public class MeetResponse {
 
-    public record MeetIdDTO (Long id) { }
+    @Schema(description = "모임 생성 응답")
+    public record MeetIdDTO (@Schema(description = "생성된 모임 ID", example = "1") Long id) { }
 
     // Meet 상세 정보 DTO
-    public record MeetInfoDTO(Long id,
-                              String title,
-                              String description,
-                              MeetType meetType,
-                              ChatRoomResponse.ChatRoomDTO chatRoomDTO,
-                              Integer currentCount,
-                              Integer max,
-                              boolean hasTicket,
-                              MeetGender gender,
-                              Integer ageMin,
-                              Integer ageMax,
-                              MeetMatchDTO match
+    @Schema(description = "모임 상세 정보")
+    public record MeetInfoDTO(
+            Long id,
+            String title,
+            String description,
+            MeetType meetType,
+            ChatRoomResponse.ChatRoomDTO chatRoomDTO,
+            Integer currentCount,
+            Integer max,
+            boolean hasTicket,
+            MeetGender gender,
+            Integer ageMin,
+            Integer ageMax,
+            MeetMatchDTO match
     ) {
 
         public MeetInfoDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoomDTO, Team curTeam) { //currentCount
@@ -51,6 +55,7 @@ public class MeetResponse {
     }
 
     // Match 정보 DTO
+    @Schema(description = "모임 매치 정보")
     public record MeetMatchDTO(Long id, Boolean isHome, String opponentShortName, String opponentImage, LocalDateTime time) {
         public MeetMatchDTO(Match match, Team curTeam) {
             this(
@@ -66,6 +71,7 @@ public class MeetResponse {
 
 
     // Meet 목록 반환 DTO
+    @Schema(description = "모임 목록")
     public record MeetListDTO(List<MeetInfoDTO> meets, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
         public MeetListDTO(Page<?> page, List<MeetInfoDTO> meets) {
             this(meets, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
@@ -89,6 +95,7 @@ public class MeetResponse {
     ) {
         // 작성자 정보 DTO
         //public record MeetWriterDTO(Long id, int age, String gender) { }
+        @Schema(description = "모임 작성자")
         public record MeetWriterDTO(Long id) { }
     }
 
