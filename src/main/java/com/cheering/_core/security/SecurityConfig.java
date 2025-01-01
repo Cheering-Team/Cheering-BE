@@ -84,6 +84,11 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth)->auth
+                        .requestMatchers(
+                                "/v3/api-docs/**", // Swagger OpenAPI JSON
+                                "/swagger-ui/**",  // Swagger UI
+                                "/swagger-ui.html" // Swagger UI HTML
+                        ).permitAll()
                         .requestMatchers("/api/phone/sms", "/api/phone/code", "/api/signin", "/api/signup", "/api/refresh", "api/signin/kakao", "api/signin/naver", "api/signin/apple", "api/phone/code/social", "api/notifications/is-unread", "api/fcm-token", "api/connect","api/version", "/hc", "/env", "/ws/**").permitAll()
                         .anyRequest().authenticated());
 

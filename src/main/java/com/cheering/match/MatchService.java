@@ -373,4 +373,26 @@ public class MatchService {
             throw new RuntimeException(e);
         }
     }
+
+    // 다음 2주 내 경기 목록
+    public List<MatchResponse.MatchDetailDTO> getTwoWeeksMatches(Long communityId, User user) {
+
+        Fan curUser = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime twoWeeksLater = now.plusWeeks(2);
+
+        Optional<Team> team = teamRepository.findById(communityId);
+        Optional<Player> player = playerRepository.findById(communityId);
+
+        if (team.isPresent()) {
+            List<Match> matches = matchRepository.findByHomeTeamOrAwayTeam(team.get(), now, twoWeeksLater);
+            return matches.stream().map(MatchResponse.MatchDetailDTO::new).toList();
+        }
+        if (player.isPresent()) {
+            List<Match> matches = matchRepository.findByHomeTeamOrAwayTeam(player.get().getFirstTeam(), now, twoWeeksLater);
+            return matches.stream().map(MatchResponse.MatchDetailDTO::new).toList();
+        }
+        return null;
+    }
 }

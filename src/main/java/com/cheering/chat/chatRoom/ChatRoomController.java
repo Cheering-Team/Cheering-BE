@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -100,4 +101,25 @@ public class  ChatRoomController {
         chatRoomService.autoCreateChatRooms();
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방들이 생성되었습니다.", null));
     }
+
+    // 1:1 채팅방 만들기(모임)
+    @PostMapping("/communities/{communityId}/meets/{meetId}/talk")
+    public ResponseEntity<?> createPrivateChatRoom(
+            @PathVariable Long communityId,
+            @PathVariable Long meetId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        ChatRoomResponse.IdDTO chatRoomId = chatRoomService.createPrivateChatRoom(communityId, meetId, userDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 생성 완료", chatRoomId));
+    }
+
+    // 특정 모임에 대해 온 1:1 채팅방 목록 조회
+    @GetMapping("/meets/{meetId}/private")
+    public ResponseEntity<?> getPrivateChatRoomIdsForManager(
+            @PathVariable Long meetId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 목록 조회 완료", chatRoomService.getPrivateChatRoomIdsForManager(meetId, userDetails.getUser())));
+    }
+
+
 }

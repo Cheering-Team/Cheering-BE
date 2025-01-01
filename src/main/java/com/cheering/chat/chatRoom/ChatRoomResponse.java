@@ -51,4 +51,24 @@ public class ChatRoomResponse {
             this(chatRooms, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
         }
     }
+
+    public record PrivateChatRoomDTO(Long id,
+                                 String name,
+                                 String image,
+                                 String description,
+                                 String lastMessage,
+                                 LocalDateTime lastMessageTime,
+                                 Integer participantCount,
+                                 Boolean isUnread) {
+        public PrivateChatRoomDTO(ChatRoom chatRoom, String lastMessage, LocalDateTime lastMessageTime, Integer participantCount, Boolean isUnread) {
+            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), lastMessage, lastMessageTime, participantCount, isUnread);
+        }
+    }
+
+    public record PrivateChatRoomListDTO(List<PrivateChatRoomDTO> privateChats, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
+        public PrivateChatRoomListDTO(org.springframework.data.domain.Page<?> page, List<PrivateChatRoomDTO> privateChats) {
+            this(privateChats, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
+        }
+    }
+
 }
