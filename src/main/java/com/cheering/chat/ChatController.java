@@ -1,11 +1,20 @@
 package com.cheering.chat;
 
+import com.cheering._core.security.CustomUserDetails;
+import com.cheering._core.util.ApiUtils;
 import com.cheering.chat.chatRoom.ChatRoomService;
+import com.cheering.fan.Fan;
+import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 
@@ -28,4 +37,16 @@ public class ChatController {
                               @Header("simpSessionId") String sessionId) {
         chatRoomService.removeUserFromRoom(chatDisconnectDTO.chatRoomId(), sessionId);
     }
+
+    // 확정 질문 메시지 보내기
+    @PostMapping("/chatrooms/{chatRoomId}/join-message")
+    public ResponseEntity<?> createJoinMessage(
+            @Payload ChatRequest.ChatRequestDTO requestDTO,
+            @DestinationVariable String chatRoomId) {
+
+        chatRoomService.sendJoinRequest(requestDTO, Long.parseLong(chatRoomId));
+
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "JOIN_REQUEST 생성 완료", null));
+    }
+
 }

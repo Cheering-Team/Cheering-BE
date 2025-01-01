@@ -123,7 +123,7 @@ public class MeetController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 수정 완료", null));
     }
 
-    /*
+    /* 챗룸컨트롤러에서 구현함
     @PostMapping("/communities/{communityId}/meets/{meetId}/private-chat")
     public ResponseEntity<?> createPrivateChatRoom(
             @PathVariable Long communityId,
@@ -134,4 +134,15 @@ public class MeetController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 생성 완료", chatRoomId));
     }
     */
+
+    @PostMapping("/chatrooms/{chatRoomId}/accept")
+    public ResponseEntity<?> acceptJoinRequest(
+            @PathVariable Long chatRoomId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        User user = userDetails.getUser();
+        meetService.acceptJoinRequest(chatRoomId, user);
+
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "사용자가 모임에 가입되었습니다.", null));
+    }
 }

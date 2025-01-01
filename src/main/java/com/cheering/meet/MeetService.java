@@ -3,10 +3,13 @@ package com.cheering.meet;
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering.chat.chatRoom.*;
+import com.cheering.chat.session.ChatSession;
+import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanRepository;
 import com.cheering.match.Match;
 import com.cheering.match.MatchRepository;
+import com.cheering.match.MatchResponse;
 import com.cheering.meetfan.MeetFan;
 import com.cheering.meetfan.MeetFanRepository;
 import com.cheering.meetfan.MeetFanRole;
@@ -41,6 +44,7 @@ public class MeetService {
     private final MeetFanRepository meetFanRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomService chatRoomService;
+    private final ChatSessionRepository chatSessionRepository;
 
     @Transactional
     public MeetResponse.MeetIdDTO createMeet(Long communityId, MeetRequest.CreateMeetDTO requestDto, User user) {
@@ -123,13 +127,9 @@ public class MeetService {
         MeetFan managerFan = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        Team curTeam = teamRepository.findById(meet.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+        Team curTeam = teamRepository.findById(meet.getCommunityId())
+                .orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
 
-        Team opponentTeam = meet.getMatch().getHomeTeam().equals(curTeam)
-                ? meet.getMatch().getAwayTeam()
-                : meet.getMatch().getHomeTeam();
-
-        // 현재 참가자 수 계산
         int currentCount = meetFanRepository.countByMeet(meet);
 
         Fan writer = managerFan.getFan();
@@ -139,6 +139,10 @@ public class MeetService {
                 currentCount,
                 true
         );
+
+        MatchResponse.MatchDetailDTO matchDetailDTO = meet.getMatch() != null
+                ? new MatchResponse.MatchDetailDTO(meet.getMatch())
+                : null;
 
         return new MeetResponse.MeetDetailDTO(
                 meet.getTitle(),
@@ -153,20 +157,14 @@ public class MeetService {
                 meet.getAgeMax(),
                 new MeetResponse.MeetDetailDTO.MeetWriterDTO(
                         writer.getId()
-                        //writer.getAge(),
-                        //writer.getGender().toString()
+                        // writer.getAge(),
+                        // writer.getGender().toString()
                 ),
-                meet.getMatch() != null
-                        ? new MeetResponse.MeetMatchDTO(
-                        meet.getMatch().getId(),
-                        meet.getMatch().getHomeTeam().equals(curTeam),
-                        opponentTeam.getShortName(),
-                        opponentTeam.getImage(),
-                        meet.getMatch().getTime()
-                )
-                        : null
+                matchDetailDTO
         );
     }
+
+
 
     @Transactional(readOnly = true)
     public MeetResponse.MeetListDTO findAllMeetsByCommunity(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
@@ -280,6 +278,42 @@ public class MeetService {
         meet.setPlace(updateMeetDTO.place());
 
         meetRepository.save(meet);
+    }
+
+    // 확정 질문 수락 -> 모임 가입
+    @Transactional
+    public void acceptJoinRequest(Long chatRoomId, User user) {
+
+        ChatRoom privateChatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
+        Meet meet = privateChatRoom.getMeet();
+        if (meet == null) {
+            throw new CustomException(ExceptionCode.MEET_NOT_FOUND);
+        }
+
+        Fan userFan = fanRepository.findByCommunityIdAndUser(privateChatRoom.getCommunityId(), user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        MeetFan meetFan = MeetFan.builder()
+                .meet(meet)
+                .fan(userFan)
+                .role(MeetFanRole.MEMBER)
+                .build();
+
+        meetFanRepository.save(meetFan);
+
+        ChatRoom confirmChatRoom = meet.getConfirmChatRoom();
+        if (confirmChatRoom == null) {
+            throw new CustomException(ExceptionCode.CHATROOM_NOT_FOUND);
+        }
+
+        ChatSession chatSession = ChatSession.builder()
+                .chatRoom(confirmChatRoom)
+                .fan(userFan)
+                .build();
+
+        chatSessionRepository.save(chatSession);
     }
 
 }

@@ -430,4 +430,53 @@ public class ChatRoomService {
         return privateChatRoomIds;
     }
 
+    @Transactional
+    public void sendJoinRequest(ChatRequest.ChatRequestDTO requestDTO, Long chatRoomId) {
+
+        LocalDateTime now = LocalDateTime.now();
+        String groupKey = generateGroupKey(requestDTO.writerId(), now);
+
+        ChatRoom chatRoom = entityManager.getReference(ChatRoom.class, chatRoomId);
+
+        Meet meet = chatRoom.getMeet();
+        if (meet == null || !meet.getConfirmChatRoom().getManager().getId().equals(requestDTO.writerId())) {
+            throw new CustomException(ExceptionCode.USER_FORBIDDEN); // 방장 아닌 경우 - 권한X
+        }
+
+        simpMessagingTemplate.convertAndSend(
+                "/topic/chatRoom/" + chatRoomId,
+                new ChatResponse.ChatResponseDTO(
+                        "JOIN_REQUEST",
+                        "해당 모임에 참여를 확정하겠습니까?",
+                        now,
+                        requestDTO.writerId(),
+                        requestDTO.writerImage(),
+                        requestDTO.writerName(),
+                        groupKey,
+                        null
+                )
+        );
+
+        Fan manager = entityManager.getReference(Fan.class, requestDTO.writerId());
+
+        Chat chat = Chat.builder()
+                .type(ChatType.JOIN_REQUEST)
+                .chatRoom(chatRoom)
+                .writer(manager)
+                .content("해당 모임에 참여를 확정하겠습니까?")
+                .groupKey(groupKey)
+                .build();
+
+        chatRepository.save(chat);
+
+        List<User> users = chatSessionRepository.findByChatRoomExceptMe(chatRoom, requestDTO.writerId());
+        users.forEach(user -> {
+            Integer count = getUnreadChats(user);
+            user.getDeviceTokens().forEach(deviceToken ->
+                    fcmService.sendChatMessageTo(deviceToken.getToken(), count)
+            );
+        });
+    }
+
+
 }
