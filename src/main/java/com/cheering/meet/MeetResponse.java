@@ -57,13 +57,14 @@ public class MeetResponse {
 
     // Match 정보 DTO
     @Schema(description = "모임 매치 정보")
-    public record MeetMatchDTO(Long id, Boolean isHome, String opponentShortName, String opponentImage, LocalDateTime time) {
+    public record MeetMatchDTO(Long id, Boolean isHome, String opponentShortName, String opponentImage, String opponentColor, LocalDateTime time) {
         public MeetMatchDTO(Match match, Team curTeam) {
             this(
                     match.getId(),
                     match.getHomeTeam().equals(curTeam),
                     match.getHomeTeam().equals(curTeam) ? match.getAwayTeam().getShortName() : match.getHomeTeam().getShortName(),
                     match.getHomeTeam().equals(curTeam) ? match.getAwayTeam().getImage() : match.getHomeTeam().getImage(),
+                    match.getHomeTeam().equals(curTeam) ? match.getAwayTeam().getColor() : match.getHomeTeam().getColor(),
                     match.getTime()
             );
         }

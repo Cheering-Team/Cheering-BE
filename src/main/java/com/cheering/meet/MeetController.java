@@ -28,7 +28,6 @@ import java.util.List;
 public class MeetController {
 
     private final MeetService meetService;
-    private final ChatRoomService chatRoomService;
 
     @PostMapping("/communities/{communityId}/meets")
     @Operation(summary = "Create Meet", description = "해당 커뮤니티에 모임을 생성한다.")
