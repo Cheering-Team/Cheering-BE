@@ -439,7 +439,7 @@ public class ChatRoomService {
         ChatRoom chatRoom = entityManager.getReference(ChatRoom.class, chatRoomId);
 
         Meet meet = chatRoom.getMeet();
-        if (meet == null || !meet.getConfirmChatRoom().getManager().getId().equals(requestDTO.writerId())) {
+        if (meet == null || meet.getManager().equals(requestDTO.writerId())) {
             throw new CustomException(ExceptionCode.USER_FORBIDDEN); // 방장 아닌 경우 - 권한X
         }
 

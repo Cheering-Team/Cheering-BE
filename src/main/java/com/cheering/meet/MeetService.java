@@ -80,6 +80,7 @@ public class MeetService {
                 .communityId(communityId)
                 .communityType(requestDto.communityType())
                 .title(requestDto.title())
+                .manager(fan)
                 .description(requestDto.description())
                 .max(requestDto.max())
                 .gender(requestDto.gender())
@@ -89,18 +90,11 @@ public class MeetService {
                 .type(requestDto.type())
                 .hasTicket(hasTicket)
                 .match(match)
-//                .confirmChatRoom(null)
                 .build();
 
         meetRepository.save(meet);
 
-        ChatRoomResponse.IdDTO confirmedChatRoomIdDTO = chatRoomService.createConfirmedChatRoom(communityId, meet, requestDto.max(), user);
-
-        ChatRoom confirmedChatRoom = chatRoomRepository.findById(confirmedChatRoomIdDTO.id())
-                .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
-
-        meet.setConfirmChatRoom(confirmedChatRoom);
-        meetRepository.save(meet);
+        chatRoomService.createConfirmedChatRoom(communityId, meet, requestDto.max(), user);
 
         MeetFan meetFan = MeetFan.builder()
                 .role(MeetFanRole.MANAGER)
@@ -134,8 +128,10 @@ public class MeetService {
 
         Fan writer = managerFan.getFan();
 
+        ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meetId, ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
         ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
-                meet.getConfirmChatRoom(),
+                confirmChatRoom,
                 currentCount,
                 true
         );
@@ -200,14 +196,12 @@ public class MeetService {
                 .map(meet -> {
                     int currentCount = calculateCurrentCount(meet.getId());
                     ChatRoomResponse.ChatRoomDTO chatRoomDTO = null;
-
-                    if (meet.getConfirmChatRoom() != null) {
-                        chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
-                                meet.getConfirmChatRoom(),
+                    ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+                    chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
+                                confirmChatRoom,
                                 currentCount,
                                 true
-                        );
-                    }
+                    );
 
                     return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam);
                 })
@@ -244,13 +238,6 @@ public class MeetService {
         if (!managerFan.getFan().getUser().getId().equals(user.getId())) {
             throw new CustomException(ExceptionCode.USER_FORBIDDEN);
         }
-
-        ChatRoom chatRoom = meet.getConfirmChatRoom();
-        if (chatRoom != null) {
-            chatRoomRepository.delete(chatRoom);
-        }
-
-        meetFanRepository.deleteByMeet(meet);
 
         meetRepository.delete(meet);
     }
@@ -303,10 +290,7 @@ public class MeetService {
 
         meetFanRepository.save(meetFan);
 
-        ChatRoom confirmChatRoom = meet.getConfirmChatRoom();
-        if (confirmChatRoom == null) {
-            throw new CustomException(ExceptionCode.CHATROOM_NOT_FOUND);
-        }
+        ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
 
         ChatSession chatSession = ChatSession.builder()
                 .chatRoom(confirmChatRoom)

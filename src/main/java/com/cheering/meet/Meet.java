@@ -4,7 +4,9 @@ import com.cheering.BaseTimeEntity;
 import com.cheering.chat.Chat;
 import com.cheering.fan.CommunityType;
 import com.cheering.chat.chatRoom.ChatRoom;
+import com.cheering.fan.Fan;
 import com.cheering.match.Match;
+import com.cheering.meetfan.MeetFan;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +30,7 @@ public class Meet extends BaseTimeEntity {
     private Long id;
 
     @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
     private MeetType type;
 
     @Column(nullable = false)
@@ -35,6 +38,10 @@ public class Meet extends BaseTimeEntity {
 
     @Column
     private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "manager_id")
+    private Fan manager;
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
@@ -69,25 +76,24 @@ public class Meet extends BaseTimeEntity {
     @OneToMany(mappedBy = "meet", cascade = CascadeType.REMOVE)
     private List<ChatRoom> chatRooms = new ArrayList<>();
 
-    @OneToOne
-    @JoinColumn(name = "confirm_chat_room_id")
-    private ChatRoom confirmChatRoom;
+    @OneToMany(mappedBy = "meet", cascade = CascadeType.REMOVE)
+    private List<MeetFan> meetFans = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
 
     @Builder
-    public Meet(MeetType type, String title, String description, CommunityType communityType, Long communityId, Match match, ChatRoom confirmChatRoom,
+    public Meet(MeetType type, String title, String description, Fan manager, CommunityType communityType, Long communityId, Match match,
                 String place, MeetGender gender, Integer max, Integer ageMin, Integer ageMax, Boolean hasTicket, LocalDateTime createdAt) {
 
         this.type = type;
         this.title = title;
+        this.manager = manager;
         this.description = description;
         this.communityType = communityType;
         this.communityId = communityId;
         this.match = match;
-        this.confirmChatRoom = confirmChatRoom;
         this.place = place;
         this.gender = gender;
         this.max = max;
