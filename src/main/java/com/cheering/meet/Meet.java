@@ -79,12 +79,9 @@ public class Meet extends BaseTimeEntity {
     @OneToMany(mappedBy = "meet", cascade = CascadeType.REMOVE)
     private List<MeetFan> meetFans = new ArrayList<>();
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
     @Builder
     public Meet(MeetType type, String title, String description, Fan manager, CommunityType communityType, Long communityId, Match match,
-                String place, MeetGender gender, Integer max, Integer ageMin, Integer ageMax, Boolean hasTicket, LocalDateTime createdAt) {
+                String place, MeetGender gender, Integer max, Integer ageMin, Integer ageMax, Boolean hasTicket) {
 
         this.type = type;
         this.title = title;
@@ -99,7 +96,6 @@ public class Meet extends BaseTimeEntity {
         this.ageMin = ageMin;
         this.ageMax = ageMax;
         this.hasTicket = hasTicket;
-        this.createdAt = createdAt;
     }
 }
 
