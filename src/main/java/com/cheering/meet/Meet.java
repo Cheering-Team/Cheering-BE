@@ -1,7 +1,6 @@
 package com.cheering.meet;
 
 import com.cheering.BaseTimeEntity;
-import com.cheering.chat.Chat;
 import com.cheering.fan.CommunityType;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.fan.Fan;
@@ -12,8 +11,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.RequiredArgsConstructor;
 import jakarta.persistence.*;
-
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
