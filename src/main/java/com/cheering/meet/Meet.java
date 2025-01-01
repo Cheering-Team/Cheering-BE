@@ -82,7 +82,6 @@ public class Meet extends BaseTimeEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-
     @Builder
     public Meet(MeetType type, String title, String description, Fan manager, CommunityType communityType, Long communityId, Match match,
                 String place, MeetGender gender, Integer max, Integer ageMin, Integer ageMax, Boolean hasTicket, LocalDateTime createdAt) {

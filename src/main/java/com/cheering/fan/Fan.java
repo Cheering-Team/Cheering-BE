@@ -8,6 +8,7 @@ import com.cheering.cheer.Cheer;
 import com.cheering.comment.Comment;
 import com.cheering.comment.reComment.ReComment;
 import com.cheering.meet.Meet;
+import com.cheering.meetfan.MeetFan;
 import com.cheering.notification.Notification;
 import com.cheering.post.Like.Like;
 import com.cheering.post.Post;
@@ -112,6 +113,8 @@ public class Fan extends BaseTimeEntity {
     @OneToMany(mappedBy = "manager", cascade = CascadeType.REMOVE)
     private List<Meet> meets = new ArrayList<>();
 
+    @OneToMany(mappedBy = "fan", cascade = CascadeType.REMOVE)
+    private List<MeetFan> meetFans = new ArrayList<>();
 
     @Builder
     public Fan(CommunityType type, String name, String image, Long communityId, Integer communityOrder, User user) {
