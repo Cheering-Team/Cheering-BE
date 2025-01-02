@@ -377,8 +377,6 @@ public class MatchService {
     // 다음 2주 내 경기 목록
     public List<MatchResponse.MatchDetailDTO> getTwoWeeksMatches(Long communityId, User user) {
 
-        Fan curUser = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime twoWeeksLater = now.plusWeeks(2);
 

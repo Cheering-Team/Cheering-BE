@@ -1,7 +1,6 @@
 package com.cheering.meet;
 
 import com.cheering.BaseTimeEntity;
-import com.cheering.chat.Chat;
 import com.cheering.fan.CommunityType;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.fan.Fan;
@@ -12,8 +11,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.RequiredArgsConstructor;
 import jakarta.persistence.*;
-
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,12 +76,9 @@ public class Meet extends BaseTimeEntity {
     @OneToMany(mappedBy = "meet", cascade = CascadeType.REMOVE)
     private List<MeetFan> meetFans = new ArrayList<>();
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
     @Builder
     public Meet(MeetType type, String title, String description, Fan manager, CommunityType communityType, Long communityId, Match match,
-                String place, MeetGender gender, Integer max, Integer ageMin, Integer ageMax, Boolean hasTicket, LocalDateTime createdAt) {
+                String place, MeetGender gender, Integer max, Integer ageMin, Integer ageMax, Boolean hasTicket) {
 
         this.type = type;
         this.title = title;
@@ -99,7 +93,6 @@ public class Meet extends BaseTimeEntity {
         this.ageMin = ageMin;
         this.ageMax = ageMax;
         this.hasTicket = hasTicket;
-        this.createdAt = createdAt;
     }
 }
 
