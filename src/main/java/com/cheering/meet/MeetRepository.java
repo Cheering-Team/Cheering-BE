@@ -32,18 +32,16 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             Pageable pageable
     );
      */
-
-    @Query("SELECT m FROM Meet m " +
-            "WHERE (:type IS NULL OR m.type = :type) " +
-            "AND (:gender IS NULL OR m.gender = :gender) " +
+    @Query("SELECT m FROM Meet m WHERE (:type IS NULL OR m.type = :type) " +
+            "AND (:genders IS NULL OR m.gender IN :genders) " +
             "AND (:minAge IS NULL OR m.ageMin >= :minAge) " +
             "AND (:maxAge IS NULL OR m.ageMax <= :maxAge) " +
             "AND (:matchId IS NULL OR m.match.id = :matchId) " +
             "AND (:hasTicket IS NULL OR m.hasTicket = :hasTicket) " +
-            "AND (:location IS NULL OR m.place LIKE %:location%)")
+            "AND (:location IS NULL OR m.place = :location)")
     Page<Meet> findByFilters(
             @Param("type") MeetType type,
-            @Param("gender") MeetGender gender,
+            @Param("genders") List<MeetGender> genders,
             @Param("minAge") Integer minAge,
             @Param("maxAge") Integer maxAge,
             @Param("matchId") Long matchId,
