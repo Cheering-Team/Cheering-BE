@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -181,9 +182,19 @@ public class MeetService {
             hasTicket = false;
         }
 
+        List<MeetGender> genders = new ArrayList<>();
+        if (request.getGender() == MeetGender.ANY) {
+            genders.add(MeetGender.MALE);
+            genders.add(MeetGender.FEMALE);
+            genders.add(MeetGender.ANY);
+        } else {
+            genders.add(request.getGender());
+            genders.add(MeetGender.ANY);
+        }
+
         Page<Meet> meetPage = meetRepository.findByFilters(
                 request.getType(),
-                request.getGender(),
+                genders,
                 request.getMinAge(),
                 request.getMaxAge(),
                 request.getMatchId(),
