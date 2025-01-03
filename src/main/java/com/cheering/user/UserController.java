@@ -4,6 +4,7 @@ import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
+import io.lettuce.core.dynamic.annotation.Param;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -117,9 +118,25 @@ public class UserController {
     }
 
     // 유저의 나이와 성별 설정 여부 확인
-    @GetMapping("/users/{userId}/check-age-gender")
-    public ResponseEntity<?> isAgeAndGenderSet(@PathVariable Long userId) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별 설정 여부 확인 완료", userService.isAgeAndGenderSet(userId)));
+    @GetMapping("/users/check-age-gender")
+    public ResponseEntity<?> isAgeAndGenderSet(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        User user = customUserDetails.getUser();
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별 설정 여부 확인 완료", userService.isAgeAndGenderSet(user.getId())));
+    }
+
+    // 유저 나이, 성별 설정
+    @PostMapping("/users/age-gender")
+    public ResponseEntity<?> setAgeAndGender(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UserRequest.AgeAndGenderDTO requestDTO) {
+        User user = customUserDetails.getUser();
+        userService.setAgeAndGender(requestDTO, user.getId());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별 설정 완료", null));
+    }
+
+    // 유저의 나이, 성별 조회
+    @GetMapping("/users/age-gender")
+    public ResponseEntity<?> getAgeAndGender(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        User user = customUserDetails.getUser();
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별 조회 완료", userService.getAgeAndGender(user.getId())));
     }
 }
 

@@ -39,4 +39,9 @@ public class UserRequest {
             String deviceId,
             String token
     ) { }
+
+    public record AgeAndGenderDTO(
+            Integer age,
+            Gender gender
+    ) { }
 }
