@@ -406,4 +406,23 @@ public class UserService {
 
         return user.getAge() != null && user.getGender() != null;
     }
+
+    @Transactional
+    public void setAgeAndGender(UserRequest.AgeAndGenderDTO request, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+        user.setAge(request.age());
+        user.setGender(request.gender());
+
+        userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse.AgeAndGenderDTO getAgeAndGender(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+        return new UserResponse.AgeAndGenderDTO(userId, user.getAge(), user.getGender());
+    }
 }
