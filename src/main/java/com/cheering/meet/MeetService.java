@@ -161,8 +161,6 @@ public class MeetService {
         );
     }
 
-
-
     @Transactional(readOnly = true)
     public MeetResponse.MeetListDTO findAllMeetsByCommunity(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
         boolean isMember = fanRepository.existsByCommunityIdAndUser(communityId, user);
@@ -183,7 +181,7 @@ public class MeetService {
         }
 
         List<MeetGender> genders = new ArrayList<>();
-        if (request.getGender() == MeetGender.ANY) {
+        if (request.getGender() == null || request.getGender() == MeetGender.ANY) {
             genders.add(MeetGender.MALE);
             genders.add(MeetGender.FEMALE);
             genders.add(MeetGender.ANY);
@@ -192,14 +190,15 @@ public class MeetService {
             genders.add(MeetGender.ANY);
         }
 
+        String keyword = request.getKeyword();
         Page<Meet> meetPage = meetRepository.findByFilters(
+                keyword,
                 request.getType(),
                 genders,
                 request.getMinAge(),
                 request.getMaxAge(),
                 request.getMatchId(),
                 hasTicket,
-                request.getLocation(),
                 pageRequest
         );
 
@@ -209,9 +208,9 @@ public class MeetService {
                     ChatRoomResponse.ChatRoomDTO chatRoomDTO = null;
                     ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
                     chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
-                                confirmChatRoom,
-                                currentCount,
-                                true
+                            confirmChatRoom,
+                            currentCount,
+                            true
                     );
 
                     return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam);
