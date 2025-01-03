@@ -407,6 +407,7 @@ public class UserService {
         return user.getAge() != null && user.getGender() != null;
     }
 
+    // 나이, 성별 설정
     @Transactional
     public void setAgeAndGender(UserRequest.AgeAndGenderDTO request, Long userId) {
         User user = userRepository.findById(userId)
@@ -418,11 +419,24 @@ public class UserService {
         userRepository.save(user);
     }
 
+    // 나이, 성별 조회
     @Transactional(readOnly = true)
     public UserResponse.AgeAndGenderDTO getAgeAndGender(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
-        return new UserResponse.AgeAndGenderDTO(userId, user.getAge(), user.getGender());
+        if (user.getAge() == null) {
+            throw new CustomException(ExceptionCode.USER_AGE_NOT_SET);
+        }
+
+        if (user.getGender() == null) {
+            throw new CustomException(ExceptionCode.USER_GENDER_NOT_SET);
+        }
+
+        // 현재 나이 계산
+        int currentYear = java.time.Year.now().getValue();
+        int currentAge = currentYear - user.getAge();
+
+        return new UserResponse.AgeAndGenderDTO(userId, currentAge, user.getGender());
     }
 }
