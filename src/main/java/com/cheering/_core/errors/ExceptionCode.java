@@ -36,6 +36,8 @@ public enum ExceptionCode {
     USER_UNAUTHORIZED(401, "인증되지 않았습니다."),
     INVALID_TOKEN(401, "토큰이 유효하지 않습니다."),
     ALREADY_MANAGER_ACCOUNT(200, "이미 존재하는 매니저 계정"),
+    USER_AGE_NOT_SET(400, "나이가 설정되지 않았습니다."),
+    USER_GENDER_NOT_SET(400, "성별이 설정되지 않았습니다."),
 
     // TEAM
     LEAGUE_NOT_FOUND(404, "존재하지 않는 리그"),
