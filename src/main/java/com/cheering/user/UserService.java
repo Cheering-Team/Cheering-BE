@@ -399,4 +399,11 @@ public class UserService {
         userRepository.save(user);
         return isFirstLogin;
     }
+
+    public boolean isAgeAndGenderSet(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+        return user.getAge() != null && user.getGender() != null;
+    }
 }

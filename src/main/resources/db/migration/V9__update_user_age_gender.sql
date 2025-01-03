@@ -1,0 +1,5 @@
+ALTER TABLE user_tb
+    ADD COLUMN age INTEGER;
+
+ALTER TABLE user_tb
+    ADD COLUMN gender VARCHAR(10);
