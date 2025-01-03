@@ -17,36 +17,22 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
     @Query("SELECT m FROM Meet m WHERE m.communityId = :communityId")
     List<Meet> findByCommunityId(@Param("communityId") Long communityId);
 
-    //List<Meet> findByMatchId(Long matchId);
-
-    /*
-    @Query("SELECT m FROM Meet m WHERE (:type IS NULL OR m.type = :type) AND (:gender IS NULL OR m.gender = :gender) AND (:minAge IS NULL OR m.ageMin >= :minAge) AND (:maxAge IS NULL OR m.ageMax <= :maxAge) AND (:matchId IS NULL OR m.match.id = :matchId) AND (:hasTicket IS NULL OR m.hasTicket = :hasTicket) AND (:location IS NULL OR m.place LIKE :location) ORDER BY m.createdAt DESC")
-    Page<Meet> findByFilters(
-            @Param("type") MeetType type,
-            @Param("gender") MeetGender gender,
-            @Param("minAge") Integer minAge,
-            @Param("maxAge") Integer maxAge,
-            @Param("matchId") Long matchId,
-            @Param("hasTicket") Boolean hasTicket,
-            @Param("location") String location,
-            Pageable pageable
-    );
-     */
-    @Query("SELECT m FROM Meet m WHERE (:type IS NULL OR m.type = :type) " +
+    @Query("SELECT m FROM Meet m WHERE " +
+            "(:keyword IS NULL OR m.title LIKE %:keyword% OR m.place LIKE %:keyword%) " +
+            "AND (:type IS NULL OR m.type = :type) " +
             "AND (:genders IS NULL OR m.gender IN :genders) " +
             "AND (:minAge IS NULL OR m.ageMin >= :minAge) " +
             "AND (:maxAge IS NULL OR m.ageMax <= :maxAge) " +
             "AND (:matchId IS NULL OR m.match.id = :matchId) " +
-            "AND (:hasTicket IS NULL OR m.hasTicket = :hasTicket) " +
-            "AND (:location IS NULL OR m.place = :location)")
+            "AND (:hasTicket IS NULL OR m.hasTicket = :hasTicket)")
     Page<Meet> findByFilters(
+            @Param("keyword") String keyword,
             @Param("type") MeetType type,
             @Param("genders") List<MeetGender> genders,
             @Param("minAge") Integer minAge,
             @Param("maxAge") Integer maxAge,
             @Param("matchId") Long matchId,
             @Param("hasTicket") Boolean hasTicket,
-            @Param("location") String location,
             Pageable pageable
     );
 
