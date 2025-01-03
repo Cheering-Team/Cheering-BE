@@ -115,5 +115,11 @@ public class UserController {
     public ResponseEntity<?> isFirstLogin(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"조회 완료", userService.isFirstLogin(customUserDetails.getUser())));
     }
+
+    // 유저의 나이와 성별 설정 여부 확인
+    @GetMapping("/users/{userId}/check-age-gender")
+    public ResponseEntity<?> isAgeAndGenderSet(@PathVariable Long userId) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별 설정 여부 확인 완료", userService.isAgeAndGenderSet(userId)));
+    }
 }
 

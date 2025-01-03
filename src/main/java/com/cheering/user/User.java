@@ -47,6 +47,13 @@ public class User extends BaseTimeEntity {
     @Column
     private Boolean isFirstLogin;
 
+    @Column
+    private Integer age;
+
+    @Column
+    @Enumerated(value = EnumType.STRING)
+    private Gender gender;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<Fan> fans = new ArrayList<>();
 
@@ -57,7 +64,7 @@ public class User extends BaseTimeEntity {
     private List<DeviceToken> deviceTokens = new ArrayList<>();
 
     @Builder
-    public User(String phone, String name, Role role, String kakaoId, String naverId, String appleId, String password) {
+    public User(String phone, String name, Role role, String kakaoId, String naverId, String appleId, String password, Integer age, Gender gender) {
         this.role = role;
         this.phone = phone;
         this.name = name;
@@ -66,5 +73,7 @@ public class User extends BaseTimeEntity {
         this.naverId = naverId;
         this.appleId = appleId;
         this.isFirstLogin = true;
+        this.age = age;
+        this.gender = gender;
     }
 }
