@@ -9,6 +9,7 @@ import com.cheering.chat.session.ChatSession;
 import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.fan.CommunityType;
 import com.cheering.meet.Meet;
+import com.cheering.meet.MeetGender;
 import com.cheering.meetfan.MeetFan;
 import com.cheering.meet.MeetRepository;
 import com.cheering.meetfan.MeetFanRepository;
@@ -370,7 +371,7 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public ChatRoomResponse.IdDTO createPrivateChatRoom(Long communityId, Long meetId, User user) {
+    public ChatRoomResponse.IdWithConditionDTO createPrivateChatRoom(Long communityId, Long meetId, User user) {
 
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
@@ -383,8 +384,25 @@ public class ChatRoomService {
 
         Optional<ChatRoom> existingPrivateRoom = chatRoomRepository.findPrivateChatRoomByParticipantsAndMeet(
                 manager, applicant, ChatRoomType.PRIVATE, meetId);
+
+        // 기존 채팅방이 존재할 경우 채팅방 ID 반환
         if (existingPrivateRoom.isPresent()) {
-            throw new CustomException(ExceptionCode.DUPLICATE_CHAT_ROOM);
+            return new ChatRoomResponse.IdWithConditionDTO(existingPrivateRoom.get().getId(), true);
+        }
+
+        int currentYear = java.time.Year.now().getValue();
+        int currentAge = currentYear - applicant.getUser().getAge();
+
+        boolean isConditionMatched = true;
+        if (meet.getGender() != null && meet.getGender() != MeetGender.ANY &&
+                !meet.getGender().toString().equalsIgnoreCase(applicant.getUser().getGender().toString())) {
+            isConditionMatched = false;
+        }
+        if (meet.getAgeMin() != null && currentAge < meet.getAgeMin()) {
+            isConditionMatched = false;
+        }
+        if (meet.getAgeMax() != null && currentAge > meet.getAgeMax()) {
+            isConditionMatched = false;
         }
 
         ChatRoom privateChatRoom = ChatRoom.builder()
@@ -416,7 +434,7 @@ public class ChatRoomService {
                         .build()
         );
 
-        return new ChatRoomResponse.IdDTO(privateChatRoom.getId());
+        return new ChatRoomResponse.IdWithConditionDTO(privateChatRoom.getId(), isConditionMatched);
     }
 
     @Transactional(readOnly = true)

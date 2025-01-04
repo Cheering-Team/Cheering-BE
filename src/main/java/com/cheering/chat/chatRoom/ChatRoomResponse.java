@@ -13,6 +13,8 @@ import java.util.List;
 public class ChatRoomResponse {
     public record IdDTO (Long id) { }
 
+    public record IdWithConditionDTO(Long chatRoomId, boolean isConditionMatched) { }
+
     public record ChatRoomDTO (Long id,
                                String name,
                                String image,

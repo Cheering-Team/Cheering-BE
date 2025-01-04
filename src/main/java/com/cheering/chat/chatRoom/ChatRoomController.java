@@ -109,8 +109,8 @@ public class  ChatRoomController {
             @PathVariable Long meetId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        ChatRoomResponse.IdDTO chatRoomId = chatRoomService.createPrivateChatRoom(communityId, meetId, userDetails.getUser());
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 생성 완료", chatRoomId));
+        ChatRoomResponse.IdWithConditionDTO chatRoomIdWithCondition = chatRoomService.createPrivateChatRoom(communityId, meetId, userDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 생성 완료", chatRoomIdWithCondition));
     }
 
     // 특정 모임에 대해 온 1:1 채팅방 목록 조회
