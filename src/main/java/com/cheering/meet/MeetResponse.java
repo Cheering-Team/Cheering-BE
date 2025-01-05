@@ -34,7 +34,8 @@ public class MeetResponse {
             Integer ageMin,
             Integer ageMax,
             @Schema(description = "경기 상세 정보")
-            MeetMatchDTO match
+            MeetMatchDTO match,
+            String place
     ) {
 
         public MeetInfoDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoomDTO, Team curTeam) { //currentCount
@@ -50,7 +51,8 @@ public class MeetResponse {
                     meet.getGender(),
                     meet.getAgeMin(),
                     meet.getAgeMax(),
-                    meet.getMatch() != null ? new MeetMatchDTO(meet.getMatch(), curTeam) : null
+                    meet.getMatch() != null ? new MeetMatchDTO(meet.getMatch(), curTeam) : null,
+                    meet.getPlace().isEmpty() ? null : meet.getPlace()
             );
         }
     }
@@ -93,7 +95,8 @@ public class MeetResponse {
             Integer minAge,
             Integer maxAge,
             MeetWriterDTO writer,
-            MatchResponse.MatchDetailDTO match
+            MatchResponse.MatchDetailDTO match,
+            String place
     ) {
 
         public MeetDetailDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoomDTO, MatchResponse.MatchDetailDTO matchDetailDTO, MeetWriterDTO writer) {
@@ -109,7 +112,8 @@ public class MeetResponse {
                     meet.getAgeMin(),
                     meet.getAgeMax(),
                     writer,
-                    matchDetailDTO
+                    matchDetailDTO,
+                    meet.getPlace().isEmpty() ? null : meet.getPlace()
             );
         }
 

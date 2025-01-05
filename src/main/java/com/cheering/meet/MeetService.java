@@ -157,7 +157,8 @@ public class MeetService {
                         // writer.getAge(),
                         // writer.getGender().toString()
                 ),
-                matchDetailDTO
+                matchDetailDTO,
+                meet.getPlace()
         );
     }
 

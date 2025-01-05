@@ -12,10 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 
 import java.util.List;
@@ -39,14 +36,11 @@ public class ChatController {
     }
 
     // 확정 질문 메시지 보내기
-    @PostMapping("/chatrooms/{chatRoomId}/join-message")
-    public ResponseEntity<?> createJoinMessage(
+    @MessageMapping("/chatRooms/{chatRoomId}/join-message")
+    public void createJoinMessage(
             @Payload ChatRequest.ChatRequestDTO requestDTO,
             @DestinationVariable String chatRoomId) {
 
         chatRoomService.sendJoinRequest(requestDTO, Long.parseLong(chatRoomId));
-
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "JOIN_REQUEST 생성 완료", null));
     }
-
 }
