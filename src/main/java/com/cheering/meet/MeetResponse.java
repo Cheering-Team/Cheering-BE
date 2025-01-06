@@ -25,8 +25,8 @@ public class MeetResponse {
             Long id,
             String title,
             String description,
-            MeetType meetType,
-            ChatRoomResponse.ChatRoomDTO chatRoomDTO,
+            MeetType type,
+            ChatRoomResponse.ChatRoomDTO chatRoom,
             Integer currentCount,
             Integer max,
             Boolean hasTicket,
@@ -38,13 +38,13 @@ public class MeetResponse {
             String place
     ) {
 
-        public MeetInfoDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoomDTO, Team curTeam) { //currentCount
+        public MeetInfoDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoom, Team curTeam) { //currentCount
             this(
                     meet.getId(),
                     meet.getTitle(),
                     meet.getDescription(),
                     meet.getType(),
-                    chatRoomDTO,
+                    chatRoom,
                     currentCount,
                     meet.getMax(),
                     meet.getHasTicket(),
@@ -86,8 +86,8 @@ public class MeetResponse {
     public record MeetDetailDTO(
             String title,
             String description,
-            MeetType meetType,
-            ChatRoomResponse.ChatRoomDTO chatRoomDTO,
+            MeetType type,
+            ChatRoomResponse.ChatRoomDTO chatRoom,
             Integer currentCount,
             Integer max,
             Boolean hasTicket,
@@ -99,12 +99,12 @@ public class MeetResponse {
             String place
     ) {
 
-        public MeetDetailDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoomDTO, MatchResponse.MatchDetailDTO matchDetailDTO, MeetWriterDTO writer) {
+        public MeetDetailDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoom, MatchResponse.MatchDetailDTO matchDetailDTO, MeetWriterDTO writer) {
             this(
                     meet.getTitle(),
                     meet.getDescription(),
                     meet.getType(),
-                    chatRoomDTO,
+                    chatRoom,
                     currentCount,
                     meet.getMax(),
                     meet.getHasTicket(),
