@@ -1,7 +1,7 @@
 package com.cheering.meetfan;
 
 import com.cheering.meet.Meet;
-import com.cheering.meetfan.MeetFan;
+import com.cheering.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +29,9 @@ public interface MeetFanRepository extends JpaRepository<com.cheering.meetfan.Me
     @Modifying
     @Query("DELETE FROM MeetFan mf WHERE mf.meet = :meet")
     void deleteByMeet(@Param("meet") Meet meet);
+
+    @Query("SELECT CASE WHEN COUNT(mf) > 0 THEN true ELSE false END " +
+            "FROM MeetFan mf " +
+            "WHERE mf.meet = :meet AND mf.fan.user = :user")
+    boolean existsByMeetAndFanUser(@Param("meet") Meet meet, @Param("user") User user);
 }

@@ -114,7 +114,6 @@ public class MeetService {
 
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
-
         boolean isMember = fanRepository.existsByCommunityIdAndUser(meet.getCommunityId(), user);
         if (!isMember) {
             throw new CustomException(ExceptionCode.FAN_NOT_FOUND);
@@ -122,7 +121,6 @@ public class MeetService {
 
         MeetFan managerFan = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
-
         Team curTeam = teamRepository.findById(meet.getCommunityId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
 
@@ -130,12 +128,15 @@ public class MeetService {
 
         Fan writer = managerFan.getFan();
 
+        // 사용자의 참여 여부 확인
+        boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
+
         ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meetId, ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
 
         ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
                 confirmChatRoom,
                 currentCount,
-                true
+                isUserParticipating
         );
 
         MatchResponse.MatchDetailDTO matchDetailDTO = meet.getMatch() != null
@@ -207,12 +208,16 @@ public class MeetService {
         List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meetPage.getContent().stream()
                 .map(meet -> {
                     int currentCount = calculateCurrentCount(meet.getId());
+
+                    // 사용자의 참여 여부 확인
+                    boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
+
                     ChatRoomResponse.ChatRoomDTO chatRoomDTO = null;
                     ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
                     chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
                             confirmChatRoom,
                             currentCount,
-                            true
+                            isUserParticipating
                     );
 
                     return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam);
