@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.cheering.meet.MeetRequest.TicketOption.HAS;
@@ -303,9 +304,12 @@ public class MeetService {
 
         ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
 
+        String sessionId = UUID.randomUUID().toString();
+
         ChatSession chatSession = ChatSession.builder()
                 .chatRoom(confirmChatRoom)
                 .fan(userFan)
+                .sessionId(sessionId)
                 .build();
 
         chatSessionRepository.save(chatSession);
