@@ -29,6 +29,7 @@ public enum ExceptionCode {
     CHAT_SESSION_NOT_FOUND(404, "존재하지 않는 세션"),
     APPLY_NOT_FOUND(404, "존재하지 않는 신청"),
     MEET_NOT_FOUND(404, "존재하지 않는 모임"),
+    MEET_FAN_NOT_FOUND(404, "존재하지 않는 모임 참가자"),
 
     // USER
     USER_NOT_FOUND(200, "해당 사용자를 찾을 수 없습니다."),
@@ -77,6 +78,7 @@ public enum ExceptionCode {
     DUPLICATE_MEET(2010, "이미 해당 경기에 대해 생성된 모임이 있습니다."),
     DUPLICATE_CHAT_ROOM(2011, "이미 채팅방이 있습니다."),
     HAS_TICKET_REQUIRED_FOR_LIVE(2012, "직관 모임은 티켓 여부 입력이 필수입니다."),
+    USER_RESTRICTED_FOR_MATCH(2013, "해당 경기에 대한 모임 참여가 제한되었습니다."),
 
     //MATCH
     MATCH_NOT_RELATED_TO_COMMUNITY(403, "커뮤니티와 관련 없는 경기입니다.");
