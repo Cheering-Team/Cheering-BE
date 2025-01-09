@@ -2,6 +2,7 @@ package com.cheering.meet;
 
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.chatRoom.ChatRoomResponse;
+import com.cheering.fan.Fan;
 import com.cheering.match.Match;
 import com.cheering.match.MatchResponse;
 import com.cheering.fan.FanResponse;

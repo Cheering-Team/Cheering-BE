@@ -34,4 +34,6 @@ public interface MeetFanRepository extends JpaRepository<com.cheering.meetfan.Me
             "FROM MeetFan mf " +
             "WHERE mf.meet = :meet AND mf.fan.user = :user")
     boolean existsByMeetAndFanUser(@Param("meet") Meet meet, @Param("user") User user);
+
+    Optional<MeetFan> findByMeetAndFanUser(@Param("meet") Meet meet, @Param("user") User user);
 }
