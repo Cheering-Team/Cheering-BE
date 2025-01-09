@@ -62,11 +62,6 @@ public class MeetService {
             throw new CustomException(ExceptionCode.MATCH_NOT_RELATED_TO_COMMUNITY);
         }
 
-        //boolean alreadyExists = meetRepository.existsByMatchIdAndUser(requestDto.matchId(), user);
-        //if (alreadyExists) {
-        //    throw new CustomException(ExceptionCode.DUPLICATE_MEET);
-        //}
-
         Boolean hasTicket = null;
 
         if (requestDto.type() == MeetType.LIVE) {
@@ -135,6 +130,8 @@ public class MeetService {
 
         Fan writer = managerFan.getFan();
 
+        boolean isManager = managerFan.getFan().getUser().getId().equals(user.getId());
+
         // 사용자의 참여 여부 확인
         boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
 
@@ -167,7 +164,8 @@ public class MeetService {
                         // writer.getGender().toString()
                 ),
                 matchDetailDTO,
-                meet.getPlace()
+                meet.getPlace(),
+                isManager
         );
     }
 
