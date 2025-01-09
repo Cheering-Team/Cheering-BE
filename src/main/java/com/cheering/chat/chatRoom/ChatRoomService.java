@@ -385,7 +385,7 @@ public class ChatRoomService {
         Optional<ChatRoom> existingPrivateRoom = chatRoomRepository.findPrivateChatRoomByParticipantsAndMeet(
                 manager, applicant, ChatRoomType.PRIVATE, meetId);
 
-        // 기존 채팅방이 존재할 경우 채팅방 ID 반환
+        // 기존 채팅방이 존재할 경우 채팅방 ID 반환 (같은 모임)
         if (existingPrivateRoom.isPresent()) {
             return new ChatRoomResponse.IdWithConditionDTO(existingPrivateRoom.get().getId(), true);
         }
@@ -436,6 +436,7 @@ public class ChatRoomService {
 
         return new ChatRoomResponse.IdWithConditionDTO(privateChatRoom.getId(), isConditionMatched);
     }
+
 
     @Transactional(readOnly = true)
     public List<Long> getPrivateChatRoomIdsForManager(Long meetId, User user) {

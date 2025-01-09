@@ -55,17 +55,17 @@ public class MeetService {
         Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
-        boolean alreadyExists = meetRepository.existsByMatchIdAndFanIdAsManager(requestDto.matchId(), fan.getId());
-        if (alreadyExists) {
-            throw new CustomException(ExceptionCode.DUPLICATE_MEET);
-        }
-
         Match match = matchRepository.findById(requestDto.matchId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.MATCH_NOT_FOUND));
 
         if (!isMatchRelatedToCommunity(match, communityId)) {
             throw new CustomException(ExceptionCode.MATCH_NOT_RELATED_TO_COMMUNITY);
         }
+
+        //boolean alreadyExists = meetRepository.existsByMatchIdAndUser(requestDto.matchId(), user);
+        //if (alreadyExists) {
+        //    throw new CustomException(ExceptionCode.DUPLICATE_MEET);
+        //}
 
         Boolean hasTicket = null;
 
@@ -108,6 +108,12 @@ public class MeetService {
         meetFanRepository.save(meetFan);
 
         return new MeetResponse.MeetIdDTO(meet.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public boolean checkExistingMeet(Long matchId, User user) {
+        // 동일한 경기 ID와 사용자의 모임이 있는지 확인
+        return meetRepository.existsByMatchAndMeetFansFanUser(matchId, user);
     }
 
     @Transactional(readOnly = true)
@@ -255,6 +261,21 @@ public class MeetService {
 
         if (!managerFan.getFan().getUser().getId().equals(user.getId())) {
             throw new CustomException(ExceptionCode.USER_FORBIDDEN);
+        }
+
+        Match match = meet.getMatch();
+        // 현재 날짜와 경기를 비교
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime matchTime = match.getTime();
+        boolean isWithinTwoDays = now.isAfter(matchTime.minusDays(2));
+
+        // 이틀 전이 아니면 제한 추가
+        if (isWithinTwoDays) {
+            MatchRestriction restriction = MatchRestriction.builder()
+                    .user(user)
+                    .match(match)
+                    .build();
+            matchRestrictionRepository.save(restriction); // 새로운 제한 저장
         }
 
         meetRepository.delete(meet);

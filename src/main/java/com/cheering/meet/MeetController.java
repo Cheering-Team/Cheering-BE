@@ -157,4 +157,15 @@ public class MeetController {
                 ApiUtils.success(HttpStatus.OK, "모임 참여가 취소되었습니다.", null)
         );
     }
+
+    @GetMapping("/check-existing-meet")
+    public ResponseEntity<?> checkExistingMeet(@RequestParam Long matchId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        User user = userDetails.getUser();
+        boolean exists = meetService.checkExistingMeet(matchId, user);
+
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "기존 모임 확인 완료", exists));
+    }
+
+
 }
