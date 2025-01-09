@@ -97,10 +97,11 @@ public class MeetResponse {
             Integer maxAge,
             MeetWriterDTO writer,
             MatchResponse.MatchDetailDTO match,
-            String place
+            String place,
+            Boolean isManager
     ) {
 
-        public MeetDetailDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoom, MatchResponse.MatchDetailDTO matchDetailDTO, MeetWriterDTO writer) {
+        public MeetDetailDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoom, MatchResponse.MatchDetailDTO matchDetailDTO, MeetWriterDTO writer, Boolean isManager) {
             this(
                     meet.getTitle(),
                     meet.getDescription(),
@@ -114,7 +115,8 @@ public class MeetResponse {
                     meet.getAgeMax(),
                     writer,
                     matchDetailDTO,
-                    meet.getPlace().isEmpty() ? null : meet.getPlace()
+                    meet.getPlace().isEmpty() ? null : meet.getPlace(),
+                    isManager
             );
         }
 
