@@ -47,7 +47,7 @@ public class ChatRoomResponse {
         // 채팅방 내부 정보 (선수)
         public ChatRoomDTO(ChatRoom chatRoom, Integer count, Fan fan, Fan manager, Player player) {
             this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType(), count, new FanResponse.FanDTO(fan), new CommunityResponse.CommunityDTO(player, null, null), manager != null ? new FanResponse.FanDTO(manager) : null, null, null, null, null, chatRoom.getMeet() == null ? null : chatRoom.getMeet().getId());
-        }
+        }:
     }
 
     public record ChatRoomListDTO(List<ChatRoomDTO> chatRooms, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
