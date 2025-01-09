@@ -1,6 +1,7 @@
 package com.cheering.match;
 
 import com.cheering.cheer.Cheer;
+import com.cheering.matchRestriction.MatchRestriction;
 import com.cheering.team.Team;
 import com.cheering.vote.Vote;
 import jakarta.persistence.*;
@@ -52,6 +53,9 @@ public class Match {
 
     @OneToMany(mappedBy = "match", cascade = CascadeType.REMOVE)
     private List<Vote> votes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "match", cascade = CascadeType.REMOVE)
+    private List<MatchRestriction> restrictions = new ArrayList<>();
 
     @Builder
     public Match(MatchStatus status, LocalDateTime time, String location, String radarId, Long homeScore, Long awayScore, Team homeTeam, Team awayTeam) {

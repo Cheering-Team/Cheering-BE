@@ -2,6 +2,7 @@ package com.cheering.meet;
 
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.chatRoom.ChatRoomResponse;
+import com.cheering.fan.Fan;
 import com.cheering.match.Match;
 import com.cheering.match.MatchResponse;
 import com.cheering.fan.FanResponse;
@@ -96,10 +97,11 @@ public class MeetResponse {
             Integer maxAge,
             MeetWriterDTO writer,
             MatchResponse.MatchDetailDTO match,
-            String place
+            String place,
+            Boolean isManager
     ) {
 
-        public MeetDetailDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoom, MatchResponse.MatchDetailDTO matchDetailDTO, MeetWriterDTO writer) {
+        public MeetDetailDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoom, MatchResponse.MatchDetailDTO matchDetailDTO, MeetWriterDTO writer, Boolean isManager) {
             this(
                     meet.getTitle(),
                     meet.getDescription(),
@@ -113,7 +115,8 @@ public class MeetResponse {
                     meet.getAgeMax(),
                     writer,
                     matchDetailDTO,
-                    meet.getPlace().isEmpty() ? null : meet.getPlace()
+                    meet.getPlace().isEmpty() ? null : meet.getPlace(),
+                    isManager
             );
         }
 

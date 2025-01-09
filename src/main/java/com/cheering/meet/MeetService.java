@@ -10,6 +10,8 @@ import com.cheering.fan.FanRepository;
 import com.cheering.match.Match;
 import com.cheering.match.MatchRepository;
 import com.cheering.match.MatchResponse;
+import com.cheering.matchRestriction.MatchRestriction;
+import com.cheering.matchRestriction.MatchRestrictionRepository;
 import com.cheering.meetfan.MeetFan;
 import com.cheering.meetfan.MeetFanRepository;
 import com.cheering.meetfan.MeetFanRole;
@@ -19,16 +21,13 @@ import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -41,6 +40,7 @@ public class MeetService {
 
     private final MeetRepository meetRepository;
     private final MatchRepository matchRepository;
+    private final MatchRestrictionRepository matchRestrictionRepository;
     private final FanRepository fanRepository;
     private final TeamRepository teamRepository;
     private final MeetFanRepository meetFanRepository;
@@ -50,14 +50,10 @@ public class MeetService {
 
     @Transactional
     public MeetResponse.MeetIdDTO createMeet(Long communityId, MeetRequest.CreateMeetDTO requestDto, User user) {
+        validateParticipation(requestDto.matchId(), user);
 
         Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-
-        boolean alreadyExists = meetRepository.existsByMatchIdAndFanIdAsManager(requestDto.matchId(), fan.getId());
-        if (alreadyExists) {
-            throw new CustomException(ExceptionCode.DUPLICATE_MEET);
-        }
 
         Match match = matchRepository.findById(requestDto.matchId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.MATCH_NOT_FOUND));
@@ -110,6 +106,12 @@ public class MeetService {
     }
 
     @Transactional(readOnly = true)
+    public boolean checkExistingMeet(Long matchId, User user) {
+        // 동일한 경기 ID와 사용자의 모임이 있는지 확인
+        return meetRepository.existsByMatchAndMeetFansFanUser(matchId, user);
+    }
+
+    @Transactional(readOnly = true)
     public MeetResponse.MeetDetailDTO getMeetDetail(Long meetId, User user) {
 
         Meet meet = meetRepository.findById(meetId)
@@ -127,6 +129,8 @@ public class MeetService {
         int currentCount = meetFanRepository.countByMeet(meet);
 
         Fan writer = managerFan.getFan();
+
+        boolean isManager = managerFan.getFan().getUser().getId().equals(user.getId());
 
         // 사용자의 참여 여부 확인
         boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
@@ -160,7 +164,8 @@ public class MeetService {
                         // writer.getGender().toString()
                 ),
                 matchDetailDTO,
-                meet.getPlace()
+                meet.getPlace(),
+                isManager
         );
     }
 
@@ -256,6 +261,21 @@ public class MeetService {
             throw new CustomException(ExceptionCode.USER_FORBIDDEN);
         }
 
+        Match match = meet.getMatch();
+        // 현재 날짜와 경기를 비교
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime matchTime = match.getTime();
+        boolean isWithinTwoDays = now.isAfter(matchTime.minusDays(2));
+
+        // 이틀 전이 아니면 제한 추가
+        if (isWithinTwoDays) {
+            MatchRestriction restriction = MatchRestriction.builder()
+                    .user(user)
+                    .match(match)
+                    .build();
+            matchRestrictionRepository.save(restriction); // 새로운 제한 저장
+        }
+
         meetRepository.delete(meet);
     }
 
@@ -296,6 +316,8 @@ public class MeetService {
             throw new CustomException(ExceptionCode.MEET_NOT_FOUND);
         }
 
+        validateParticipation(meet.getMatch().getId(), user);
+
         Fan userFan = fanRepository.findByCommunityIdAndUser(privateChatRoom.getCommunityId(), user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
@@ -318,6 +340,54 @@ public class MeetService {
                 .build();
 
         chatSessionRepository.save(chatSession);
+    }
+
+    // 모임 참여 취소
+    @Transactional
+    public void cancelMeetParticipation(Long meetId, User user) {
+
+        Meet meet = meetRepository.findById(meetId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
+
+        Match match = meet.getMatch();
+        if (match == null) {
+            throw new CustomException(ExceptionCode.MATCH_NOT_FOUND);
+        }
+
+        MeetFan meetFan = meetFanRepository.findByMeetAndFanUser(meet, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        // 현재 날짜와 경기를 비교
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime matchTime = match.getTime();
+        boolean isWithinTwoDays = now.isAfter(matchTime.minusDays(2));
+
+        // 사용자가 이미 해당 경기에서 제한된 상태인지 확인
+        boolean isRestricted = matchRestrictionRepository.existsByMatchIdAndUser(match.getId(), user);
+        if (isRestricted) {
+            throw new CustomException(ExceptionCode.USER_RESTRICTED_FOR_MATCH);
+        }
+
+        meetFanRepository.delete(meetFan);
+
+        // 이틀 전이 아니면 제한 추가
+        if (isWithinTwoDays) {
+            MatchRestriction restriction = MatchRestriction.builder()
+                    .user(user)
+                    .match(match)
+                    .build();
+            matchRestrictionRepository.save(restriction); // 새로운 제한 저장
+        }
+    }
+
+    // 경기 제한 검증
+    @Transactional
+    public void validateParticipation(Long matchId, User user) {
+        // 경기 제한 여부 확인
+        boolean isRestricted = matchRestrictionRepository.existsByMatchIdAndUser(matchId, user);
+        if (isRestricted) {
+            throw new CustomException(ExceptionCode.USER_RESTRICTED_FOR_MATCH);
+        }
     }
 
 }
