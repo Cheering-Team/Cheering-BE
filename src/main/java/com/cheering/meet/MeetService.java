@@ -15,6 +15,8 @@ import com.cheering.matchRestriction.MatchRestrictionRepository;
 import com.cheering.meetfan.MeetFan;
 import com.cheering.meetfan.MeetFanRepository;
 import com.cheering.meetfan.MeetFanRole;
+import com.cheering.player.Player;
+import com.cheering.player.PlayerRepository;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -43,6 +46,7 @@ public class MeetService {
     private final MatchRestrictionRepository matchRestrictionRepository;
     private final FanRepository fanRepository;
     private final TeamRepository teamRepository;
+    private final PlayerRepository playerRepository;
     private final MeetFanRepository meetFanRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomService chatRoomService;
@@ -123,8 +127,6 @@ public class MeetService {
 
         MeetFan managerFan = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
-        Team curTeam = teamRepository.findById(meet.getCommunityId())
-                .orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
 
         int currentCount = meetFanRepository.countByMeet(meet);
 
@@ -176,8 +178,8 @@ public class MeetService {
             throw new CustomException(ExceptionCode.FAN_NOT_FOUND);
         }
 
-        Team curTeam = teamRepository.findById(communityId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+        Optional<Team> optionalTeam = teamRepository.findById(communityId);
+        Optional<Player> optionalPlayer = playerRepository.findById(communityId);
 
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -224,8 +226,14 @@ public class MeetService {
                             currentCount,
                             isUserParticipating
                     );
-
-                    return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam);
+                    if (optionalTeam.isPresent()) {
+                        Team curTeam = optionalTeam.get();
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam);
+                    } else {
+                        Player player = optionalPlayer.get();
+                        Team firstTeam = player.getFirstTeam();
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam);
+                    }
                 })
                 .collect(Collectors.toList());
 
