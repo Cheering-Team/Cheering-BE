@@ -29,10 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.cheering.meet.MeetRequest.TicketOption.HAS;
@@ -98,11 +95,12 @@ public class MeetService {
         meetRepository.save(meet);
 
         chatRoomService.createConfirmedChatRoom(communityId, meet, requestDto.max(), user);
-
+        String managerNickname = "모임장";
         MeetFan meetFan = MeetFan.builder()
                 .role(MeetFanRole.MANAGER)
                 .meet(meet)
                 .fan(fan)
+                .nickname(managerNickname)
                 .build();
 
         meetFanRepository.save(meetFan);
@@ -333,7 +331,9 @@ public class MeetService {
 
         Integer currentCount = meetFanRepository.countByMeet(meet);
 
-        String nickname = generateNickname(currentCount + 1);
+        // 방장은 "모임장"으로 닉네임 설정, 멤버는 A, B, C 순으로 닉네임 설정
+        String nickname = userFan.equals(meet.getManager()) ? "모임장" : generateNickname(currentCount);
+
 
         MeetFan meetFan = MeetFan.builder()
                 .meet(meet)
@@ -342,8 +342,6 @@ public class MeetService {
                 .build();
         // 닉네임 저장
         meetFan.setNickname(nickname);
-        meetFanRepository.save(meetFan);
-
         meetFanRepository.save(meetFan);
 
         ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
@@ -454,10 +452,33 @@ public class MeetService {
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
 
-        List<MeetFan> members = meetFanRepository.findAllByMeet(meet);
+        List<MeetFan> meetFans = meetFanRepository.findAllByMeet(meet);
 
-        return members.stream()
-                .map(MeetResponse.MeetMemberDTO::new)
+        MeetFan manager = meetFans.stream()
+                .filter(meetFan -> meetFan.getRole() == MeetFanRole.MANAGER)
+                .findFirst()
+                .orElseThrow(() -> new CustomException(ExceptionCode.MANAGER_NOT_FOUND));
+
+        List<MeetFan> members = meetFans.stream()
+                .filter(meetFan -> meetFan.getRole() != MeetFanRole.MANAGER)
+                .sorted(Comparator.comparing(MeetFan::getNickname)) // 닉네임 기준 정렬
+                .collect(Collectors.toList());
+
+        List<MeetFan> sortedMeetFans = new ArrayList<>();
+        sortedMeetFans.add(manager);
+        sortedMeetFans.addAll(members);
+
+        int currentYear = java.time.Year.now().getValue();
+
+        return sortedMeetFans.stream()
+                .map(meetFan -> new MeetResponse.MeetMemberDTO(
+                        meetFan.getId(),
+                        meetFan.getFan().getUser().getId(),
+                        currentYear - meetFan.getFan().getUser().getAge(),
+                        meetFan.getFan().getUser().getGender(),
+                        meetFan.getRole().toString(),
+                        meetFan.getNickname()
+                ))
                 .collect(Collectors.toList());
     }
 
