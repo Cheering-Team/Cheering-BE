@@ -174,4 +174,10 @@ public class MeetController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "내가 참여하는 모든 모임 조회 완료", myMeets));
     }
 
+    @GetMapping("/meets/{meetId}/members")
+    public ResponseEntity<?> getMeetMembers(@PathVariable Long meetId) {
+
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 멤버 조회 완료", meetService.findAllMembersByMeet(meetId)));
+    }
+
 }

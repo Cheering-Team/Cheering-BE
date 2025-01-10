@@ -6,6 +6,7 @@ import com.cheering.fan.Fan;
 import com.cheering.match.Match;
 import com.cheering.match.MatchResponse;
 import com.cheering.fan.FanResponse;
+import com.cheering.meetfan.MeetFan;
 import com.cheering.team.Team;
 import com.cheering.user.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -139,5 +140,26 @@ public class MeetResponse {
             }
         }
     }
+
+    public record MeetMemberDTO(
+            Long meetFanId,
+            Long userId,
+            Integer userAge,
+            Gender userGender,
+            String role,
+            String nickname // 추가된 필드
+    ) {
+        public MeetMemberDTO(MeetFan meetFan) {
+            this(
+                    meetFan.getId(),
+                    meetFan.getFan().getUser().getId(),
+                    meetFan.getFan().getUser().getAge(),
+                    meetFan.getFan().getUser().getGender(),
+                    meetFan.getRole().toString(),
+                    meetFan.getNickname()
+            );
+        }
+    }
+
 
 }
