@@ -7,6 +7,7 @@ import com.cheering.match.Match;
 import com.cheering.match.MatchResponse;
 import com.cheering.fan.FanResponse;
 import com.cheering.team.Team;
+import com.cheering.user.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -85,6 +86,7 @@ public class MeetResponse {
 
     // Meet 상세 정보 DTO
     public record MeetDetailDTO(
+            Long id,
             String title,
             String description,
             MeetType type,
@@ -103,6 +105,7 @@ public class MeetResponse {
 
         public MeetDetailDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoom, MatchResponse.MatchDetailDTO matchDetailDTO, MeetWriterDTO writer, Boolean isManager) {
             this(
+                    meet.getId(),
                     meet.getTitle(),
                     meet.getDescription(),
                     meet.getType(),
@@ -121,9 +124,20 @@ public class MeetResponse {
         }
 
         // 작성자 정보 DTO
-        //public record MeetWriterDTO(Long id, int age, String gender) { }
         @Schema(description = "모임 작성자")
-        public record MeetWriterDTO(Long id) { }
+        public record MeetWriterDTO(
+                Long id, // 작성자 ID
+                Integer age, // 작성자 나이
+                Gender gender // 작성자 성별
+        ) {
+            public MeetWriterDTO(Fan fan) {
+                this(
+                        fan.getId(),
+                        fan.getUser().getAge(),
+                        fan.getUser().getGender()
+                );
+            }
+        }
     }
 
 }

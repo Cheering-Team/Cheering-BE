@@ -2,6 +2,8 @@ package com.cheering.meetfan;
 
 import com.cheering.meet.Meet;
 import com.cheering.user.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -36,4 +38,8 @@ public interface MeetFanRepository extends JpaRepository<com.cheering.meetfan.Me
     boolean existsByMeetAndFanUser(@Param("meet") Meet meet, @Param("user") User user);
 
     Optional<MeetFan> findByMeetAndFanUser(@Param("meet") Meet meet, @Param("user") User user);
+
+    @Query("SELECT mf FROM MeetFan mf JOIN mf.meet m JOIN m.match mt WHERE mf.fan.user = :user ORDER BY mt.time ASC")
+    Page<MeetFan> findByFanUserOrderByMatchTime(User user, Pageable pageable);
+
 }

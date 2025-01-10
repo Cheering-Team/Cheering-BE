@@ -2,8 +2,6 @@ package com.cheering.meet;
 
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
-import com.cheering.chat.chatRoom.ChatRoomResponse;
-import com.cheering.chat.chatRoom.ChatRoomService;
 import com.cheering.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,12 +12,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -167,5 +166,12 @@ public class MeetController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "기존 모임 확인 완료", exists));
     }
 
+    @GetMapping("/meets/my")
+    public ResponseEntity<?> findMyMeets(MeetRequest.MeetSearchRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        User user = userDetails.getUser();
+        MeetResponse.MeetListDTO myMeets = meetService.findAllMyMeets(request, user);
+
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "내가 참여하는 모든 모임 조회 완료", myMeets));
+    }
 
 }
