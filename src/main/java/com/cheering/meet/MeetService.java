@@ -5,6 +5,7 @@ import com.cheering._core.errors.ExceptionCode;
 import com.cheering.chat.chatRoom.*;
 import com.cheering.chat.session.ChatSession;
 import com.cheering.chat.session.ChatSessionRepository;
+import com.cheering.fan.CommunityType;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanRepository;
 import com.cheering.match.Match;
@@ -397,6 +398,48 @@ public class MeetService {
         if (isRestricted) {
             throw new CustomException(ExceptionCode.USER_RESTRICTED_FOR_MATCH);
         }
+    }
+
+    // 참여 중인 모든 모임 조회하기
+    @Transactional(readOnly = true)
+    public MeetResponse.MeetListDTO findAllMyMeets(MeetRequest.MeetSearchRequest request, User user) {
+
+        PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
+
+        // 요청한 사용자가 참여 중인 모든 모임 조회
+        Page<MeetFan> meetFanPage = meetFanRepository.findByFanUserOrderByMatchTime(user, pageRequest);
+
+        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meetFanPage.getContent().stream()
+                .map(meetFan -> {
+                    Meet meet = meetFan.getMeet();
+
+                    int currentCount = calculateCurrentCount(meet.getId());
+
+                    boolean isUserParticipating = true;
+
+                    ChatRoomResponse.ChatRoomDTO chatRoomDTO = null;
+                    ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM)
+                            .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+                    chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
+                            confirmChatRoom,
+                            currentCount,
+                            isUserParticipating
+                    );
+
+                    if (meet.getCommunityType() == CommunityType.TEAM) {
+                        Team curTeam = teamRepository.findById(meet.getCommunityId())
+                                .orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam);
+                    } else {
+                        Player player = playerRepository.findById(meet.getCommunityId())
+                                .orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+                        Team firstTeam = player.getFirstTeam();
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam);
+                    }
+                })
+                .collect(Collectors.toList());
+
+        return new MeetResponse.MeetListDTO(meetFanPage, meetInfoDTOs);
     }
 
 }
