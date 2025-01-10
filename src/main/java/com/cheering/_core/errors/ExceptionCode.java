@@ -30,6 +30,7 @@ public enum ExceptionCode {
     APPLY_NOT_FOUND(404, "존재하지 않는 신청"),
     MEET_NOT_FOUND(404, "존재하지 않는 모임"),
     MEET_FAN_NOT_FOUND(404, "존재하지 않는 모임 참가자"),
+    MANAGER_NOT_FOUND(404, "모임장이 존재하지 않습니다."),
 
     // USER
     USER_NOT_FOUND(200, "해당 사용자를 찾을 수 없습니다."),
