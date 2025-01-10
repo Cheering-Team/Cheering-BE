@@ -150,6 +150,7 @@ public class MeetService {
                 : null;
 
         return new MeetResponse.MeetDetailDTO(
+                meetId,
                 meet.getTitle(),
                 meet.getDescription(),
                 meet.getType(),
@@ -161,9 +162,9 @@ public class MeetService {
                 meet.getAgeMin(),
                 meet.getAgeMax(),
                 new MeetResponse.MeetDetailDTO.MeetWriterDTO(
-                        writer.getId()
-                        // writer.getAge(),
-                        // writer.getGender().toString()
+                        writer.getId(),
+                        writer.getUser().getAge(),
+                        writer.getUser().getGender()
                 ),
                 matchDetailDTO,
                 meet.getPlace(),
