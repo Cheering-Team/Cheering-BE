@@ -180,7 +180,7 @@ public class MeetController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 멤버 조회 완료", meetService.findAllMembersByMeet(meetId)));
     }
 
-    @GetMapping("/community/{communityId}/meets/my")
+    @GetMapping("/community/{communityId}/meets/my-confirmed")
     public ResponseEntity<?> getMyConfirmedMeetsInCommunity(MeetRequest.MeetSearchRequest request, @PathVariable Long communityId, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         User user = userDetails.getUser();
@@ -188,6 +188,15 @@ public class MeetController {
         MeetResponse.MeetListDTO meetList = meetService.findMyConfirmedMeetsInCommunity(request, communityId, user);
 
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "특정 커뮤니티 내 참여 확정 모임 조회 완료", meetList));
+    }
+
+    @GetMapping("/community/{communityId}/meets/my-all")
+    public ResponseEntity<?> findAllMyMeetsWithPrivateChats(MeetRequest.MeetSearchRequest request, @RequestParam Long communityId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        User user = userDetails.getUser();
+        MeetResponse.MeetListDTO response = meetService.findAllMyMeetsWithPrivateChats(request, communityId, user);
+
+        return ResponseEntity.ok(response);
     }
 
 }
