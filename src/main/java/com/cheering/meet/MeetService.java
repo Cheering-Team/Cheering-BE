@@ -148,6 +148,8 @@ public class MeetService {
                 ? new MatchResponse.MatchDetailDTO(meet.getMatch())
                 : null;
 
+        int currentYear = java.time.Year.now().getValue();
+
         return new MeetResponse.MeetDetailDTO(
                 meetId,
                 meet.getTitle(),
@@ -162,7 +164,7 @@ public class MeetService {
                 meet.getAgeMax(),
                 new MeetResponse.MeetDetailDTO.MeetWriterDTO(
                         writer.getId(),
-                        writer.getUser().getAge(),
+                        currentYear - writer.getUser().getAge() + 1,
                         writer.getUser().getGender()
                 ),
                 matchDetailDTO,
@@ -474,7 +476,7 @@ public class MeetService {
                 .map(meetFan -> new MeetResponse.MeetMemberDTO(
                         meetFan.getId(),
                         meetFan.getFan().getUser().getId(),
-                        currentYear - meetFan.getFan().getUser().getAge(),
+                        currentYear - meetFan.getFan().getUser().getAge() + 1,
                         meetFan.getFan().getUser().getGender(),
                         meetFan.getRole().toString(),
                         meetFan.getNickname()
@@ -491,4 +493,43 @@ public class MeetService {
         }
         return nickname.toString();
     }
+
+    @Transactional(readOnly = true)
+    public MeetResponse.MeetListDTO findMyConfirmedMeetsInCommunity(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
+        PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
+
+        // 요청한 커뮤니티에서 사용자의 참여 확정된 모임 조회
+        Page<Meet> meetPage = meetRepository.findConfirmedMeetsByCommunityAndUser(communityId, user, pageRequest);
+
+        Optional<Team> optionalTeam = teamRepository.findById(communityId);
+        Optional<Player> optionalPlayer = playerRepository.findById(communityId);
+
+        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meetPage.getContent().stream()
+                .map(meet -> {
+                    int currentCount = calculateCurrentCount(meet.getId());
+
+                    // 사용자의 참여 여부 확인
+                    boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
+
+                    ChatRoomResponse.ChatRoomDTO chatRoomDTO = null;
+                    ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+                    chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
+                            confirmChatRoom,
+                            currentCount,
+                            isUserParticipating
+                    );
+                    if (optionalTeam.isPresent()) {
+                        Team curTeam = optionalTeam.get();
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam);
+                    } else {
+                        Player player = optionalPlayer.get();
+                        Team firstTeam = player.getFirstTeam();
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam);
+                    }
+                })
+                .collect(Collectors.toList());
+
+        return new MeetResponse.MeetListDTO(meetPage, meetInfoDTOs);
+    }
+
 }
