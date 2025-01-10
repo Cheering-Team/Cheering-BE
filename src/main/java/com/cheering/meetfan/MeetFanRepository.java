@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MeetFanRepository extends JpaRepository<com.cheering.meetfan.MeetFan, Long> {
@@ -42,4 +43,6 @@ public interface MeetFanRepository extends JpaRepository<com.cheering.meetfan.Me
     @Query("SELECT mf FROM MeetFan mf JOIN mf.meet m JOIN m.match mt WHERE mf.fan.user = :user ORDER BY mt.time ASC")
     Page<MeetFan> findByFanUserOrderByMatchTime(User user, Pageable pageable);
 
+    @Query("SELECT mf FROM MeetFan mf WHERE mf.meet = :meet")
+    List<MeetFan> findAllByMeet(@Param("meet") Meet meet);
 }

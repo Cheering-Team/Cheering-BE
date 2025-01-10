@@ -331,11 +331,18 @@ public class MeetService {
         Fan userFan = fanRepository.findByCommunityIdAndUser(privateChatRoom.getCommunityId(), user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
+        Integer currentCount = meetFanRepository.countByMeet(meet);
+
+        String nickname = generateNickname(currentCount + 1);
+
         MeetFan meetFan = MeetFan.builder()
                 .meet(meet)
                 .fan(userFan)
                 .role(MeetFanRole.MEMBER)
                 .build();
+        // 닉네임 저장
+        meetFan.setNickname(nickname);
+        meetFanRepository.save(meetFan);
 
         meetFanRepository.save(meetFan);
 
@@ -442,4 +449,25 @@ public class MeetService {
         return new MeetResponse.MeetListDTO(meetFanPage, meetInfoDTOs);
     }
 
+    @Transactional(readOnly = true)
+    public List<MeetResponse.MeetMemberDTO> findAllMembersByMeet(Long meetId) {
+        Meet meet = meetRepository.findById(meetId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
+
+        List<MeetFan> members = meetFanRepository.findAllByMeet(meet);
+
+        return members.stream()
+                .map(MeetResponse.MeetMemberDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public static String generateNickname(int order) {
+        StringBuilder nickname = new StringBuilder();
+        order--; // 0-based index
+        while (order >= 0) {
+            nickname.insert(0, (char) ('A' + (order % 26)));
+            order = (order / 26) - 1;
+        }
+        return nickname.toString();
+    }
 }
