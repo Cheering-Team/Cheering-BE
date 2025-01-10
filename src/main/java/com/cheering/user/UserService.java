@@ -435,7 +435,7 @@ public class UserService {
 
         // 현재 나이 계산
         int currentYear = java.time.Year.now().getValue();
-        int currentAge = currentYear - user.getAge();
+        int currentAge = currentYear - user.getAge() + 1;
 
         return new UserResponse.AgeAndGenderDTO(userId, currentAge, user.getGender());
     }
