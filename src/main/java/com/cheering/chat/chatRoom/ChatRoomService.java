@@ -439,15 +439,47 @@ public class ChatRoomService {
 
 
     @Transactional(readOnly = true)
-    public List<Long> getPrivateChatRoomIdsForManager(Long meetId, User user) {
+    public List<ChatRoomResponse.ChatRoomDTO> getPrivateChatRoomsForManager(Long meetId, User user) {
 
+        // 모임의 매니저 확인
         MeetFan manager = meetFanRepository.findByMeetIdAndRole(meetId, MeetFanRole.MANAGER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        List<Long> privateChatRoomIds = chatRoomRepository.findPrivateChatRoomIdsByManagerAndMeet(manager.getFan().getId(), ChatRoomType.PRIVATE, meetId);
+        // 채팅 메시지가 있는 1:1 대화방 조회
+        List<ChatRoom> privateChatRooms = chatRoomRepository.findPrivateChatRoomsWithMessages(
+                manager.getFan().getId(),
+                ChatRoomType.PRIVATE,
+                meetId,
+                ChatType.MESSAGE
+        );
 
-        return privateChatRoomIds;
+        return privateChatRooms.stream().map(chatRoom -> {
+            ChatSession chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoom.getId(), user)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
+
+            // 마지막 메시지 가져오기
+            Pageable pageable = PageRequest.of(0, 1);
+            List<Chat> chats = chatRepository.findLastChat(chatRoom, ChatType.MESSAGE, pageable);
+            String lastMessage = chats.isEmpty() ? null : chats.get(0).getContent();
+            LocalDateTime lastMessageTime = chats.isEmpty() ? null : chats.get(0).getCreatedAt();
+
+            // 읽지 않은 메시지 개수
+            Integer unreadCount = chatRepository.countUnreadMessages(chatRoom, ChatType.MESSAGE, chatSession.getLastExitTime());
+
+            // 현재 대화방 참가자 수
+            Integer count = chatSessionRepository.countByChatRoom(chatRoom);
+
+            return new ChatRoomResponse.ChatRoomDTO(
+                    chatRoom,
+                    count,
+                    true,
+                    lastMessage,
+                    lastMessageTime,
+                    unreadCount
+            );
+        }).toList();
     }
+
 
     @Transactional
     public void sendJoinRequest(ChatRequest.ChatRequestDTO requestDTO, Long chatRoomId) {

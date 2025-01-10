@@ -1,5 +1,6 @@
 package com.cheering.chat.chatRoom;
 
+import com.cheering.chat.ChatType;
 import com.cheering.player.Player;
 import com.cheering.fan.Fan;
 import com.cheering.user.User;
@@ -66,8 +67,19 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
             @Param("meetId") Long meetId
     );
 
-    @Query("SELECT c.id FROM ChatRoom c WHERE c.manager.id = :managerId AND c.type = :type AND c.meet.id = :meetId")
-    List<Long> findPrivateChatRoomIdsByManagerAndMeet(@Param("managerId") Long managerId, @Param("type") ChatRoomType type, @Param("meetId") Long meetId);
+    @Query("""
+    SELECT c FROM ChatRoom c
+    WHERE c.manager.id = :managerId
+    AND c.type = :chatRoomType
+    AND c.meet.id = :meetId
+    AND EXISTS (
+        SELECT 1 FROM Chat ch
+        WHERE ch.chatRoom = c
+        AND ch.type = :chatType
+    )
+""")
+    List<ChatRoom> findPrivateChatRoomsWithMessages(Long managerId, ChatRoomType chatRoomType, Long meetId, ChatType chatType);
+
 
 
 
