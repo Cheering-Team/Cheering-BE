@@ -194,9 +194,9 @@ public class MeetController {
     public ResponseEntity<?> findAllMyMeetsWithPrivateChats(MeetRequest.MeetSearchRequest request, @PathVariable Long communityId, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         User user = userDetails.getUser();
-        MeetResponse.MeetListDTO response = meetService.findAllMyMeetsWithPrivateChats(request, communityId, user);
+        MeetResponse.MeetListDTO meets = meetService.findAllMyMeetsWithPrivateChats(request, communityId, user);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "특정 커뮤니티의 확정된 모임과 1:1채팅중인 모임 목록 조회 완료", meets));
     }
 
 }

@@ -2,6 +2,7 @@ package com.cheering.meet;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
+import com.cheering.chat.ChatType;
 import com.cheering.chat.chatRoom.*;
 import com.cheering.chat.session.ChatSession;
 import com.cheering.chat.session.ChatSessionRepository;
@@ -542,9 +543,9 @@ public class MeetService {
         Page<Meet> confirmedMeets = meetRepository.findConfirmedMeetsByCommunityAndUser(communityId, user, pageRequest);
 
         // 1:1 대화방이 있는 모임 조회
-        Page<Meet> privateChatRoomMeets = meetRepository.findPrivateChatRoomMeetsByCommunityAndUser(user, communityId, ChatRoomType.PRIVATE, pageRequest);
+        Page<Meet> privateChatRoomMeets = meetRepository.findPrivateChatRoomMeetsWithChatsByCommunityAndUser(user, communityId, ChatRoomType.PRIVATE, ChatType.MESSAGE, pageRequest);
 
-        // 두 페이지의 콘텐츠 합치기
+        // 합치기
         List<Meet> combinedMeets = Stream.concat(
                         confirmedMeets.getContent().stream(),
                         privateChatRoomMeets.getContent().stream()
