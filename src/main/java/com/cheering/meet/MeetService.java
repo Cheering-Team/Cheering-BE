@@ -23,6 +23,7 @@ import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.cheering.meet.MeetRequest.TicketOption.HAS;
 import static com.cheering.meet.MeetRequest.TicketOption.NOT;
@@ -531,5 +533,62 @@ public class MeetService {
 
         return new MeetResponse.MeetListDTO(meetPage, meetInfoDTOs);
     }
+
+    @Transactional(readOnly = true)
+    public MeetResponse.MeetListDTO findAllMyMeetsWithPrivateChats(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
+        PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
+
+        // 확정된 모임 조회
+        Page<Meet> confirmedMeets = meetRepository.findConfirmedMeetsByCommunityAndUser(communityId, user, pageRequest);
+
+        // 1:1 대화방이 있는 모임 조회
+        Page<Meet> privateChatRoomMeets = meetRepository.findPrivateChatRoomMeetsByCommunityAndUser(user, communityId, ChatRoomType.PRIVATE, pageRequest);
+
+        // 두 페이지의 콘텐츠 합치기
+        List<Meet> combinedMeets = Stream.concat(
+                        confirmedMeets.getContent().stream(),
+                        privateChatRoomMeets.getContent().stream()
+                ).distinct().sorted(Comparator.comparing(m -> m.getMatch().getTime()))
+                .toList();
+
+        // 페이징 처리
+        int start = request.getPage() * request.getSize();
+        int end = Math.min(start + request.getSize(), combinedMeets.size());
+        List<Meet> pagedMeetList = combinedMeets.subList(start, end);
+
+        Page<Meet> pagedMeets = new PageImpl<>(pagedMeetList, pageRequest, pagedMeetList.size());
+
+        // DTO 변환
+        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = pagedMeets.stream()
+                .map(meet -> {
+                    boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
+
+                    int currentCount = calculateCurrentCount(meet.getId());
+
+                    ChatRoomResponse.ChatRoomDTO chatRoomDTO = null;
+                    ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM)
+                            .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+                    chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
+                            confirmChatRoom,
+                            currentCount,
+                            isUserParticipating
+                    );
+
+                    if (meet.getCommunityType() == CommunityType.TEAM) {
+                        Team curTeam = teamRepository.findById(meet.getCommunityId())
+                                .orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam);
+                    } else {
+                        Player player = playerRepository.findById(meet.getCommunityId())
+                                .orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+                        Team firstTeam = player.getFirstTeam();
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam);
+                    }
+                })
+                .toList();
+
+        return new MeetResponse.MeetListDTO(pagedMeets, meetInfoDTOs);
+    }
+
 
 }

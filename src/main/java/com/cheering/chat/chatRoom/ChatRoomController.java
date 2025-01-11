@@ -115,10 +115,11 @@ public class  ChatRoomController {
 
     // 특정 모임에 대해 온 1:1 채팅방 목록 조회
     @GetMapping("/meets/{meetId}/private")
-    public ResponseEntity<?> getPrivateChatRoomIdsForManager(
+    public ResponseEntity<?> getPrivateChatRoomsForManager(
             @PathVariable Long meetId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 목록 조회 완료", chatRoomService.getPrivateChatRoomIdsForManager(meetId, userDetails.getUser())));
+
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 목록 조회 완료", chatRoomService.getPrivateChatRoomsForManager(meetId, userDetails.getUser())));
     }
 
 

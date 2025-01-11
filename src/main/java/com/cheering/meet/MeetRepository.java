@@ -1,5 +1,6 @@
 package com.cheering.meet;
 
+import com.cheering.chat.chatRoom.ChatRoomType;
 import com.cheering.meetfan.MeetFanRole;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,5 +51,14 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
 
     @Query("SELECT mf.meet FROM MeetFan mf JOIN mf.meet m WHERE mf.fan.user = :user AND m.communityId = :communityId ORDER BY m.match.time ASC")
     Page<Meet> findConfirmedMeetsByCommunityAndUser(Long communityId, User user, Pageable pageable);
+
+    @Query("SELECT m FROM ChatRoom cr JOIN cr.meet m JOIN m.match mt WHERE cr.type = :chatRoomType AND cr.communityId = :communityId AND EXISTS (SELECT 1 FROM ChatSession cs " +
+            "JOIN cs.fan f WHERE cs.chatRoom = cr AND f.user = :user) ORDER BY mt.time ASC")
+    Page<Meet> findPrivateChatRoomMeetsByCommunityAndUser(
+            User user,
+            Long communityId,
+            ChatRoomType chatRoomType,
+            Pageable pageable
+    );
 
 }
