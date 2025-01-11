@@ -533,32 +533,33 @@ public class MeetService {
 
         return new MeetResponse.MeetListDTO(meetPage, meetInfoDTOs);
     }
+
     @Transactional(readOnly = true)
     public MeetResponse.MeetListDTO findAllMyMeetsWithPrivateChats(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
-
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
 
-        // 요청한 사용자가 참여 중인 모든 모임 조회 (확정된 모임)
+        // 확정된 모임 조회
         Page<Meet> confirmedMeets = meetRepository.findConfirmedMeetsByCommunityAndUser(communityId, user, pageRequest);
 
-        // 사용자가 참여 중인 1:1 대화방 있는 모임 조회
+        // 1:1 대화방이 있는 모임 조회
         Page<Meet> privateChatRoomMeets = meetRepository.findPrivateChatRoomMeetsByCommunityAndUser(user, communityId, ChatRoomType.PRIVATE, pageRequest);
 
-        // 두 목록을 병합하고 중복 제거 (경기 일정 순으로 정렬)
-        Set<Meet> combinedMeetSet = new TreeSet<>(Comparator.comparing(m -> m.getMatch().getTime()));
-        combinedMeetSet.addAll(confirmedMeets.getContent());
-        combinedMeetSet.addAll(privateChatRoomMeets.getContent());
+        // 두 페이지의 콘텐츠 합치기
+        List<Meet> combinedMeets = Stream.concat(
+                        confirmedMeets.getContent().stream(),
+                        privateChatRoomMeets.getContent().stream()
+                ).distinct().sorted(Comparator.comparing(m -> m.getMatch().getTime()))
+                .toList();
 
-        // 병합된 목록을 다시 Page로 변환
-        List<Meet> combinedMeetList = new ArrayList<>(combinedMeetSet);
-        int start = (int) pageRequest.getOffset();
-        int end = Math.min((start + pageRequest.getPageSize()), combinedMeetList.size());
-        List<Meet> pagedMeetList = combinedMeetList.subList(start, end);
+        // 페이징 처리
+        int start = request.getPage() * request.getSize();
+        int end = Math.min(start + request.getSize(), combinedMeets.size());
+        List<Meet> pagedMeetList = combinedMeets.subList(start, end);
 
-        Page<Meet> pagedMeets = new PageImpl<>(pagedMeetList, pageRequest, combinedMeetList.size());
+        Page<Meet> pagedMeets = new PageImpl<>(pagedMeetList, pageRequest, pagedMeetList.size());
 
         // DTO 변환
-        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = pagedMeets.getContent().stream()
+        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = pagedMeets.stream()
                 .map(meet -> {
                     boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
 

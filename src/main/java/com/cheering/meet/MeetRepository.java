@@ -52,12 +52,13 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
     @Query("SELECT mf.meet FROM MeetFan mf JOIN mf.meet m WHERE mf.fan.user = :user AND m.communityId = :communityId ORDER BY m.match.time ASC")
     Page<Meet> findConfirmedMeetsByCommunityAndUser(Long communityId, User user, Pageable pageable);
 
-    @Query("SELECT DISTINCT c.meet FROM ChatRoom c " +
-            "WHERE c.type = :chatRoomType " +
-            "AND c.communityId = :communityId " +
-            "AND EXISTS (SELECT 1 FROM ChatSession cs WHERE cs.chatRoom = c AND cs.fan.user = :user) " +
-            "ORDER BY c.meet.match.time ASC")
-    Page<Meet> findPrivateChatRoomMeetsByCommunityAndUser(User user, Long communityId, ChatRoomType chatRoomType, Pageable pageable);
-
+    @Query("SELECT m FROM ChatRoom cr JOIN cr.meet m JOIN m.match mt WHERE cr.type = :chatRoomType AND cr.communityId = :communityId AND EXISTS (SELECT 1 FROM ChatSession cs " +
+            "JOIN cs.fan f WHERE cs.chatRoom = cr AND f.user = :user) ORDER BY mt.time ASC")
+    Page<Meet> findPrivateChatRoomMeetsByCommunityAndUser(
+            User user,
+            Long communityId,
+            ChatRoomType chatRoomType,
+            Pageable pageable
+    );
 
 }
