@@ -80,8 +80,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 """)
     List<ChatRoom> findPrivateChatRoomsWithMessages(Long managerId, ChatRoomType chatRoomType, Long meetId, ChatType chatType);
 
-
-
-
-
+    @Query("SELECT COUNT(c) FROM ChatRoom c WHERE c.meet.id = :meetId AND c.type = :chatRoomType")
+    int countPrivateChatRoomsByMeetId(Long meetId, ChatRoomType chatRoomType);
 }

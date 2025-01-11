@@ -405,9 +405,12 @@ public class ChatRoomService {
             isConditionMatched = false;
         }
 
+        int existingPrivateRoomsCount = chatRoomRepository.countPrivateChatRoomsByMeetId(meetId, ChatRoomType.PRIVATE);
+        String chatRoomName = "신청자" + (existingPrivateRoomsCount + 1);
+
         ChatRoom privateChatRoom = ChatRoom.builder()
                 .communityId(communityId)
-                .name("방장과의 1:1 채팅방")
+                .name(chatRoomName)
                 .description("방장과 자유롭게 이야기해보세요")
                 .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-private-chatroom.png")
                 .type(ChatRoomType.PRIVATE)
