@@ -29,6 +29,7 @@ public class MeetResponse {
             String title,
             String description,
             MeetType type,
+            MeetStatus status,
             ChatRoomResponse.ChatRoomDTO chatRoom,
             Integer currentCount,
             Integer max,
@@ -41,12 +42,13 @@ public class MeetResponse {
             String place
     ) {
 
-        public MeetInfoDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoom, Team curTeam) { //currentCount
+        public MeetInfoDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoom, Team curTeam, MeetStatus status) { //currentCount
             this(
                     meet.getId(),
                     meet.getTitle(),
                     meet.getDescription(),
                     meet.getType(),
+                    status,
                     chatRoom,
                     currentCount,
                     meet.getMax(),
