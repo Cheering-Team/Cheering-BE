@@ -592,7 +592,7 @@ public class MeetService {
                     int currentCount = calculateCurrentCount(meet.getId());
 
                     MeetStatus status;
-                    if (meet.getManager().getUser().equals(user)) {
+                    if (meet.getManager().getUser().getId().equals(user.getId())) {
                         status = MeetStatus.MANAGER; // 내가 만든 모임
                     } else if (meetFanRepository.existsByMeetAndFanUser(meet, user)) {
                         status = MeetStatus.CONFIRMED; // 확정된 모임
