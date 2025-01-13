@@ -191,13 +191,29 @@ public class ChatRoomService {
         lastChat = chats.get(chats.size() - 1);
         boolean hasNext = chatRepository.existsByChatRoomIdAndBeforeLastChat(chatRoomId, lastChat.getCreatedAt(), enterDate);
 
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+        ChatRoomType chatRoomType = chatRoom.getType();
+
         ChatGroup curGroup = null;
 
-        for(Chat chat: chats) {
-            if(curGroup == null || !curGroup.getGroupKey().equals(chat.getGroupKey())){
+        for (Chat chat : chats) {
+            FanResponse.FanDTO writerDTO;
+
+            if (chatRoomType == ChatRoomType.CONFIRM || chatRoomType == ChatRoomType.PRIVATE) {
+                writerDTO = new FanResponse.FanDTO(
+                        chat.getWriter().getId(),
+                        chat.getWriter().getType(),
+                        chat.getWriter().getMeetName(),
+                        chat.getWriter().getMeetImage()
+                );
+            } else {
+                writerDTO = new FanResponse.FanDTO(chat.getWriter());
+            }
+
+            if (curGroup == null || !curGroup.getGroupKey().equals(chat.getGroupKey())) {
                 List<String> messages = new ArrayList<>();
                 messages.add(chat.getContent());
-                curGroup = new ChatGroup(chat.getType(), chat.getCreatedAt(), new FanResponse.FanDTO(chat.getWriter()), messages, chat.getGroupKey());
+                curGroup = new ChatGroup(chat.getType(), chat.getCreatedAt(), writerDTO, messages, chat.getGroupKey());
                 chatGroups.add(curGroup);
             } else {
                 curGroup.getMessages().add(0, chat.getContent());
