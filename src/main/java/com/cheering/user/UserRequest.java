@@ -44,4 +44,12 @@ public class UserRequest {
             Integer age,
             Gender gender
     ) { }
+
+    public record AgeAndGenderAndProfileDTO(
+            Integer age,
+            Gender gender,
+            String name,
+            String status
+    ) {}
+
 }
