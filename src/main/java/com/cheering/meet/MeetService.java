@@ -98,7 +98,6 @@ public class MeetService {
         meetRepository.save(meet);
 
         chatRoomService.createConfirmedChatRoom(communityId, meet, requestDto.max(), user);
-        //String managerNickname = "모임장";
         MeetFan meetFan = MeetFan.builder()
                 .role(MeetFanRole.MANAGER)
                 .meet(meet)
@@ -342,19 +341,12 @@ public class MeetService {
         Fan userFan = fanRepository.findByCommunityIdAndUser(privateChatRoom.getCommunityId(), user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        Integer currentCount = meetFanRepository.countByMeet(meet);
-
-        // 방장은 "모임장"으로 닉네임 설정, 멤버는 A, B, C 순으로 닉네임 설정
-        String nickname = userFan.equals(meet.getManager()) ? "모임장" : generateNickname(currentCount);
-
-
         MeetFan meetFan = MeetFan.builder()
                 .meet(meet)
                 .fan(userFan)
                 .role(MeetFanRole.MEMBER)
                 .build();
-        // 닉네임 저장
-        //meetFan.setNickname(nickname);
+
         meetFanRepository.save(meetFan);
 
         ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
@@ -481,7 +473,7 @@ public class MeetService {
 
         List<MeetFan> members = meetFans.stream()
                 .filter(meetFan -> meetFan.getRole() != MeetFanRole.MANAGER)
-                //.sorted(Comparator.comparing(MeetFan::getNickname)) // 닉네임 기준 정렬
+                .sorted(Comparator.comparing(MeetFan::getCreatedAt)) // 생성 시간 기준 정렬
                 .collect(Collectors.toList());
 
         List<MeetFan> sortedMeetFans = new ArrayList<>();
@@ -500,16 +492,6 @@ public class MeetService {
                         meetFan.getFan().getMeetName()
                 ))
                 .collect(Collectors.toList());
-    }
-
-    public static String generateNickname(int order) {
-        StringBuilder nickname = new StringBuilder();
-        order--; // 0-based index
-        while (order >= 0) {
-            nickname.insert(0, (char) ('A' + (order % 26)));
-            order = (order / 26) - 1;
-        }
-        return nickname.toString();
     }
 
     @Transactional(readOnly = true)
