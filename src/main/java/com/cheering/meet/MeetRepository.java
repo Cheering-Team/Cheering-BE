@@ -19,14 +19,16 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
     @Query("SELECT m FROM Meet m WHERE m.communityId = :communityId")
     List<Meet> findByCommunityId(@Param("communityId") Long communityId);
 
-    @Query("SELECT m FROM Meet m WHERE " +
-            "(:keyword IS NULL OR m.title LIKE %:keyword% OR m.place LIKE %:keyword%) " +
+    @Query("SELECT m FROM Meet m " +
+            "WHERE (:keyword IS NULL OR m.title LIKE %:keyword%) " +
             "AND (:type IS NULL OR m.type = :type) " +
             "AND (:genders IS NULL OR m.gender IN :genders) " +
             "AND (:minAge IS NULL OR m.ageMin >= :minAge) " +
             "AND (:maxAge IS NULL OR m.ageMax <= :maxAge) " +
             "AND (:matchId IS NULL OR m.match.id = :matchId) " +
-            "AND (:hasTicket IS NULL OR m.hasTicket = :hasTicket)")
+            "AND (:hasTicket IS NULL OR m.hasTicket = :hasTicket) " +
+            "AND m.match.time > CURRENT_TIMESTAMP " +
+            "ORDER BY m.createdAt DESC")
     Page<Meet> findByFilters(
             @Param("keyword") String keyword,
             @Param("type") MeetType type,
@@ -37,6 +39,7 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             @Param("hasTicket") Boolean hasTicket,
             Pageable pageable
     );
+
 
 
     @Query("SELECT COUNT(mf) > 0 " +
