@@ -532,5 +532,16 @@ public class ChatRoomService {
         });
     }
 
+    public ChatRoomResponse.PrivateChatRoomDTO getPrivateChatRoomById(Long chatRoomId, User user) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
+        Fan curFan = fanRepository.findByCommunityIdAndUser(chatRoom.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        Fan opponentFan = chatSessionRepository.findOpponentFanByChatRoomAndUser(chatRoomId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        return new ChatRoomResponse.PrivateChatRoomDTO(chatRoom, opponentFan.getName(), opponentFan.getMeetImage(), opponentFan.getUser().getAge(), opponentFan.getUser().getGender(), curFan);
+    }
+
 
 }
