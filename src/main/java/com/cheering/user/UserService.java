@@ -411,7 +411,7 @@ public class UserService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         boolean isAgeAndGenderSet = user.getAge() != null && user.getGender() != null;
-        boolean isMeetProfileSet = fan.getName() != null;
+        boolean isMeetProfileSet = fan.getMeetName() != null;
 
         if (!isAgeAndGenderSet && !isMeetProfileSet) {
             return "NEITHER";
