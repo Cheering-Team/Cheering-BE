@@ -34,15 +34,11 @@ public class MeetFan extends BaseTimeEntity {
     @JoinColumn(name = "fan_id", nullable = false)
     private Fan fan; // 연결된 팬
 
-    @Column(nullable = false)
-    private String nickname; // 자동 할당된 닉네임
-
     @Builder
-    public MeetFan(MeetFanRole role, Meet meet, Fan fan, String nickname) {
+    public MeetFan(MeetFanRole role, Meet meet, Fan fan) {
         this.role = role;
         this.meet = meet;
         this.fan = fan;
-        this.nickname = nickname;
     }
     public MeetFan(Long meetFanId) {
         this.id = meetFanId;

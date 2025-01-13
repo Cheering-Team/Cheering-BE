@@ -98,12 +98,11 @@ public class MeetService {
         meetRepository.save(meet);
 
         chatRoomService.createConfirmedChatRoom(communityId, meet, requestDto.max(), user);
-        String managerNickname = "모임장";
+        //String managerNickname = "모임장";
         MeetFan meetFan = MeetFan.builder()
                 .role(MeetFanRole.MANAGER)
                 .meet(meet)
                 .fan(fan)
-                .nickname(managerNickname)
                 .build();
 
         meetFanRepository.save(meetFan);
@@ -355,7 +354,7 @@ public class MeetService {
                 .role(MeetFanRole.MEMBER)
                 .build();
         // 닉네임 저장
-        meetFan.setNickname(nickname);
+        //meetFan.setNickname(nickname);
         meetFanRepository.save(meetFan);
 
         ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
@@ -482,7 +481,7 @@ public class MeetService {
 
         List<MeetFan> members = meetFans.stream()
                 .filter(meetFan -> meetFan.getRole() != MeetFanRole.MANAGER)
-                .sorted(Comparator.comparing(MeetFan::getNickname)) // 닉네임 기준 정렬
+                //.sorted(Comparator.comparing(MeetFan::getNickname)) // 닉네임 기준 정렬
                 .collect(Collectors.toList());
 
         List<MeetFan> sortedMeetFans = new ArrayList<>();
@@ -498,7 +497,7 @@ public class MeetService {
                         currentYear - meetFan.getFan().getUser().getAge() + 1,
                         meetFan.getFan().getUser().getGender(),
                         meetFan.getRole().toString(),
-                        meetFan.getNickname()
+                        meetFan.getFan().getMeetName()
                 ))
                 .collect(Collectors.toList());
     }
