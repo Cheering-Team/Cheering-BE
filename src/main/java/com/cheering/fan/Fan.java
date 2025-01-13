@@ -49,6 +49,12 @@ public class Fan extends BaseTimeEntity {
     @Column(length = 2000)
     private String image;
 
+    @Column(length = 15)
+    private String meetName;
+
+    @Column(length = 2000)
+    private String meetImage;
+
     @Column
     private Long communityId;
 

@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
@@ -32,6 +34,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final FanRepository fanRepository
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
