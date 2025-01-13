@@ -15,7 +15,9 @@ import lombok.Getter;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 public class MeetResponse {
 
@@ -59,6 +61,14 @@ public class MeetResponse {
                     meet.getMatch() != null ? new MeetMatchDTO(meet.getMatch(), curTeam) : null,
                     meet.getPlace().isEmpty() ? null : meet.getPlace()
             );
+        }
+
+        public String getMatchDateFormatted() {
+            if (match == null || match.time() == null) {
+                return null;
+            }
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M월 d일 (E)", Locale.KOREA);
+            return match.time().format(formatter);
         }
     }
 
@@ -149,7 +159,7 @@ public class MeetResponse {
             Integer userAge,
             Gender userGender,
             String role,
-            String name // 추가된 필드
+            String name
     ) {
         public MeetMemberDTO(MeetFan meetFan) {
             this(
