@@ -33,12 +33,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.cheering.meet.MeetRequest.TicketOption.HAS;
 import static com.cheering.meet.MeetRequest.TicketOption.NOT;
+import static org.apache.http.client.utils.DateUtils.formatDate;
 
 @Service
 @RequiredArgsConstructor
@@ -556,8 +558,9 @@ public class MeetService {
         return new MeetResponse.MeetListDTO(meetPage, meetInfoDTOs);
     }
 
+
     @Transactional(readOnly = true)
-    public MeetResponse.MeetListDTO findAllMyMeetsWithPrivateChats(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
+    public List<Map<String, Object>> findAllMyMeetsWithPrivateChats(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
 
         // 확정된 모임 조회
@@ -573,15 +576,8 @@ public class MeetService {
                 ).distinct().sorted(Comparator.comparing(m -> m.getMatch().getTime()))
                 .toList();
 
-        // 페이징 처리
-        int start = request.getPage() * request.getSize();
-        int end = Math.min(start + request.getSize(), combinedMeets.size());
-        List<Meet> pagedMeetList = combinedMeets.subList(start, end);
-
-        Page<Meet> pagedMeets = new PageImpl<>(pagedMeetList, pageRequest, pagedMeetList.size());
-
         // DTO 변환
-        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = pagedMeets.stream()
+        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = combinedMeets.stream()
                 .map(meet -> {
                     boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
 
@@ -618,8 +614,29 @@ public class MeetService {
                 })
                 .toList();
 
-        return new MeetResponse.MeetListDTO(pagedMeets, meetInfoDTOs);
+        // 날짜별 그룹화 (match의 날짜 기준으로 직접 그룹화)
+        Map<String, List<MeetResponse.MeetInfoDTO>> groupedByDate = meetInfoDTOs.stream()
+                .collect(Collectors.groupingBy(dto -> {
+                    LocalDateTime time = dto.match().time();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M월 d일 (E)", Locale.KOREA);
+                    return time.format(formatter);
+                }));
+
+        // 요청한 형식으로 변환
+        List<Map<String, Object>> response = groupedByDate.entrySet().stream()
+                .map(entry -> {
+                    Map<String, Object> section = new HashMap<>();
+                    section.put("title", entry.getKey());
+                    section.put("data", entry.getValue());
+                    return section;
+                })
+                .sorted(Comparator.comparing(section -> section.get("title").toString()))
+                .toList();
+
+        return response;
     }
+
+
 
 
 }
