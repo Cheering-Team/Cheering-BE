@@ -67,7 +67,7 @@ public class ChatRoomResponse {
                                  Long meetId
     ) {
         public PrivateChatRoomDTO(ChatRoom chatRoom, String name, String image, Integer opponentAge, Gender opponentGender, Fan fan) {
-            this(chatRoom.getId(), chatRoom.getType(), name, image, opponentAge, opponentGender, new FanResponse.FanDTO(fan), chatRoom.getMeet().getId());
+            this(chatRoom.getId(), chatRoom.getType(), name, image, opponentAge, opponentGender, new FanResponse.FanDTO(fan.getId(), fan.getType(), fan.getMeetName(), fan.getMeetImage()), chatRoom.getMeet().getId());
         }
     }
 
