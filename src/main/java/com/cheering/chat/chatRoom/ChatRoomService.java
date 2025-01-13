@@ -421,12 +421,9 @@ public class ChatRoomService {
             isConditionMatched = false;
         }
 
-        int existingPrivateRoomsCount = chatRoomRepository.countPrivateChatRoomsByMeetId(meetId, ChatRoomType.PRIVATE);
-        String chatRoomName = "신청자" + (existingPrivateRoomsCount + 1);
-
         ChatRoom privateChatRoom = ChatRoom.builder()
                 .communityId(communityId)
-                .name(chatRoomName)
+                .name(applicant.getMeetName())
                 .description("방장과 자유롭게 이야기해보세요")
                 .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-private-chatroom.png")
                 .type(ChatRoomType.PRIVATE)
@@ -452,6 +449,18 @@ public class ChatRoomService {
                         .fan(applicant)
                         .build()
         );
+
+        if (!isConditionMatched) {
+            String systemMessage = "모임 조건과 일치하지 않는 대화 신청자입니다. 대화를 통해 모임 참가 여부를 입력해주세요.";
+            Chat systemChat = Chat.builder()
+                    .type(ChatType.SYSTEM)
+                    .chatRoom(privateChatRoom)
+                    .writer(manager)
+                    .content(systemMessage)
+                    .groupKey(manager.getId() + "_SYSTEM")
+                    .build();
+            chatRepository.save(systemChat);
+        }
 
         return new ChatRoomResponse.IdWithConditionDTO(privateChatRoom.getId(), isConditionMatched);
     }
