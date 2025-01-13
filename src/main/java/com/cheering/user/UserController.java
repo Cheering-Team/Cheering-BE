@@ -118,10 +118,10 @@ public class UserController {
     }
 
     // 유저의 나이와 성별 설정 여부 확인
-    @GetMapping("/users/check-age-gender")
-    public ResponseEntity<?> isAgeAndGenderSet(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    @GetMapping("/users/communities/{communityId}/check-profile")
+    public ResponseEntity<?> getUserProfileStatus(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = customUserDetails.getUser();
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별 설정 여부 확인 완료", userService.isAgeAndGenderSet(user.getId())));
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "프로필 설정 여부 확인 완료", userService.getUserProfileStatus(user.getId(), communityId)));
     }
 
     // 유저 나이, 성별 설정

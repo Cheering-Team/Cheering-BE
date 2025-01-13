@@ -403,12 +403,25 @@ public class UserService {
         return isFirstLogin;
     }
 
-    public boolean isAgeAndGenderSet(Long userId) {
+    public String getUserProfileStatus(Long userId, Long communityId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
-        return user.getAge() != null && user.getGender() != null;
+        Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        boolean isAgeAndGenderSet = user.getAge() != null && user.getGender() != null;
+        boolean isMeetProfileSet = fan.getName() != null;
+
+        if (!isAgeAndGenderSet && !isMeetProfileSet) {
+            return "NEITHER";
+        } else if (isAgeAndGenderSet && !isMeetProfileSet) {
+            return "NULL_PROFILE";
+        } else {
+            return "BOTH";
+        }
     }
+
 
     // 나이, 성별 설정
     @Transactional
