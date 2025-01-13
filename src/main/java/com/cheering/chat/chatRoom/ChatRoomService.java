@@ -322,15 +322,15 @@ public class ChatRoomService {
         Fan fan = chatSession.get().getFan();
         chatSessionRepository.delete(chatSession.get());
         Integer count = chatSessionRepository.countByChatRoom(chatRoom);
-        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", new ChatResponse.ChatResponseDTO("SYSTEM_EXIT", fan.getName() + "님이 나가셨습니다", LocalDateTime.now(), fan.getId(), fan.getImage(), fan.getName(), fan.getId() + "_SYSTEM_EXIT", count));
+        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", new ChatResponse.ChatResponseDTO("SYSTEM", fan.getName() + "님이 나가셨습니다", LocalDateTime.now(), fan.getId(), fan.getImage(), fan.getName(), fan.getId() + "_SYSTEM", count));
 
         if (chatRoom.getType().equals(ChatRoomType.PUBLIC) || chatRoom.getType().equals(ChatRoomType.CONFIRM) || chatRoom.getType().equals(ChatRoomType.PRIVATE)) {
             Chat chat = Chat.builder()
-                    .type(ChatType.SYSTEM_EXIT)
+                    .type(ChatType.SYSTEM)
                     .chatRoom(chatRoom)
                     .writer(fan)
                     .content(fan.getName() + "님이 나가셨습니다")
-                    .groupKey(fan.getId() + "_SYSTEM_EXIT")
+                    .groupKey(fan.getId() + "_SYSTEM")
                     .build();
             chatRepository.save(chat);
         }

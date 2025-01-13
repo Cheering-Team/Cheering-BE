@@ -77,22 +77,20 @@ public class WebSocketEventListener {
                                 .build();
                         chatSessionRepository.save(newChatSession);
 
-                        if(chatRoom.getType().equals(ChatRoomType.PUBLIC) ||
-                            chatRoom.getType().equals(ChatRoomType.PRIVATE) ||
-                            chatRoom.getType().equals(ChatRoomType.CONFIRM)) {
+                        if(chatRoom.getType().equals(ChatRoomType.PUBLIC)) {
                             Chat chat = Chat.builder()
-                                    .type(ChatType.SYSTEM_ENTER)
+                                    .type(ChatType.SYSTEM)
                                     .chatRoom(chatRoom)
                                     .writer(fan)
                                     .content(fan.getName() + "님이 입장하였습니다")
-                                    .groupKey(fan.getId() + "_SYSTEM_ENTER")
+                                    .groupKey(fan.getId() + "_SYSTEM")
                                     .build();
 
                             chatRepository.save(chat);
                         }
                         Integer count = chatSessionRepository.countByChatRoom(chatRoom);
 
-                        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", new ChatResponse.ChatResponseDTO("SYSTEM_ENTER", fan.getName() + "님이 입장하였습니다", LocalDateTime.now(), fan.getId(), fan.getImage(), fan.getName(), fan.getId() + "_SYSTEM_ENTER", count));
+                        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", new ChatResponse.ChatResponseDTO("SYSTEM", fan.getName() + "님이 입장하였습니다", LocalDateTime.now(), fan.getId(), fan.getImage(), fan.getName(), fan.getId() + "_SYSTEM", count));
                     } else {
                         chatSession.get().setSessionId(sessionId);
                         chatSessionRepository.save(chatSession.get());
