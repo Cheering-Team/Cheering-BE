@@ -125,11 +125,11 @@ public class UserController {
     }
 
     // 유저 나이, 성별 설정
-    @PostMapping("/users/age-gender")
-    public ResponseEntity<?> setAgeAndGender(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UserRequest.AgeAndGenderDTO requestDTO) {
+    @PostMapping("/users/communities/{communityId}/set-profile")
+    public ResponseEntity<?> setAgeAndGender(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UserRequest.AgeAndGenderAndProfileDTO requestDTO) {
         User user = customUserDetails.getUser();
-        userService.setAgeAndGender(requestDTO, user.getId());
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별 설정 완료", null));
+        userService.setAgeAndGenderAndMeetProfile(requestDTO, user.getId(), communityId);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별, 모임 프로필 설정 완료", null));
     }
 
     // 유저의 나이, 성별 조회

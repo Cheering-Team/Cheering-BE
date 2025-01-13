@@ -422,18 +422,26 @@ public class UserService {
         }
     }
 
-
-    // 나이, 성별 설정
     @Transactional
-    public void setAgeAndGender(UserRequest.AgeAndGenderDTO request, Long userId) {
+    public void setAgeAndGenderAndMeetProfile(UserRequest.AgeAndGenderAndProfileDTO request, Long userId, Long communityId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
-        user.setAge(request.age());
-        user.setGender(request.gender());
+        Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
+        if ("NEITHER".equalsIgnoreCase(request.status())) {
+            user.setAge(request.age());
+            user.setGender(request.gender());
+            fan.setMeetName(request.name());
+        } else if ("NULL_PROFILE".equalsIgnoreCase(request.status())) {
+            fan.setMeetName(request.name());
+        }
+        // 저장
         userRepository.save(user);
+        fanRepository.save(fan);
     }
+
 
     // 나이, 성별 조회
     @Transactional(readOnly = true)
