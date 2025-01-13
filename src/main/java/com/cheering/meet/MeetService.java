@@ -72,6 +72,11 @@ public class MeetService {
             throw new CustomException(ExceptionCode.MATCH_NOT_RELATED_TO_COMMUNITY);
         }
 
+        boolean MatchDuplicatedMeet = checkExistingMeet(match.getId(), user);
+        if(MatchDuplicatedMeet) {
+            throw new CustomException(ExceptionCode.DUPLICATE_MEET);
+        }
+
         Boolean hasTicket = null;
 
         if (requestDto.type() == MeetType.LIVE) {
