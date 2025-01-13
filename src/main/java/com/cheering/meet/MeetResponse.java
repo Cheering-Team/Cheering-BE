@@ -149,7 +149,7 @@ public class MeetResponse {
             Integer userAge,
             Gender userGender,
             String role,
-            String nickname // 추가된 필드
+            String name // 추가된 필드
     ) {
         public MeetMemberDTO(MeetFan meetFan) {
             this(
@@ -158,7 +158,7 @@ public class MeetResponse {
                     meetFan.getFan().getUser().getAge(),
                     meetFan.getFan().getUser().getGender(),
                     meetFan.getRole().toString(),
-                    meetFan.getNickname()
+                    meetFan.getFan().getMeetName()
             );
         }
     }

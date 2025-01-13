@@ -424,6 +424,7 @@ public class UserService {
 
     @Transactional
     public void setAgeAndGenderAndMeetProfile(UserRequest.AgeAndGenderAndProfileDTO request, Long userId, Long communityId) {
+
         if(badWordService.containsBadWords(request.name())) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
