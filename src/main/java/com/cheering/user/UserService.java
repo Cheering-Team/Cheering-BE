@@ -34,7 +34,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final FanRepository fanRepository
+    private final FanRepository fanRepository;
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
