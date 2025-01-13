@@ -6,6 +6,7 @@ import com.cheering.player.Player;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanResponse;
 import com.cheering.team.Team;
+import com.cheering.user.Gender;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
@@ -59,19 +60,19 @@ public class ChatRoomResponse {
     public record PrivateChatRoomDTO(Long id,
                                  String name,
                                  String image,
-                                 String description,
-                                 String lastMessage,
-                                 LocalDateTime lastMessageTime,
-                                 Integer participantCount,
-                                 Boolean isUnread) {
-        public PrivateChatRoomDTO(ChatRoom chatRoom, String lastMessage, LocalDateTime lastMessageTime, Integer participantCount, Boolean isUnread) {
-            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), lastMessage, lastMessageTime, participantCount, isUnread);
+                                 Integer opponentAge,
+                                 Gender opponentGender,
+                                 FanResponse.FanDTO user,
+                                 Long meetId
+    ) {
+        public PrivateChatRoomDTO(ChatRoom chatRoom, String name, String image, Integer opponentAge, Gender opponentGender, Fan fan) {
+            this(chatRoom.getId(), name, image, opponentAge, opponentGender, new FanResponse.FanDTO(fan), chatRoom.getMeet() == null ? null : chatRoom.getMeet().getId());
         }
     }
 
-    public record PrivateChatRoomListDTO(List<PrivateChatRoomDTO> privateChats, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
-        public PrivateChatRoomListDTO(org.springframework.data.domain.Page<?> page, List<PrivateChatRoomDTO> privateChats) {
-            this(privateChats, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
+    public record PrivateChatRoomListDTO(List<PrivateChatRoomDTO> privateChatsRooms, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
+        public PrivateChatRoomListDTO(Page<?> page, List<PrivateChatRoomDTO> privateChatRooms) {
+            this(privateChatRooms, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
         }
     }
 

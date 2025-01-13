@@ -2,6 +2,7 @@ package com.cheering.chat.chatRoom;
 
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
+import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -120,6 +121,12 @@ public class  ChatRoomController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 목록 조회 완료", chatRoomService.getPrivateChatRoomsForManager(meetId, userDetails.getUser())));
+    }
+
+    // 1:1 채팅방 조회
+    @GetMapping("/chatrooms/private/{chatRoomId}")
+    public ResponseEntity<?> getPrivateChatRoomById(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1:1 채팅방 정보 조회 완료", chatRoomService.getPrivateChatRoomById(chatRoomId, customUserDetails.getUser())));
     }
 
 

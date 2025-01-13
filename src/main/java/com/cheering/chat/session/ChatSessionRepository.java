@@ -34,4 +34,7 @@ public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> 
 
     @Query("SELECT cs.fan.user FROM ChatSession cs WHERE cs.chatRoom = :chatRoom AND cs.fan.id != :myId")
     List<User> findByChatRoomExceptMe(ChatRoom chatRoom, Long myId);
+
+    @Query("SELECT cs.fan FROM ChatSession cs WHERE cs.chatRoom.id = :chatRoomId AND cs.fan.user != :user")
+    Optional<Fan> findOpponentFanByChatRoomAndUser(@Param("chatRoomId") Long chatRoomId, @Param("user") User user);
 }
