@@ -2,6 +2,8 @@ package com.cheering.meet;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
+import com.cheering.chat.Chat;
+import com.cheering.chat.ChatRepository;
 import com.cheering.chat.ChatType;
 import com.cheering.chat.chatRoom.*;
 import com.cheering.chat.session.ChatSession;
@@ -52,6 +54,7 @@ public class MeetService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomService chatRoomService;
     private final ChatSessionRepository chatSessionRepository;
+    private final ChatRepository chatRepository;
 
     @Transactional
     public MeetResponse.MeetIdDTO createMeet(Long communityId, MeetRequest.CreateMeetDTO requestDto, User user) {
@@ -360,6 +363,19 @@ public class MeetService {
                 .build();
 
         chatSessionRepository.save(chatSession);
+
+        LocalDateTime now = LocalDateTime.now();
+        String groupKey = chatRoomService.generateGroupKey(userFan.getId(), now);
+
+        Chat chat = Chat.builder()
+                .type(ChatType.JOIN_ACCEPT)
+                .chatRoom(privateChatRoom)
+                .writer(userFan)
+                .content("모임 참여를 확정하였습니다.")
+                .groupKey(groupKey)
+                .build();
+
+        chatRepository.save(chat);
     }
 
     // 모임 참여 취소

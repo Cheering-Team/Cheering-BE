@@ -354,7 +354,7 @@ public class ChatRoomService {
         return chatSessions.stream().mapToInt(chatSession -> chatRepository.countUnreadMessages(chatSession.getChatRoom(), ChatType.MESSAGE, chatSession.getLastExitTime())).sum();
     }
 
-    private String generateGroupKey(Long writerId, LocalDateTime timestamp) {
+    public String generateGroupKey(Long writerId, LocalDateTime timestamp) {
         return writerId + "_" + groupKeyFormatter.format(timestamp);
     }
 
