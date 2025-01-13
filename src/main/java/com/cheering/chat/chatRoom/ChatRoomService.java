@@ -451,7 +451,8 @@ public class ChatRoomService {
         );
 
         if (!isConditionMatched) {
-            String systemMessage = "모임 조건과 일치하지 않는 대화 신청자입니다. 대화를 통해 모임 참가 여부를 입력해주세요.";
+            String systemMessage = "모임 조건과 일치하지 않는 대화 신청자입니다.\n" +
+                    "충분한 대화를 통해 멤버 확정을 검토해주세요.";
             Chat systemChat = Chat.builder()
                     .type(ChatType.SYSTEM)
                     .chatRoom(privateChatRoom)

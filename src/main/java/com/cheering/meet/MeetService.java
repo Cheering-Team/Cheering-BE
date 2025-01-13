@@ -233,7 +233,6 @@ public class MeetService {
                     } else {
                         status = MeetStatus.APPLIED; // 1:1 대화 중인 상태
                     }
-
                     ChatRoomResponse.ChatRoomDTO chatRoomDTO = null;
                     ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
                     chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
