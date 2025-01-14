@@ -20,7 +20,7 @@ public interface MeetFanRepository extends JpaRepository<com.cheering.meetfan.Me
     boolean existsByMatchIdAndFanIdAsManager(@Param("matchId") Long matchId, @Param("fanId") Long fanId);
 
 
-    @Query("SELECT COUNT(mf) FROM MeetFan mf WHERE mf.meet = :meet")
+    @Query("SELECT COUNT(mf) FROM MeetFan mf WHERE mf.meet = :meet AND (mf.role = 'MANAGER' OR mf.role = 'MEMBER')")
     int countByMeet(@Param("meet") Meet meet);
 
     Optional<MeetFan> findByMeetAndRole(Meet meet, MeetFanRole role);
