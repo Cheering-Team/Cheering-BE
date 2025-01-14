@@ -573,11 +573,11 @@ public class ChatRoomService {
         if(chatRoom.getMeet().getManager().equals(curFan)) {
             Optional<MeetFan> optionalMeetFan = meetFanRepository.findByMeetAndFanUser(chatRoom.getMeet(), opponentFan.getUser());
 
-            isConfirmed = optionalMeetFan.isPresent();
+            isConfirmed = optionalMeetFan.isPresent() && optionalMeetFan.get().getRole() != MeetFanRole.APPLIER;
         } else {
             Optional<MeetFan> optionalMeetFan = meetFanRepository.findByMeetAndFanUser(chatRoom.getMeet(), curFan.getUser());
 
-            isConfirmed = optionalMeetFan.isPresent();
+            isConfirmed = optionalMeetFan.isPresent() && optionalMeetFan.get().getRole() != MeetFanRole.APPLIER;;
         }
 
         return new ChatRoomResponse.PrivateChatRoomDTO(chatRoom, opponentFan.getMeetName(), opponentFan.getMeetImage(), opponentFan.getUser().getAge(), opponentFan.getUser().getGender(), curFan, isConfirmed);

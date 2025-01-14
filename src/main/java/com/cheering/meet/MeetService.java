@@ -347,6 +347,12 @@ public class MeetService {
 
         validateParticipation(meet.getMatch().getId(), user);
 
+        boolean MatchDuplicatedMeet = checkExistingMeet(meet.getMatch().getId(), user);
+
+        if(MatchDuplicatedMeet) {
+            throw new CustomException(ExceptionCode.DUPLICATE_MEET);
+        }
+
         Fan userFan = fanRepository.findByCommunityIdAndUser(privateChatRoom.getCommunityId(), user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
