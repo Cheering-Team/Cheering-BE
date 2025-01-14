@@ -47,11 +47,10 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             "WHERE mf.meet.match.id = :matchId AND mf.fan.id = :fanId AND mf.role = 'MANAGER'")
     boolean existsByMatchIdAndFanIdAsManager(@Param("matchId") Long matchId, @Param("fanId") Long fanId);
 
-    @Query("SELECT CASE WHEN COUNT(m) > 0 THEN true ELSE false END " +
-            "FROM Meet m " +
-            "JOIN m.meetFans mf " +
-            "WHERE m.match.id = :matchId AND mf.fan.user = :user")
+    @Query("SELECT CASE WHEN COUNT(mf) > 0 THEN true ELSE false END FROM Meet m JOIN m.meetFans mf WHERE m.match.id = :matchId AND mf.fan.user = :user AND (mf.role = 'MANAGER' OR mf.role = 'MEMBER')")
     boolean existsByMatchAndMeetFansFanUser(@Param("matchId") Long matchId, @Param("user") User user);
+
+
 
     @Query("SELECT mf.meet FROM MeetFan mf JOIN mf.meet m WHERE mf.fan.user = :user AND m.communityId = :communityId ORDER BY m.match.time ASC")
     Page<Meet> findMeetsByCommunityAndUser(Long communityId, User user, Pageable pageable);
