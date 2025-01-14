@@ -517,7 +517,8 @@ public class MeetService {
                         currentYear - meetFan.getFan().getUser().getAge() + 1,
                         meetFan.getFan().getUser().getGender(),
                         meetFan.getRole().toString(),
-                        meetFan.getFan().getMeetName()
+                        meetFan.getFan().getMeetName(),
+                        meetFan.getFan().getMeetImage()
                 ))
                 .collect(Collectors.toList());
     }

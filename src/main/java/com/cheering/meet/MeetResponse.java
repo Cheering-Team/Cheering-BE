@@ -171,7 +171,8 @@ public class MeetResponse {
             Integer userAge,
             Gender userGender,
             String role,
-            String name
+            String name,
+            String image
     ) {
         public MeetMemberDTO(MeetFan meetFan) {
             this(
@@ -180,7 +181,8 @@ public class MeetResponse {
                     meetFan.getFan().getUser().getAge(),
                     meetFan.getFan().getUser().getGender(),
                     meetFan.getRole().toString(),
-                    meetFan.getFan().getMeetName()
+                    meetFan.getFan().getMeetName(),
+                    meetFan.getFan().getMeetImage()
             );
         }
     }
