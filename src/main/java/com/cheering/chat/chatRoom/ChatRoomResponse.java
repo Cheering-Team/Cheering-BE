@@ -58,23 +58,18 @@ public class ChatRoomResponse {
     }
 
     public record PrivateChatRoomDTO(Long id,
-                                 ChatRoomType type,
-                                 String name,
-                                 String image,
-                                 Integer opponentAge,
-                                 Gender opponentGender,
-                                 FanResponse.FanDTO user,
-                                 Long meetId
+                                     ChatRoomType type,
+                                     String name,
+                                     String image,
+                                     Integer opponentAge,
+                                     Gender opponentGender,
+                                     FanResponse.FanDTO user,
+                                     Long meetId,
+                                     Long communityId,
+                                     Boolean isConfirmed
     ) {
-        public PrivateChatRoomDTO(ChatRoom chatRoom, String name, String image, Integer opponentAge, Gender opponentGender, Fan fan) {
-            this(chatRoom.getId(), chatRoom.getType(), name, image, opponentAge, opponentGender, new FanResponse.FanDTO(fan.getId(), fan.getType(), fan.getMeetName(), fan.getMeetImage()), chatRoom.getMeet().getId());
+        public PrivateChatRoomDTO(ChatRoom chatRoom, String name, String image, Integer opponentAge, Gender opponentGender, Fan fan, Boolean isConfirmed) {
+            this(chatRoom.getId(), chatRoom.getType(), name, image, opponentAge, opponentGender, new FanResponse.FanDTO(fan.getId(), fan.getType(), fan.getMeetName(), fan.getMeetImage()), chatRoom.getMeet().getId(), chatRoom.getCommunityId(), isConfirmed);
         }
     }
-
-    public record PrivateChatRoomListDTO(List<PrivateChatRoomDTO> privateChatsRooms, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
-        public PrivateChatRoomListDTO(Page<?> page, List<PrivateChatRoomDTO> privateChatRooms) {
-            this(privateChatRooms, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
-        }
-    }
-
 }

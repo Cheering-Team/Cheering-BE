@@ -34,6 +34,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -566,7 +568,19 @@ public class ChatRoomService {
         Fan opponentFan = chatSessionRepository.findOpponentFanByChatRoomAndUser(chatRoomId, user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        return new ChatRoomResponse.PrivateChatRoomDTO(chatRoom, opponentFan.getMeetName(), opponentFan.getMeetImage(), opponentFan.getUser().getAge(), opponentFan.getUser().getGender(), curFan);
+        boolean isConfirmed;
+
+        if(chatRoom.getMeet().getManager().equals(curFan)) {
+            Optional<MeetFan> optionalMeetFan = meetFanRepository.findByMeetAndFanUser(chatRoom.getMeet(), opponentFan.getUser());
+
+            isConfirmed = optionalMeetFan.isPresent();
+        } else {
+            Optional<MeetFan> optionalMeetFan = meetFanRepository.findByMeetAndFanUser(chatRoom.getMeet(), curFan.getUser());
+
+            isConfirmed = optionalMeetFan.isPresent();
+        }
+
+        return new ChatRoomResponse.PrivateChatRoomDTO(chatRoom, opponentFan.getMeetName(), opponentFan.getMeetImage(), opponentFan.getUser().getAge(), opponentFan.getUser().getGender(), curFan, isConfirmed);
     }
 
 
