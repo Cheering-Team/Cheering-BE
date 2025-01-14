@@ -80,6 +80,7 @@ public enum ExceptionCode {
     DUPLICATE_CHAT_ROOM(2011, "이미 채팅방이 있습니다."),
     HAS_TICKET_REQUIRED_FOR_LIVE(2012, "직관 모임은 티켓 여부 입력이 필수입니다."),
     USER_RESTRICTED_FOR_MATCH(2013, "해당 경기에 대한 모임 참여가 제한되었습니다."),
+    ALREADY_APPLIED(2014, "해당 모임에 대해 이미 대화를 신청했습니다."),
 
     //MATCH
     MATCH_NOT_RELATED_TO_COMMUNITY(403, "커뮤니티와 관련 없는 경기입니다.");
