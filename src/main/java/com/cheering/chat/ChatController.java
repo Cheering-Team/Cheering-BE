@@ -47,7 +47,7 @@ public class ChatController {
     }
 
     @MessageMapping("/fans/{fanId}/meets/{meetId}/join-applier")
-    public void joinAsApplier(, @DestinationVariable Long fanId, @DestinationVariable Long meetId) {
+    public void joinAsApplier(@DestinationVariable Long fanId, @DestinationVariable Long meetId) {
         meetService.joinAsApplier(meetId, fanId);
     }
 }
