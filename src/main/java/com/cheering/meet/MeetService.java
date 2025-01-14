@@ -521,7 +521,7 @@ public class MeetService {
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
 
         // 요청한 커뮤니티에서 사용자의 참여 확정된 모임 조회
-        Page<Meet> meetPage = meetRepository.findConfirmedMeetsByCommunityAndUser(communityId, user, pageRequest);
+        Page<Meet> meetPage = meetRepository.findMeetsByCommunityAndUser(communityId, user, pageRequest);
 
         Optional<Team> optionalTeam = teamRepository.findById(communityId);
         Optional<Player> optionalPlayer = playerRepository.findById(communityId);
@@ -565,81 +565,81 @@ public class MeetService {
 
 
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> findAllMyMeetsWithPrivateChats(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
+    public MeetResponse.MeetSectionResponse findAllMyMeetsWithPrivateChats(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
+        // 1. 페이지 요청 생성
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
 
-        // 확정된 모임 조회
-        Page<Meet> confirmedMeets = meetRepository.findConfirmedMeetsByCommunityAndUser(communityId, user, pageRequest);
+        // 2. 커뮤니티의 모임 조회
+        Page<Meet> meets = meetRepository.findMeetsByCommunityAndUser(communityId, user, pageRequest);
 
-        // 1:1 대화방이 있는 모임 조회
-        Page<Meet> privateChatRoomMeets = meetRepository.findPrivateChatRoomMeetsWithChatsByCommunityAndUser(user, communityId, ChatRoomType.PRIVATE, ChatType.MESSAGE, pageRequest);
+        // 3. 커뮤니티 타입 확인 (Team 또는 Player)
+        Optional<Team> optionalTeam = teamRepository.findById(communityId);
+        Optional<Player> optionalPlayer = playerRepository.findById(communityId);
 
-        // 합치기
-        List<Meet> combinedMeets = Stream.concat(
-                        confirmedMeets.getContent().stream(),
-                        privateChatRoomMeets.getContent().stream()
-                ).distinct().sorted(Comparator.comparing(m -> m.getMatch().getTime()))
-                .toList();
-
-        // DTO 변환
-        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = combinedMeets.stream()
+        // 4. Meet -> MeetInfoDTO 변환
+        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meets.getContent().stream()
                 .map(meet -> {
-                    boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
-
                     int currentCount = calculateCurrentCount(meet.getId());
 
+                    // 사용자의 참여 여부 확인
+                    boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
+
+                    // 모임 상태 결정
                     MeetStatus status;
-                    if (meet.getManager().getUser().getId().equals(user.getId())) {
+                    if (meet.getManager().getUser().equals(user)) {
                         status = MeetStatus.MANAGER; // 내가 만든 모임
-                    } else if (meetFanRepository.existsByMeetAndFanUser(meet, user)) {
+                    } else if (isUserParticipating) {
                         status = MeetStatus.CONFIRMED; // 확정된 모임
                     } else {
                         status = MeetStatus.APPLIED; // 1:1 대화 중인 상태
                     }
 
-                    ChatRoomResponse.ChatRoomDTO chatRoomDTO = null;
+                    // 채팅방 정보 생성
                     ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM)
                             .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
-                    chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
+                    ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
                             confirmChatRoom,
                             currentCount,
                             isUserParticipating
                     );
 
-                    if (meet.getCommunityType() == CommunityType.TEAM) {
-                        Team curTeam = teamRepository.findById(meet.getCommunityId())
-                                .orElseThrow(() -> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
+                    // 팀 또는 선수 정보 설정
+                    if (optionalTeam.isPresent()) {
+                        Team curTeam = optionalTeam.get();
                         return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam, status);
                     } else {
-                        Player player = playerRepository.findById(meet.getCommunityId())
-                                .orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+                        Player player = optionalPlayer.orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
                         Team firstTeam = player.getFirstTeam();
                         return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam, status);
                     }
                 })
-                .toList();
+                .collect(Collectors.toList());
 
-        // 날짜별 그룹화 (match의 날짜 기준으로 직접 그룹화)
+        // 5. 날짜별 그룹화
         Map<String, List<MeetResponse.MeetInfoDTO>> groupedByDate = meetInfoDTOs.stream()
-                .collect(Collectors.groupingBy(dto -> {
-                    LocalDateTime time = dto.match().time();
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M월 d일 (E)", Locale.KOREA);
-                    return time.format(formatter);
-                }));
+                .collect(Collectors.groupingBy(dto -> dto.match().time().toLocalDate().format(
+                        DateTimeFormatter.ofPattern("M월 d일 (E)", Locale.KOREA)
+                )));
 
-        // 요청한 형식으로 변환
-        List<Map<String, Object>> response = groupedByDate.entrySet().stream()
-                .map(entry -> {
-                    Map<String, Object> section = new HashMap<>();
-                    section.put("title", entry.getKey());
-                    section.put("data", entry.getValue());
-                    return section;
-                })
-                .sorted(Comparator.comparing(section -> section.get("title").toString()))
+        // 6. 섹션 생성
+        List<MeetResponse.MeetSectionDTO> sections = groupedByDate.entrySet().stream()
+                .map(entry -> new MeetResponse.MeetSectionDTO(entry.getKey(), entry.getValue()))
+                .sorted(Comparator.comparing(MeetResponse.MeetSectionDTO::title))
                 .toList();
 
-        return response;
+        // 7. 최종 응답 DTO 생성 및 반환
+        return new MeetResponse.MeetSectionResponse(
+                sections,
+                meets.getNumber(),
+                meets.getSize(),
+                meets.getTotalElements(),
+                meets.getTotalPages(),
+                meets.isLast(),
+                meets.hasNext()
+        );
     }
+
+
 
     public void joinAsApplier(Long chatRoomId, Long fanId) {
 

@@ -54,7 +54,7 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
     boolean existsByMatchAndMeetFansFanUser(@Param("matchId") Long matchId, @Param("user") User user);
 
     @Query("SELECT mf.meet FROM MeetFan mf JOIN mf.meet m WHERE mf.fan.user = :user AND m.communityId = :communityId ORDER BY m.match.time ASC")
-    Page<Meet> findConfirmedMeetsByCommunityAndUser(Long communityId, User user, Pageable pageable);
+    Page<Meet> findMeetsByCommunityAndUser(Long communityId, User user, Pageable pageable);
 
     @Query("SELECT m FROM ChatRoom cr " +
             "JOIN cr.meet m " +
