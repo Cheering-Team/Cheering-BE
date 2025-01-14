@@ -641,21 +641,22 @@ public class MeetService {
         return response;
     }
 
-    public void joinAsApplier(Long meetId, Long fanId) {
-        Meet meet = meetRepository.findById(meetId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
+    public void joinAsApplier(Long chatRoomId, Long fanId) {
 
         Fan fan = fanRepository.findById(fanId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        boolean alreadyApplier = meetFanRepository.existsByMeetAndFanUser(meet, fan.getUser());
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
+        boolean alreadyApplier = meetFanRepository.existsByMeetAndFanUser(chatRoom.getMeet(), fan.getUser());
 
         if (alreadyApplier) {
             throw new CustomException(ExceptionCode.ALREADY_APPLIED);
         }
 
         MeetFan meetFan = MeetFan.builder()
-                .meet(meet)
+                .meet(chatRoom.getMeet())
                 .fan(fan)
                 .role(MeetFanRole.APPLIER)
                 .build();
