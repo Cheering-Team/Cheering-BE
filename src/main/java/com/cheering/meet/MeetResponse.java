@@ -96,6 +96,18 @@ public class MeetResponse {
             this(meets, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
         }
     }
+    @Schema(description = "모임 섹션 기반 응답")
+    public record MeetSectionResponse(List<MeetSectionDTO> meets, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last, boolean hasNext) {
+        public MeetSectionResponse(Page<?> page, List<MeetSectionDTO> meets) {
+            this(meets, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast(), page.hasNext());
+        }
+    }
+
+    @Schema(description = "모임 섹션")
+    public record MeetSectionDTO(
+            String title,
+            List<MeetInfoDTO> data
+    ) {}
 
     // Meet 상세 정보 DTO
     public record MeetDetailDTO(
