@@ -518,7 +518,8 @@ public class MeetService {
                         meetFan.getFan().getUser().getGender(),
                         meetFan.getRole().toString(),
                         meetFan.getFan().getMeetName(),
-                        meetFan.getFan().getMeetImage()
+                        meetFan.getFan().getMeetImage(),
+                        meetFan.getRole().equals(MeetFanRole.MANAGER)
                 ))
                 .collect(Collectors.toList());
     }

@@ -7,6 +7,7 @@ import com.cheering.match.Match;
 import com.cheering.match.MatchResponse;
 import com.cheering.fan.FanResponse;
 import com.cheering.meetfan.MeetFan;
+import com.cheering.meetfan.MeetFanRole;
 import com.cheering.team.Team;
 import com.cheering.user.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -172,7 +173,8 @@ public class MeetResponse {
             Gender userGender,
             String role,
             String name,
-            String image
+            String image,
+            Boolean isManager
     ) {
         public MeetMemberDTO(MeetFan meetFan) {
             this(
@@ -182,7 +184,8 @@ public class MeetResponse {
                     meetFan.getFan().getUser().getGender(),
                     meetFan.getRole().toString(),
                     meetFan.getFan().getMeetName(),
-                    meetFan.getFan().getMeetImage()
+                    meetFan.getFan().getMeetImage(),
+                    meetFan.getRole() == MeetFanRole.MANAGER
             );
         }
     }
