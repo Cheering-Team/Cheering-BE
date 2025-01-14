@@ -46,8 +46,8 @@ public class ChatController {
         chatRoomService.sendJoinRequest(requestDTO, Long.parseLong(chatRoomId));
     }
 
-    @MessageMapping("/fans/{fanId}/meets/{meetId}/join-applier")
-    public void joinAsApplier(@DestinationVariable Long fanId, @DestinationVariable Long meetId) {
-        meetService.joinAsApplier(meetId, fanId);
+    @MessageMapping("/fans/{fanId}/chatRooms/{chatRoomId}/join-applier")
+    public void joinAsApplier(@DestinationVariable Long fanId, @DestinationVariable Long chatRoomId) {
+        meetService.joinAsApplier(chatRoomId, fanId);
     }
 }
