@@ -4,6 +4,7 @@ import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
 import com.cheering.chat.chatRoom.ChatRoomService;
 import com.cheering.fan.Fan;
+import com.cheering.meet.MeetService;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -22,6 +23,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatRoomService chatRoomService;
+    private final MeetService meetService;
 
     @MessageMapping("/chatRooms/{chatRoomId}/sendMessage")
     public void handleSendMessage(@Payload ChatRequest.ChatRequestDTO requestDTO, @DestinationVariable String chatRoomId) {
@@ -42,5 +44,10 @@ public class ChatController {
             @DestinationVariable String chatRoomId) {
 
         chatRoomService.sendJoinRequest(requestDTO, Long.parseLong(chatRoomId));
+    }
+
+    @MessageMapping("/meet/{meetId}/join-applier")
+    public void joinAsApplier(@DestinationVariable Long meetId, @DestinationVariable Long fanId) {
+        meetService.joinAsApplier(meetId, fanId);
     }
 }
