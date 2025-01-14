@@ -571,30 +571,36 @@ public class MeetService {
 
 
     @Transactional(readOnly = true)
-    public MeetResponse.MeetSectionResponse findAllMyMeetsWithPrivateChats(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
-        // 1. 페이지 요청 생성
+    public MeetResponse.MeetSectionResponse findAllMyMeetsWithPrivateChats(MeetRequest.MyMeetListRequest request, Long communityId, User user) {
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
 
-        // 2. 커뮤니티의 모임 조회
-        Page<Meet> meets = meetRepository.findMeetsByCommunityAndUser(communityId, user, pageRequest);
+        // 커뮤니티의 모임 조회
+        Page<Meet> meets;
 
-        // 3. 커뮤니티 타입 확인 (Team 또는 Player)
+        if (request.getPastFiltering()) {
+            // 과거 모임만 필터링
+            meets = meetRepository.findPastMeetsByCommunityAndUser(communityId, user, pageRequest);
+        } else {
+            meets = meetRepository.findFutureMeetsByCommunityAndUser(communityId, user, pageRequest);
+        }
+
+        Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        // 커뮤니티 타입 확인 (Team 또는 Player)
         Optional<Team> optionalTeam = teamRepository.findById(communityId);
         Optional<Player> optionalPlayer = playerRepository.findById(communityId);
 
-        // 4. Meet -> MeetInfoDTO 변환
+        // Meet -> MeetInfoDTO 변환
         List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meets.getContent().stream()
                 .map(meet -> {
                     int currentCount = calculateCurrentCount(meet.getId());
 
-                    // 사용자의 참여 여부 확인
-                    boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
-
                     // 모임 상태 결정
                     MeetStatus status;
-                    if (meet.getManager().getUser().equals(user)) {
+                    if (meet.getManager().getUser().getId().equals(user.getId())) {
                         status = MeetStatus.MANAGER; // 내가 만든 모임
-                    } else if (isUserParticipating) {
+                    } else if (meetFanRepository.existsByMeetAndFanUserAndRole(meet, user, MeetFanRole.MEMBER)) {
                         status = MeetStatus.CONFIRMED; // 확정된 모임
                     } else {
                         status = MeetStatus.APPLIED; // 1:1 대화 중인 상태
@@ -606,10 +612,9 @@ public class MeetService {
                     ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
                             confirmChatRoom,
                             currentCount,
-                            isUserParticipating
+                            true
                     );
 
-                    // 팀 또는 선수 정보 설정
                     if (optionalTeam.isPresent()) {
                         Team curTeam = optionalTeam.get();
                         return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam, status);
@@ -621,19 +626,20 @@ public class MeetService {
                 })
                 .collect(Collectors.toList());
 
-        // 5. 날짜별 그룹화
+        // 날짜별 그룹화 (LinkedHashMap으로 정렬 유지)
         Map<String, List<MeetResponse.MeetInfoDTO>> groupedByDate = meetInfoDTOs.stream()
-                .collect(Collectors.groupingBy(dto -> dto.match().time().toLocalDate().format(
-                        DateTimeFormatter.ofPattern("M월 d일 (E)", Locale.KOREA)
-                )));
+                .collect(Collectors.groupingBy(
+                        dto -> dto.match().time().toLocalDate().format(
+                                DateTimeFormatter.ofPattern("M월 d일 (E)", Locale.KOREA)
+                        ),
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
 
-        // 6. 섹션 생성
         List<MeetResponse.MeetSectionDTO> sections = groupedByDate.entrySet().stream()
                 .map(entry -> new MeetResponse.MeetSectionDTO(entry.getKey(), entry.getValue()))
-                .sorted(Comparator.comparing(MeetResponse.MeetSectionDTO::title))
                 .toList();
 
-        // 7. 최종 응답 DTO 생성 및 반환
         return new MeetResponse.MeetSectionResponse(
                 sections,
                 meets.getNumber(),

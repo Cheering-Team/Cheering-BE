@@ -25,8 +25,7 @@ public interface MeetFanRepository extends JpaRepository<com.cheering.meetfan.Me
 
     Optional<MeetFan> findByMeetAndRole(Meet meet, MeetFanRole role);
 
-    @Query("SELECT mf FROM MeetFan mf " +
-            "WHERE mf.meet.id = :meetId AND mf.role = :role")
+    @Query("SELECT mf FROM MeetFan mf WHERE mf.meet.id = :meetId AND mf.role = :role")
     Optional<MeetFan> findByMeetIdAndRole(@Param("meetId") Long meetId, @Param("role") MeetFanRole role);
 
     @Modifying
@@ -37,6 +36,13 @@ public interface MeetFanRepository extends JpaRepository<com.cheering.meetfan.Me
             "FROM MeetFan mf " +
             "WHERE mf.meet = :meet AND mf.fan.user = :user")
     boolean existsByMeetAndFanUser(@Param("meet") Meet meet, @Param("user") User user);
+
+    @Query("SELECT CASE WHEN COUNT(mf) > 0 THEN true ELSE false END " +
+            "FROM MeetFan mf " +
+            "WHERE mf.meet = :meet AND mf.fan.user = :user AND mf.role = :role")
+    boolean existsByMeetAndFanUserAndRole(@Param("meet") Meet meet,
+                                          @Param("user") User user,
+                                          @Param("role") MeetFanRole role);
 
     Optional<MeetFan> findByMeetAndFanUser(@Param("meet") Meet meet, @Param("user") User user);
 

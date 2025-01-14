@@ -87,4 +87,12 @@ public class MeetRequest {
         ALL, HAS, NOT
     }
 
+    @Getter
+    @Setter
+    public class MyMeetListRequest {
+        private Boolean pastFiltering;
+        private Integer page = 0;
+        private Integer size = 10;
+    }
+
 }
