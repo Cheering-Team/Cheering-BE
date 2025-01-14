@@ -191,7 +191,7 @@ public class MeetController {
     }
 
     @GetMapping("/communities/{communityId}/meets/my-all")
-    public ResponseEntity<?> findAllMyMeetsWithPrivateChats(MeetRequest.MeetSearchRequest request, @PathVariable Long communityId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<?> findAllMyMeetsWithPrivateChats(MeetRequest.MyMeetListRequest request, @PathVariable Long communityId, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         User user = userDetails.getUser();
 

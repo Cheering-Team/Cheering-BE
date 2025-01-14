@@ -56,6 +56,20 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
     @Query("SELECT mf.meet FROM MeetFan mf JOIN mf.meet m WHERE mf.fan.user = :user AND m.communityId = :communityId ORDER BY m.match.time ASC")
     Page<Meet> findMeetsByCommunityAndUser(Long communityId, User user, Pageable pageable);
 
+    @Query("SELECT mf.meet FROM MeetFan mf JOIN mf.meet m WHERE mf.fan.user = :user AND m.communityId = :communityId " +
+            "AND m.match.time < CURRENT_TIMESTAMP " +
+            "ORDER BY m.match.time DESC")
+    Page<Meet> findPastMeetsByCommunityAndUser(@Param("communityId") Long communityId,
+                                               @Param("user") User user,
+                                               Pageable pageable);
+
+    @Query("SELECT mf.meet FROM MeetFan mf JOIN mf.meet m WHERE mf.fan.user = :user AND m.communityId = :communityId " +
+            "AND m.match.time > CURRENT_TIMESTAMP " +
+            "ORDER BY m.match.time ASC")
+    Page<Meet> findFutureMeetsByCommunityAndUser(@Param("communityId") Long communityId,
+                                                 @Param("user") User user,
+                                                 Pageable pageable);
+
     @Query("SELECT m FROM ChatRoom cr " +
             "JOIN cr.meet m " +
             "JOIN m.match mt " +
