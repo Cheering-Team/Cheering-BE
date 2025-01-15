@@ -290,10 +290,12 @@ public class MeetService {
         // 현재 날짜와 경기를 비교
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime matchTime = match.getTime();
-        boolean isWithinTwoDays = now.isAfter(matchTime.minusDays(2));
+        boolean isMatchWithinTwoDays = now.isAfter(matchTime.minusDays(2));
 
-        // 이틀 전이 아니면 제한 추가
-        if (isWithinTwoDays) {
+        // 이틀보다 가까우면 제한 추가
+        if (isMatchWithinTwoDays) {
+            // 이미 제한 있는지 확인
+            validateParticipation(match.getId(), user);
             MatchRestriction restriction = MatchRestriction.builder()
                     .user(user)
                     .match(match)
@@ -406,10 +408,7 @@ public class MeetService {
         boolean isWithinTwoDays = now.isAfter(matchTime.minusDays(2));
 
         // 사용자가 이미 해당 경기에서 제한된 상태인지 확인
-        boolean isRestricted = matchRestrictionRepository.existsByMatchIdAndUser(match.getId(), user);
-        if (isRestricted) {
-            throw new CustomException(ExceptionCode.USER_RESTRICTED_FOR_MATCH);
-        }
+        validateParticipation(meet.getMatch().getId(), user);
 
         meetFanRepository.delete(meetFan);
 
