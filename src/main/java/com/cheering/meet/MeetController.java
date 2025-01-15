@@ -121,18 +121,6 @@ public class MeetController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 수정 완료", null));
     }
 
-    /* 챗룸컨트롤러에서 구현함
-    @PostMapping("/communities/{communityId}/meets/{meetId}/private-chat")
-    public ResponseEntity<?> createPrivateChatRoom(
-            @PathVariable Long communityId,
-            @PathVariable Long meetId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        ChatRoomResponse.IdDTO chatRoomId = chatRoomService.createPrivateChatRoom(communityId, meetId, userDetails.getUser());
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 생성 완료", chatRoomId));
-    }
-    */
-
     @PostMapping("/chatrooms/{chatRoomId}/accept")
     public ResponseEntity<?> acceptJoinRequest(
             @PathVariable Long chatRoomId,
@@ -144,17 +132,12 @@ public class MeetController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "사용자가 모임에 가입되었습니다.", null));
     }
 
-    @PostMapping("/meets/{meetId}/cancel")
-    public ResponseEntity<?> cancelMeetParticipation(
-            @PathVariable Long meetId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
+    @PostMapping("/meets/{meetId}/leave")
+    public ResponseEntity<?> leaveMeet(@PathVariable Long meetId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userDetails.getUser();
-        meetService.cancelMeetParticipation(meetId, user);
+        meetService.leaveMeet(meetId, user);
 
-        return ResponseEntity.ok().body(
-                ApiUtils.success(HttpStatus.OK, "모임 참여가 취소되었습니다.", null)
-        );
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임을 탈퇴하였습니다.", null));
     }
 
     @GetMapping("/check-existing-meet")
