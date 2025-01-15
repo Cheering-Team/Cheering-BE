@@ -126,7 +126,7 @@ public class UserController {
 
     // 유저 나이, 성별 설정
     @PostMapping("/users/communities/{communityId}/set-profile")
-    public ResponseEntity<?> setAgeAndGender(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UserRequest.AgeAndGenderAndProfileDTO requestDTO) {
+    public ResponseEntity<?> setAgeAndGenderAndMeetProfile(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UserRequest.AgeAndGenderAndProfileDTO requestDTO) {
         User user = customUserDetails.getUser();
         userService.setAgeAndGenderAndMeetProfile(requestDTO, user.getId(), communityId);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별, 모임 프로필 설정 완료", null));
@@ -137,6 +137,13 @@ public class UserController {
     public ResponseEntity<?> getAgeAndGender(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = customUserDetails.getUser();
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별 조회 완료", userService.getAgeAndGender(user.getId())));
+    }
+
+    @PutMapping("/users/communities/{communityId}/update-profile")
+    public ResponseEntity<?> updateMeetProfile(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UserRequest.UpdateMeetProfileDTO requestDTO) {
+        User user = customUserDetails.getUser();
+        userService.updateMeetProfile(requestDTO, user.getId(), communityId);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 프로필 수정 완료", null));
     }
 }
 
