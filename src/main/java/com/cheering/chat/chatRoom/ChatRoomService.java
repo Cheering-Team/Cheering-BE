@@ -286,7 +286,14 @@ public class ChatRoomService {
         LocalDateTime now = LocalDateTime.now();
         String groupKey = generateGroupKey(requestDTO.writerId(), now);
 
-        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId, new ChatResponse.ChatResponseDTO("MESSAGE", requestDTO.content(), now, requestDTO.writerId(), requestDTO.writerImage(), requestDTO.writerName(), groupKey, null));
+        Fan writerFan = fanRepository.findById(requestDTO.writerId())
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        if (requestDTO.chatRoomType().equals("CONFIRM")) {
+            simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId, new ChatResponse.ChatResponseDTO("MESSAGE", requestDTO.content(), now, requestDTO.writerId(), writerFan.getMeetImage(), writerFan.getMeetName(), groupKey, null));
+        } else {
+            simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId, new ChatResponse.ChatResponseDTO("MESSAGE", requestDTO.content(), now, requestDTO.writerId(), requestDTO.writerImage(), requestDTO.writerName(), groupKey, null));
+        }
 
         if(requestDTO.chatRoomType().equals("PUBLIC") ||
                 requestDTO.chatRoomType().equals("PRIVATE") ||
