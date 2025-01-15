@@ -26,7 +26,6 @@ import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -36,11 +35,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.cheering.meet.MeetRequest.TicketOption.HAS;
 import static com.cheering.meet.MeetRequest.TicketOption.NOT;
-import static org.apache.http.client.utils.DateUtils.formatDate;
 
 @Service
 @RequiredArgsConstructor
@@ -223,7 +220,6 @@ public class MeetService {
         List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meetPage.getContent().stream()
                 .map(meet -> {
                     int currentCount = calculateCurrentCount(meet.getId());
-                    boolean isMember = checkExistingMeet(meet.getMatch().getId(), user);
 
                     // 사용자의 참여 여부 확인
                     boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
@@ -304,6 +300,40 @@ public class MeetService {
         }
 
         meetRepository.delete(meet);
+    }
+
+    // 모임 탈퇴
+    @Transactional
+    public void leaveMeet(Long meetId, User user) {
+        Meet meet = meetRepository.findById(meetId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
+
+        MeetFan meetFan = meetFanRepository.findByMeetAndRoleIsMember(meet, MeetFanRole.MEMBER)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        // 관리자는 탈퇴 X -> 삭제만
+        if (meetFan.getRole() == MeetFanRole.MANAGER) {
+            throw new CustomException(ExceptionCode.USER_FORBIDDEN);
+        }
+
+        Match match = meet.getMatch();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime matchTime = match.getTime();
+        boolean isMatchWithinTwoDays = now.isAfter(matchTime.minusDays(2));
+
+        // 이틀보다 가까우면 제한 추가
+        if (isMatchWithinTwoDays) {
+            // 이미 제한 있는지 확인
+            validateParticipation(match.getId(), user);
+            MatchRestriction restriction = MatchRestriction.builder()
+                    .user(user)
+                    .match(match)
+                    .build();
+            matchRestrictionRepository.save(restriction); // 새로운 제한 저장
+        }
+
+        // 참가 정보 삭제
+        meetFanRepository.delete(meetFan);
     }
 
     @Transactional
@@ -387,43 +417,7 @@ public class MeetService {
         chatRepository.save(chat);
     }
 
-    // 모임 참여 취소
-    @Transactional
-    public void cancelMeetParticipation(Long meetId, User user) {
-
-        Meet meet = meetRepository.findById(meetId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
-
-        Match match = meet.getMatch();
-        if (match == null) {
-            throw new CustomException(ExceptionCode.MATCH_NOT_FOUND);
-        }
-
-        MeetFan meetFan = meetFanRepository.findByMeetAndFanUser(meet, user)
-                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
-
-        // 현재 날짜와 경기를 비교
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime matchTime = match.getTime();
-        boolean isWithinTwoDays = now.isAfter(matchTime.minusDays(2));
-
-        // 사용자가 이미 해당 경기에서 제한된 상태인지 확인
-        validateParticipation(meet.getMatch().getId(), user);
-
-        meetFanRepository.delete(meetFan);
-
-        // 이틀 전이 아니면 제한 추가
-        if (isWithinTwoDays) {
-            MatchRestriction restriction = MatchRestriction.builder()
-                    .user(user)
-                    .match(match)
-                    .build();
-            matchRestrictionRepository.save(restriction); // 새로운 제한 저장
-        }
-    }
-
     // 경기 제한 검증
-    @Transactional
     public void validateParticipation(Long matchId, User user) {
         // 경기 제한 여부 확인
         boolean isRestricted = matchRestrictionRepository.existsByMatchIdAndUser(matchId, user);
@@ -657,6 +651,8 @@ public class MeetService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
 
+        Match match = chatRoom.getMeet().getMatch();
+        validateParticipation(match.getId(), fan.getUser());
         boolean alreadyApplier = meetFanRepository.existsByMeetAndFanUser(chatRoom.getMeet(), fan.getUser());
 
         if (alreadyApplier) {
