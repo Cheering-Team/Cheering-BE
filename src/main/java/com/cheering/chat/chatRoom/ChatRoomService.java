@@ -519,7 +519,7 @@ public class ChatRoomService {
                     lastMessage,
                     lastMessageTime,
                     unreadCount,
-                    null
+                    chatRoom.getMeet().getId()
             );
         }).toList();
     }
