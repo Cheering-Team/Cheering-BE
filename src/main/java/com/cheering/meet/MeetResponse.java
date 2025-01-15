@@ -126,10 +126,11 @@ public class MeetResponse {
             MeetWriterDTO writer,
             MatchResponse.MatchDetailDTO match,
             String place,
-            Boolean isManager
+            Boolean isManager,
+            Boolean isMember
     ) {
 
-        public MeetDetailDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoom, MatchResponse.MatchDetailDTO matchDetailDTO, MeetWriterDTO writer, Boolean isManager) {
+        public MeetDetailDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoom, MatchResponse.MatchDetailDTO matchDetailDTO, MeetWriterDTO writer, Boolean isManager, Boolean isMember) {
             this(
                     meet.getId(),
                     meet.getTitle(),
@@ -145,7 +146,8 @@ public class MeetResponse {
                     writer,
                     matchDetailDTO,
                     meet.getPlace().isEmpty() ? null : meet.getPlace(),
-                    isManager
+                    isManager,
+                    isMember
             );
         }
 

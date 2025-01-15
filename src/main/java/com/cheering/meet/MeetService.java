@@ -130,10 +130,8 @@ public class MeetService {
 
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
-        boolean isMember = fanRepository.existsByCommunityIdAndUser(meet.getCommunityId(), user);
-        if (!isMember) {
-            throw new CustomException(ExceptionCode.FAN_NOT_FOUND);
-        }
+
+        boolean isMember = checkExistingMeet(meet.getMatch().getId(), user);
 
         MeetFan managerFan = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
@@ -180,16 +178,13 @@ public class MeetService {
                 ),
                 matchDetailDTO,
                 meet.getPlace(),
-                isManager
+                isManager,
+                isMember
         );
     }
 
     @Transactional(readOnly = true)
     public MeetResponse.MeetListDTO findAllMeetsByCommunity(MeetRequest.MeetSearchRequest request, Long communityId, User user) {
-        boolean isMember = fanRepository.existsByCommunityIdAndUser(communityId, user);
-        if (!isMember) {
-            throw new CustomException(ExceptionCode.FAN_NOT_FOUND);
-        }
 
         Optional<Team> optionalTeam = teamRepository.findById(communityId);
         Optional<Player> optionalPlayer = playerRepository.findById(communityId);
@@ -228,6 +223,7 @@ public class MeetService {
         List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meetPage.getContent().stream()
                 .map(meet -> {
                     int currentCount = calculateCurrentCount(meet.getId());
+                    boolean isMember = checkExistingMeet(meet.getMatch().getId(), user);
 
                     // 사용자의 참여 여부 확인
                     boolean isUserParticipating = meetFanRepository.existsByMeetAndFanUser(meet, user);
