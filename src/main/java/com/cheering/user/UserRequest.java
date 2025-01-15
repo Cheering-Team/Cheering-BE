@@ -52,4 +52,8 @@ public class UserRequest {
             String status
     ) {}
 
+    public record UpdateMeetProfileDTO(
+            String name,
+            String image
+    ) {}
 }
