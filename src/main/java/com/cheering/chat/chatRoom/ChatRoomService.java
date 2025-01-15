@@ -507,7 +507,7 @@ public class ChatRoomService {
             return new ChatRoomResponse.ChatRoomDTO(
                     chatRoom.getId(),
                     opponentFan.getMeetName(),
-                    chatRoom.getImage(),
+                    opponentFan.getMeetImage(),
                     chatRoom.getDescription(),
                     chatRoom.getMax(),
                     chatRoom.getType(),
