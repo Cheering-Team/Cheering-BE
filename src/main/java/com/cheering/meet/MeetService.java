@@ -207,6 +207,7 @@ public class MeetService {
 
         String keyword = request.getKeyword();
         Page<Meet> meetPage = meetRepository.findByFilters(
+                communityId,
                 keyword,
                 request.getType(),
                 genders,
@@ -641,8 +642,7 @@ public class MeetService {
         );
     }
 
-
-
+    @Transactional
     public void joinAsApplier(Long chatRoomId, Long fanId) {
 
         Fan fan = fanRepository.findById(fanId)

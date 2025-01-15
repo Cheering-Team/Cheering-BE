@@ -20,7 +20,8 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
     List<Meet> findByCommunityId(@Param("communityId") Long communityId);
 
     @Query("SELECT m FROM Meet m " +
-            "WHERE (:keyword IS NULL OR m.title LIKE %:keyword%) " +
+            "WHERE (m.communityId = :communityId)" +
+            "AND (:keyword IS NULL OR m.title LIKE %:keyword%) " +
             "AND (:type IS NULL OR m.type = :type) " +
             "AND (:genders IS NULL OR m.gender IN :genders) " +
             "AND (:minAge IS NULL OR m.ageMin >= :minAge) " +
@@ -30,6 +31,7 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             "AND m.match.time > CURRENT_TIMESTAMP " +
             "ORDER BY m.createdAt DESC")
     Page<Meet> findByFilters(
+            @Param("communityId") Long communityId,
             @Param("keyword") String keyword,
             @Param("type") MeetType type,
             @Param("genders") List<MeetGender> genders,
