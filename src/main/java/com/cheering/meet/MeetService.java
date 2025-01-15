@@ -352,12 +352,11 @@ public class MeetService {
         Fan userFan = fanRepository.findByCommunityIdAndUser(privateChatRoom.getCommunityId(), user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        MeetFan meetFan = MeetFan.builder()
-                .meet(meet)
-                .fan(userFan)
-                .role(MeetFanRole.MEMBER)
-                .build();
+        MeetFan meetFan = meetFanRepository.findByMeetAndFanUser(meet, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
+        // 역할 업데이트
+        meetFan.setRole(MeetFanRole.MEMBER);
         meetFanRepository.save(meetFan);
 
         ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
