@@ -468,7 +468,6 @@ public class ChatRoomService {
         return new ChatRoomResponse.IdWithConditionDTO(privateChatRoom.getId(), isConditionMatched);
     }
 
-
     @Transactional(readOnly = true)
     public List<ChatRoomResponse.ChatRoomDTO> getPrivateChatRoomsForManager(Long meetId, User user) {
 
@@ -485,8 +484,13 @@ public class ChatRoomService {
         );
 
         return privateChatRooms.stream().map(chatRoom -> {
+
             ChatSession chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoom.getId(), user)
                     .orElseThrow(() -> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
+
+            // 상대방 팬 정보 가져오기
+            Fan opponentFan = chatSessionRepository.findOpponentFanByChatRoomAndUser(chatRoom.getId(), user)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
             // 마지막 메시지 가져오기
             Pageable pageable = PageRequest.of(0, 1);
@@ -501,15 +505,25 @@ public class ChatRoomService {
             Integer count = chatSessionRepository.countByChatRoom(chatRoom);
 
             return new ChatRoomResponse.ChatRoomDTO(
-                    chatRoom,
+                    chatRoom.getId(),
+                    opponentFan.getMeetName(),
+                    chatRoom.getImage(),
+                    chatRoom.getDescription(),
+                    chatRoom.getMax(),
+                    chatRoom.getType(),
                     count,
+                    null,
+                    null,
+                    null,
                     true,
                     lastMessage,
                     lastMessageTime,
-                    unreadCount
+                    unreadCount,
+                    null
             );
         }).toList();
     }
+
 
 
     @Transactional
