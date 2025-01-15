@@ -487,7 +487,7 @@ public class MeetService {
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
 
-        List<MeetFan> meetFans = meetFanRepository.findAllByMeet(meet);
+        List<MeetFan> meetFans = meetFanRepository.findByMeetAndRoleIsManagerOrMember(meet);
 
         MeetFan manager = meetFans.stream()
                 .filter(meetFan -> meetFan.getRole() == MeetFanRole.MANAGER)
