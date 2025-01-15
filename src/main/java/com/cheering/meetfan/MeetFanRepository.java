@@ -14,12 +14,6 @@ import java.util.Optional;
 
 public interface MeetFanRepository extends JpaRepository<com.cheering.meetfan.MeetFan, Long> {
 
-    @Query("SELECT COUNT(mf) > 0 " +
-            "FROM MeetFan mf " +
-            "WHERE mf.meet.match.id = :matchId AND mf.fan.id = :fanId AND mf.role = com.cheering.meetfan.MeetFanRole.MANAGER")
-    boolean existsByMatchIdAndFanIdAsManager(@Param("matchId") Long matchId, @Param("fanId") Long fanId);
-
-
     @Query("SELECT COUNT(mf) FROM MeetFan mf WHERE mf.meet = :meet AND (mf.role = 'MANAGER' OR mf.role = 'MEMBER')")
     int countByMeet(@Param("meet") Meet meet);
 
@@ -48,9 +42,6 @@ public interface MeetFanRepository extends JpaRepository<com.cheering.meetfan.Me
 
     @Query("SELECT mf FROM MeetFan mf JOIN mf.meet m JOIN m.match mt WHERE mf.fan.user = :user ORDER BY mt.time ASC")
     Page<MeetFan> findByFanUserOrderByMatchTime(User user, Pageable pageable);
-
-    @Query("SELECT mf FROM MeetFan mf WHERE mf.meet = :meet")
-    List<MeetFan> findAllByMeet(@Param("meet") Meet meet);
 
     @Query("SELECT mf FROM MeetFan mf WHERE mf.meet = :meet AND (mf.role = 'MANAGER' OR mf.role = 'MEMBER')")
     List<MeetFan> findByMeetAndRoleIsManagerOrMember(@Param("meet") Meet meet);

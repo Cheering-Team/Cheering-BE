@@ -128,7 +128,7 @@ public class MeetService {
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
 
-        boolean isMember = checkExistingMeet(meet.getMatch().getId(), user);
+        boolean isMember = meetFanRepository.existsByMeetAndFanUserAndRole(meet, user, MeetFanRole.MEMBER) || meetFanRepository.existsByMeetAndFanUserAndRole(meet, user, MeetFanRole.MANAGER);
 
         MeetFan managerFan = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
