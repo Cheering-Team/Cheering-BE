@@ -334,7 +334,7 @@ public class MeetService {
         }
 
         // 참가 정보 삭제
-        meetFanRepository.delete(meetFan);
+        meetFan.setRole(MeetFanRole.LEFT);
     }
 
     @Transactional
@@ -433,8 +433,8 @@ public class MeetService {
 
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
 
-        // 요청한 사용자가 참여 중인 모든 모임 조회
-        Page<MeetFan> meetFanPage = meetFanRepository.findByFanUserOrderByMatchTime(user, pageRequest);
+        // 요청한 사용자가 참여 중인 모든 모임 조회 (탈퇴 제외)
+        Page<MeetFan> meetFanPage = meetFanRepository.findByFanUserOrderByMatchTimeExcludingLeft(user, MeetFanRole.LEFT, pageRequest);
 
         List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meetFanPage.getContent().stream()
                 .map(meetFan -> {
@@ -518,7 +518,7 @@ public class MeetService {
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
 
         // 요청한 커뮤니티에서 사용자의 참여 확정된 모임 조회
-        Page<Meet> meetPage = meetRepository.findMeetsByCommunityAndUser(communityId, user, pageRequest);
+        Page<Meet> meetPage = meetRepository.findConfirmedMeetsByCommunityIdAndRole(communityId, user, pageRequest);
 
         Optional<Team> optionalTeam = teamRepository.findById(communityId);
         Optional<Player> optionalPlayer = playerRepository.findById(communityId);
@@ -572,7 +572,8 @@ public class MeetService {
             // 과거 모임만 필터링
             meets = meetRepository.findPastMeetsByCommunityAndUser(communityId, user, pageRequest);
         } else {
-            meets = meetRepository.findFutureMeetsByCommunityAndUser(communityId, user, pageRequest);
+            List<MeetFanRole> roles = List.of(MeetFanRole.MANAGER, MeetFanRole.MEMBER, MeetFanRole.APPLIER);
+            meets = meetRepository.findFutureMeetsByCommunityAndUser(communityId, user, roles, pageRequest);
         }
 
         Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
