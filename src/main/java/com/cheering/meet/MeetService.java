@@ -371,12 +371,6 @@ public class MeetService {
 
         meet.setTitle(updateMeetDTO.title());
         meet.setDescription(updateMeetDTO.description());
-        meet.setMax(updateMeetDTO.max());
-        meet.setHasTicket(updateMeetDTO.hasTicket());
-        meet.setGender(updateMeetDTO.gender());
-        meet.setAgeMin(updateMeetDTO.ageMin());
-        meet.setAgeMax(updateMeetDTO.ageMax());
-        meet.setPlace(updateMeetDTO.place());
 
         meetRepository.save(meet);
     }
