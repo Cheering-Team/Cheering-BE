@@ -448,6 +448,7 @@ public class ChatRoomService {
                         .sessionId(UUID.randomUUID().toString()) // 임시 세션 ID
                         .chatRoom(privateChatRoom)
                         .fan(manager)
+                        .lastExitTime(LocalDateTime.now())
                         .build()
         );
 
@@ -456,6 +457,7 @@ public class ChatRoomService {
                         .sessionId(UUID.randomUUID().toString()) // 임시 세션 ID
                         .chatRoom(privateChatRoom)
                         .fan(applicant)
+                        .lastExitTime(LocalDateTime.now())
                         .build()
         );
 
