@@ -23,6 +23,7 @@ import com.cheering.fan.FanResponse;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
+import com.cheering.user.deviceToken.DeviceToken;
 import io.sentry.SystemOutLogger;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -442,6 +443,17 @@ public class ChatRoomService {
                 .meet(meet)
                 .build();
         chatRoomRepository.save(privateChatRoom);
+
+        User managerUser = manager.getUser();
+        for (DeviceToken deviceToken : managerUser.getDeviceTokens()) {
+            fcmService.sendMeetNewAppliedMessageTo(
+                    deviceToken.getToken(),
+                    meet.getTitle(),
+                    meet.getTitle() + " 모임에 새로운 신청이 있습니다.",
+                    meetId,
+                    meet.getCommunityId()
+            );
+        }
 
         chatSessionRepository.save(
                 ChatSession.builder()
