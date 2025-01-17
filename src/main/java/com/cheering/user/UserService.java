@@ -442,6 +442,7 @@ public class UserService {
         } else if ("NULL_PROFILE".equalsIgnoreCase(request.status())) {
             fan.setMeetName(request.name());
         }
+        fan.setMeetImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/profile-image.jpg");
         // 저장
         userRepository.save(user);
         fanRepository.save(fan);

@@ -34,9 +34,10 @@ public class ChatSession extends BaseTimeEntity {
     private Fan fan;
 
     @Builder
-    public ChatSession(String sessionId, ChatRoom chatRoom, Fan fan) {
+    public ChatSession(String sessionId, ChatRoom chatRoom, Fan fan, LocalDateTime lastExitTime) {
         this.sessionId = sessionId;
         this.chatRoom = chatRoom;
         this.fan = fan;
+        this.lastExitTime = lastExitTime;
     }
 }
