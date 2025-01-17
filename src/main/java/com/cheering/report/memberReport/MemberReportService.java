@@ -24,27 +24,25 @@ public class MemberReportService {
     private final MemberReportRepository memberReportRepository;
 
     @Transactional
-    public void reportMember(MemberReportRequest.MeetMemberReportRequest request, User user) {
+    public void reportMember(MemberReportRequest.MeetMemberReportRequest request, Long meetId, User user) {
 
-        Meet meet = meetRepository.findById(request.meetId())
+        Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
 
-        Fan curFan = fanRepository.findByCommunityIdAndUser(meet.getCommunityId(), user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+        Fan curFan = fanRepository.findByCommunityIdAndUser(meet.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         Fan reportedFan = fanRepository.findById(request.reportedFanId()).orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        Optional<MemberReport> report = memberReportRepository.findByReportedFanAndWriter(reportedFan, curFan);
+        Optional<MemberReport> report = memberReportRepository.findByReportedFanAndWriter(reportedFan.getUser().getId(), curFan);
 
         if(report.isPresent()) {
             return;
         }
 
         MemberReport newMemberReport = MemberReport.builder()
-                .reportedFan(reportedFan)
                 .writer(curFan)
-                .userId(reportedFan.getId())
+                .userId(reportedFan.getUser().getId())
                 .reportReason(request.reason())
-                .meet(meet)
                 .build();
 
         memberReportRepository.save(newMemberReport);

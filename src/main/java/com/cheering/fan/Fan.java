@@ -14,6 +14,7 @@ import com.cheering.post.Like.Like;
 import com.cheering.post.Post;
 import com.cheering.report.block.Block;
 import com.cheering.report.commentReport.CommentReport;
+import com.cheering.report.memberReport.MemberReport;
 import com.cheering.report.postReport.PostReport;
 import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.user.User;
@@ -88,6 +89,9 @@ public class Fan extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "writer", cascade = CascadeType.REMOVE)
     private List<ReCommentReport> reCommentReports = new ArrayList<>();
+
+    @OneToMany(mappedBy = "writer", cascade = CascadeType.REMOVE)
+    private List<MemberReport> memberReports = new ArrayList<>();
 
     @OneToMany(mappedBy = "from", cascade = CascadeType.REMOVE)
     private List<Block> blocksFrom = new ArrayList<>();

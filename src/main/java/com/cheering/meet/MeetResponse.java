@@ -171,6 +171,7 @@ public class MeetResponse {
     public record MeetMemberDTO(
             Long meetFanId,
             Long userId,
+            Long FanId,
             Integer userAge,
             Gender userGender,
             String role,
@@ -182,6 +183,7 @@ public class MeetResponse {
             this(
                     meetFan.getId(),
                     meetFan.getFan().getUser().getId(),
+                    meetFan.getFan().getId(),
                     meetFan.getFan().getUser().getAge(),
                     meetFan.getFan().getUser().getGender(),
                     meetFan.getRole().toString(),
