@@ -52,21 +52,7 @@ public class MeetRequest {
             @NotNull
             String title,
 
-            String description,
-
-            @NotNull
-            Integer max,
-
-            @NotNull
-            MeetGender gender, // 성별 (MALE, FEMALE, ANY)
-
-            Integer ageMin,
-
-            Integer ageMax,
-
-            String place,
-
-            Boolean hasTicket
+            String description
     ) { }
 
     @Getter

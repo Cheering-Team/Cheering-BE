@@ -114,7 +114,7 @@ public class MeetController {
     })
     public ResponseEntity<?> updateMeet(
             @PathVariable Long meetId,
-            @RequestBody @Valid MeetRequest.UpdateMeetDTO updateMeetDTO,
+            @RequestBody MeetRequest.UpdateMeetDTO updateMeetDTO,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         meetService.updateMeet(meetId, updateMeetDTO, userDetails.getUser());
