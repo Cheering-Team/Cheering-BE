@@ -477,29 +477,35 @@ public class MeetService {
     }
 
     @Transactional(readOnly = true)
-    public List<MeetResponse.MeetMemberDTO> findAllMembersByMeet(Long meetId) {
+    public Map<String, List<MeetResponse.MeetMemberDTO>> findAllMembersByMeet(Long meetId, User user) {
+
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
 
-        List<MeetFan> meetFans = meetFanRepository.findByMeetAndRoleIsManagerOrMember(meet);
+        MeetFan managerFan = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        MeetFan manager = meetFans.stream()
-                .filter(meetFan -> meetFan.getRole() == MeetFanRole.MANAGER)
-                .findFirst()
-                .orElseThrow(() -> new CustomException(ExceptionCode.MANAGER_NOT_FOUND));
+        boolean isManager = managerFan.getFan().getUser().getId().equals(user.getId());
 
-        List<MeetFan> members = meetFans.stream()
-                .filter(meetFan -> meetFan.getRole() != MeetFanRole.MANAGER)
-                .sorted(Comparator.comparing(MeetFan::getCreatedAt)) // 생성 시간 기준 정렬
+        // MANAGER + MEMBER
+        List<MeetFan> currentFans = meetFanRepository.findByMeetAndRoleIsManagerOrMember(meet)
+                .stream()
+                .sorted(Comparator.comparing(MeetFan::getCreatedAt))
                 .collect(Collectors.toList());
 
-        List<MeetFan> sortedMeetFans = new ArrayList<>();
-        sortedMeetFans.add(manager);
-        sortedMeetFans.addAll(members);
+        // LEFT
+        List<MeetFan> leavedMembers = isManager ?
+                meetFanRepository.findLeavedMeetFansByMeet(meet)
+                        .stream()
+                        .sorted(Comparator.comparing(MeetFan::getCreatedAt))
+                        .collect(Collectors.toList())
+                : Collections.emptyList();
 
+        // 현재 연도 계산
         int currentYear = java.time.Year.now().getValue();
 
-        return sortedMeetFans.stream()
+        // DTO 변환
+        List<MeetResponse.MeetMemberDTO> activeMemberDTOs = currentFans.stream()
                 .map(meetFan -> new MeetResponse.MeetMemberDTO(
                         meetFan.getId(),
                         meetFan.getFan().getUser().getId(),
@@ -511,7 +517,28 @@ public class MeetService {
                         meetFan.getRole().equals(MeetFanRole.MANAGER)
                 ))
                 .collect(Collectors.toList());
+
+        List<MeetResponse.MeetMemberDTO> leavedMemberDTOs = leavedMembers.stream()
+                .map(meetFan -> new MeetResponse.MeetMemberDTO(
+                        meetFan.getId(),
+                        meetFan.getFan().getUser().getId(),
+                        currentYear - meetFan.getFan().getUser().getAge() + 1,
+                        meetFan.getFan().getUser().getGender(),
+                        meetFan.getRole().toString(),
+                        meetFan.getFan().getMeetName(),
+                        meetFan.getFan().getMeetImage(),
+                        false
+                ))
+                .collect(Collectors.toList());
+
+        // 섹션별 데이터 반환
+        Map<String, List<MeetResponse.MeetMemberDTO>> result = new HashMap<>();
+        result.put("MEMBERS", activeMemberDTOs);
+        result.put("LEAVED", leavedMemberDTOs);
+
+        return result;
     }
+
 
     @Transactional(readOnly = true)
     public MeetResponse.MeetListDTO findMyConfirmedMeetsInCommunity(MeetRequest.MeetSearchRequest request, Long communityId, User user) {

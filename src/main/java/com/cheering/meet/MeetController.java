@@ -158,9 +158,11 @@ public class MeetController {
     }
 
     @GetMapping("/meets/{meetId}/members")
-    public ResponseEntity<?> getMeetMembers(@PathVariable Long meetId) {
+    public ResponseEntity<?> getMeetMembers(@PathVariable Long meetId, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 멤버 조회 완료", meetService.findAllMembersByMeet(meetId)));
+        User user = userDetails.getUser();
+
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 멤버 조회 완료", meetService.findAllMembersByMeet(meetId, user)));
     }
 
     @GetMapping("/communities/{communityId}/meets/my-confirmed")
