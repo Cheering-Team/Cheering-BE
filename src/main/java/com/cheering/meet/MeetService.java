@@ -477,8 +477,7 @@ public class MeetService {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, List<MeetResponse.MeetMemberDTO>> findAllMembersByMeet(Long meetId, User user) {
-
+    public List<Map<String, Object>> findAllMembersByMeet(Long meetId, User user) {
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
 
@@ -487,13 +486,12 @@ public class MeetService {
 
         boolean isManager = managerFan.getFan().getUser().getId().equals(user.getId());
 
-        // MANAGER + MEMBER
-        List<MeetFan> currentFans = meetFanRepository.findByMeetAndRoleIsManagerOrMember(meet)
+        // Retrieve all members
+        List<MeetFan> members = meetFanRepository.findByMeetAndRoleIsManagerOrMember(meet)
                 .stream()
                 .sorted(Comparator.comparing(MeetFan::getCreatedAt))
                 .collect(Collectors.toList());
 
-        // LEFT
         List<MeetFan> leavedMembers = isManager ?
                 meetFanRepository.findLeavedMeetFansByMeet(meet)
                         .stream()
@@ -501,42 +499,22 @@ public class MeetService {
                         .collect(Collectors.toList())
                 : Collections.emptyList();
 
-        // 현재 연도 계산
-        int currentYear = java.time.Year.now().getValue();
+        // Group the results
+        List<Map<String, Object>> response = new ArrayList<>();
 
-        // DTO 변환
-        List<MeetResponse.MeetMemberDTO> activeMemberDTOs = currentFans.stream()
-                .map(meetFan -> new MeetResponse.MeetMemberDTO(
-                        meetFan.getId(),
-                        meetFan.getFan().getUser().getId(),
-                        currentYear - meetFan.getFan().getUser().getAge() + 1,
-                        meetFan.getFan().getUser().getGender(),
-                        meetFan.getRole().toString(),
-                        meetFan.getFan().getMeetName(),
-                        meetFan.getFan().getMeetImage(),
-                        meetFan.getRole().equals(MeetFanRole.MANAGER)
-                ))
-                .collect(Collectors.toList());
+        // Add MEMBERS section
+        Map<String, Object> membersSection = new HashMap<>();
+        membersSection.put("title", "MEMBERS");
+        membersSection.put("data", members.stream().map(MeetResponse.MeetMemberDTO::new).collect(Collectors.toList()));
+        response.add(membersSection);
 
-        List<MeetResponse.MeetMemberDTO> leavedMemberDTOs = leavedMembers.stream()
-                .map(meetFan -> new MeetResponse.MeetMemberDTO(
-                        meetFan.getId(),
-                        meetFan.getFan().getUser().getId(),
-                        currentYear - meetFan.getFan().getUser().getAge() + 1,
-                        meetFan.getFan().getUser().getGender(),
-                        meetFan.getRole().toString(),
-                        meetFan.getFan().getMeetName(),
-                        meetFan.getFan().getMeetImage(),
-                        false
-                ))
-                .collect(Collectors.toList());
+        // Add LEAVED section
+        Map<String, Object> leavedSection = new HashMap<>();
+        leavedSection.put("title", "LEAVED");
+        leavedSection.put("data", leavedMembers.stream().map(MeetResponse.MeetMemberDTO::new).collect(Collectors.toList()));
+        response.add(leavedSection);
 
-        // 섹션별 데이터 반환
-        Map<String, List<MeetResponse.MeetMemberDTO>> result = new HashMap<>();
-        result.put("MEMBERS", activeMemberDTOs);
-        result.put("LEAVED", leavedMemberDTOs);
-
-        return result;
+        return response;
     }
 
 
