@@ -1,5 +1,6 @@
 package com.cheering.notification.Fcm;
 
+import com.cheering.meet.Meet;
 import com.cheering.user.deviceToken.DeviceTokenRepository;
 import com.google.firebase.ErrorCode;
 import com.google.firebase.messaging.*;
@@ -95,6 +96,24 @@ public class FcmServiceImpl {
             } else {
                 System.err.println(e.getMessage());
             }
+        }
+    }
+
+    public void sendMeetDeleteMessageTo(String token, String title, String body, Long meetId, Long communityId) {
+        Message message = Message.builder()
+                .setToken(token)
+                .putData("type", "MEET_DELETED")
+                .putData("meetId", meetId.toString())
+                .putData("communityId", communityId.toString())
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
+                .build();
+        try {
+            String response = FirebaseMessaging.getInstance().send(message);
+        } catch (FirebaseMessagingException e) {
+            System.err.println(e.getMessage());
         }
     }
 }

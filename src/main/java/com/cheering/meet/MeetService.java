@@ -19,11 +19,13 @@ import com.cheering.matchRestriction.MatchRestrictionRepository;
 import com.cheering.meetfan.MeetFan;
 import com.cheering.meetfan.MeetFanRepository;
 import com.cheering.meetfan.MeetFanRole;
+import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
+import com.cheering.user.deviceToken.DeviceToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,6 +56,7 @@ public class MeetService {
     private final ChatRoomService chatRoomService;
     private final ChatSessionRepository chatSessionRepository;
     private final ChatRepository chatRepository;
+    private final FcmServiceImpl fcmService;
 
     @Transactional
     public MeetResponse.MeetIdDTO createMeet(Long communityId, MeetRequest.CreateMeetDTO requestDto, User user) {
@@ -298,6 +301,21 @@ public class MeetService {
                     .match(match)
                     .build();
             matchRestrictionRepository.save(restriction); // 새로운 제한 저장
+        }
+
+        // 알림 전송
+        List<MeetFan> meetFans = meetFanRepository.findByFanUserOrderByRoleExcludingLeft(user, MeetFanRole.LEFT);
+        for (MeetFan meetFan : meetFans) {
+            User fanUser = meetFan.getFan().getUser();
+            for (DeviceToken deviceToken : fanUser.getDeviceTokens()) {
+                fcmService.sendMeetDeleteMessageTo(
+                        deviceToken.getToken(),
+                        meet.getTitle(),
+                        meet.getTitle() + " 모임이 삭제되었습니다.",
+                        meetId,
+                        meet.getCommunityId()
+                );
+            }
         }
 
         meetRepository.delete(meet);
