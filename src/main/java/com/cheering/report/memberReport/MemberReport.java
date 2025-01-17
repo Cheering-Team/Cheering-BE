@@ -31,21 +31,11 @@ public class MemberReport extends BaseTimeEntity {
     @JoinColumn(name = "writer_id")
     private Fan writer; // 신고자
 
-    @ManyToOne
-    @JoinColumn(name = "reported_id")
-    private Fan reportedFan; // 신고 대상
-
-    @ManyToOne
-    @JoinColumn(name = "meet_id")
-    private Meet meet;
-
     @Builder
-    public MemberReport(Long reportId, Long userId, String reportReason, Fan writer, Fan reportedFan, Meet meet) {
+    public MemberReport(Long reportId, Long userId, String reportReason, Fan writer, Fan reportedFan) {
         this.id = reportId;
         this.userId = userId;
         this.reportReason = reportReason;
         this.writer = writer;
-        this.reportedFan = reportedFan;
-        this.meet = meet;
     }
 }

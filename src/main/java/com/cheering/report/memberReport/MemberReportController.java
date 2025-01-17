@@ -19,10 +19,10 @@ public class MemberReportController {
 
     private final MemberReportService memberReportService;
 
-    @PostMapping("/meets/{meetId}/reports")
+    @PostMapping("/meets/{meetId}/members/report")
     ResponseEntity<?> reportMember (@PathVariable("meetId") Long meetId, MemberReportRequest.MeetMemberReportRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = customUserDetails.getUser();
-        memberReportService.reportMember(request, user);
+        memberReportService.reportMember(request, meetId, user);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "신고 완료", null));
     }
 }
