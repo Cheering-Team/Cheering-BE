@@ -8,7 +8,19 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public class CommunityResponse {
-    public record CommunityDTO(Long id, String type, String koreanName, String englishName, String image, String backgroundImage, Long fanCount, FanResponse.FanDTO curFan, String sportName, String leagueName, String firstTeamName, Long officialRoomId, String color) {
+    public record CommunityDTO(Long id,
+                               String type,
+                               String koreanName,
+                               String englishName,
+                               String image,
+                               String backgroundImage,
+                               Long fanCount,
+                               FanResponse.FanDTO curFan,
+                               String sportName,
+                               String leagueName,
+                               String firstTeamName,
+                               Long officialRoomId,
+                               String color) {
 
         public CommunityDTO(Team team, Long fanCount, FanResponse.FanDTO curFan) {
             this(team.getId(), "TEAM", team.getKoreanName(), team.getEnglishName(), team.getImage(), team.getBackgroundImage(), fanCount, curFan, team.getLeague().getSport().getName(), team.getLeague().getName(), null, null, team.getColor());

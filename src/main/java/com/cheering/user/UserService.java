@@ -469,22 +469,4 @@ public class UserService {
 
         return new UserResponse.AgeAndGenderDTO(userId, currentAge, user.getGender());
     }
-
-    @Transactional
-    public void updateMeetProfile(UserRequest.UpdateMeetProfileDTO request, Long userId, Long communityId) {
-        if (badWordService.containsBadWords(request.name())) {
-            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
-        }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
-
-        Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
-                .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-
-        fan.setMeetName(request.name());
-        fan.setMeetImage(request.image());
-
-        fanRepository.save(fan);
-    }
 }

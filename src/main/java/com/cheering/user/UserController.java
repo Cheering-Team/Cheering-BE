@@ -138,12 +138,5 @@ public class UserController {
         User user = customUserDetails.getUser();
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별 조회 완료", userService.getAgeAndGender(user.getId())));
     }
-
-    @PutMapping("/users/communities/{communityId}/update-profile")
-    public ResponseEntity<?> updateMeetProfile(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UserRequest.UpdateMeetProfileDTO requestDTO) {
-        User user = customUserDetails.getUser();
-        userService.updateMeetProfile(requestDTO, user.getId(), communityId);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 프로필 수정 완료", null));
-    }
 }
 

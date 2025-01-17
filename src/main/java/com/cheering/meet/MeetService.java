@@ -11,6 +11,7 @@ import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.fan.CommunityType;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanRepository;
+import com.cheering.fan.FanResponse;
 import com.cheering.match.Match;
 import com.cheering.match.MatchRepository;
 import com.cheering.match.MatchResponse;
@@ -693,4 +694,10 @@ public class MeetService {
 
     }
 
+    public FanResponse.FanDTO getMeetProfile(Long communityId, User user) {
+        Fan curFan = fanRepository.findByCommunityIdAndUser(communityId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        return new FanResponse.FanDTO(curFan.getId(), curFan.getType(), curFan.getMeetName(), curFan.getMeetImage());
+    }
 }
