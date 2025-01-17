@@ -309,7 +309,7 @@ public class MeetService {
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
 
-        MeetFan meetFan = meetFanRepository.findByMeetAndRoleIsMember(meet, MeetFanRole.MEMBER)
+        MeetFan meetFan = meetFanRepository.findByMeetAndUserAndRole(meet, user, MeetFanRole.MEMBER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
         // 관리자는 탈퇴 X -> 삭제만
