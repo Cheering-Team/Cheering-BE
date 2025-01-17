@@ -8,5 +8,5 @@ ALTER TABLE meet_fan_tb
     ('MANAGER'::character varying)::text,
     ('MEMBER'::character varying)::text,
     ('APPLIER'::character varying)::text,
-    ('LEFT'::character varying)::text,
+    ('LEFT'::character varying)::text
     ]));
