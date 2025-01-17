@@ -116,4 +116,22 @@ public class FcmServiceImpl {
             System.err.println(e.getMessage());
         }
     }
+
+    public void sendMeetNewAppliedMessageTo(String token, String title, String body, Long meetId, Long communityId) {
+        Message message = Message.builder()
+                .setToken(token)
+                .putData("type", "MEET_APPLIED")
+                .putData("meetId", meetId.toString())
+                .putData("communityId", communityId.toString())
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
+                .build();
+        try {
+            String response = FirebaseMessaging.getInstance().send(message);
+        } catch (FirebaseMessagingException e) {
+            System.err.println(e.getMessage());
+        }
+    }
 }
