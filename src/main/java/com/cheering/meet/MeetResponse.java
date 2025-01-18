@@ -171,7 +171,7 @@ public class MeetResponse {
     public record MeetMemberDTO(
             Long meetFanId,
             Long userId,
-            Long FanId,
+            Long fanId,
             Integer userAge,
             Gender userGender,
             String role,

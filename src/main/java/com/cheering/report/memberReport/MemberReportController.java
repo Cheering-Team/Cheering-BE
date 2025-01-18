@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +17,7 @@ public class MemberReportController {
     private final MemberReportService memberReportService;
 
     @PostMapping("/meets/{meetId}/members/report")
-    ResponseEntity<?> reportMember (@PathVariable("meetId") Long meetId, MemberReportRequest.MeetMemberReportRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    ResponseEntity<?> reportMember (@PathVariable("meetId") Long meetId, @RequestBody MemberReportRequest.MeetMemberReportRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = customUserDetails.getUser();
         memberReportService.reportMember(request, meetId, user);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.CREATED, "신고 완료", null));
