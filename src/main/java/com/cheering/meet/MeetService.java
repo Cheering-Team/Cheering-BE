@@ -25,6 +25,7 @@ import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
+import com.cheering.user.Gender;
 import com.cheering.user.User;
 import com.cheering.user.deviceToken.DeviceToken;
 import lombok.RequiredArgsConstructor;
@@ -700,4 +701,74 @@ public class MeetService {
 
         return new FanResponse.FanDTO(curFan.getId(), curFan.getType(), curFan.getMeetName(), curFan.getMeetImage());
     }
+
+    public MeetGender genderMapper(Gender gender) {
+        return MeetGender.valueOf(gender.name());
+    }
+
+    @Transactional(readOnly = true)
+    public List<MeetResponse.MeetInfoDTO> getRandomMeetsByConditions(Long communityId, User user) {
+
+        if (user.getAge() == null) {
+            throw new CustomException(ExceptionCode.USER_AGE_NOT_SET);
+        }
+
+        if (user.getGender() == null) {
+            throw new CustomException(ExceptionCode.USER_GENDER_NOT_SET);
+        }
+
+        // 커뮤니티 타입 확인 (Team 또는 Player)
+        Optional<Team> optionalTeam = teamRepository.findById(communityId);
+        Optional<Player> optionalPlayer = playerRepository.findById(communityId);
+
+        // 현재 나이 계산
+        int currentYear = java.time.Year.now().getValue();
+        int currentAge = currentYear - user.getAge() + 1;
+        MeetGender meetGender = genderMapper(user.getGender());
+
+        List<Meet> meets = meetRepository.findMeetsByConditions(
+                communityId,
+                currentAge,
+                meetGender,
+                user,
+                PageRequest.of(0, 50) // 최대 50개를 조회
+        );
+
+        if (meets.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 랜덤으로 5개 선택
+        Collections.shuffle(meets);
+        List<Meet> randomMeets = meets.stream().limit(5).collect(Collectors.toList());
+
+        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = randomMeets.stream()
+                .map(meet -> {
+                    int currentCount = calculateCurrentCount(meet.getId());
+
+                    // 모임 상태 결정
+                    MeetStatus status = null;
+
+                    // 채팅방 정보 생성
+                    ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM)
+                            .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+                    ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
+                            confirmChatRoom,
+                            currentCount,
+                            true
+                    );
+
+                    if (optionalTeam.isPresent()) {
+                        Team curTeam = optionalTeam.get();
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam, status);
+                    } else {
+                        Player player = optionalPlayer.orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
+                        Team firstTeam = player.getFirstTeam();
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam, status);
+                    }
+                })
+                .collect(Collectors.toList());
+        return meetInfoDTOs;
+    }
+
 }

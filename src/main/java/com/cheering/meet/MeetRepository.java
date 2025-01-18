@@ -3,6 +3,7 @@ package com.cheering.meet;
 import com.cheering.chat.ChatType;
 import com.cheering.chat.chatRoom.ChatRoomType;
 import com.cheering.meetfan.MeetFanRole;
+import com.cheering.user.Gender;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -51,6 +52,21 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
 
     @Query("SELECT CASE WHEN COUNT(mf) > 0 THEN true ELSE false END FROM Meet m JOIN m.meetFans mf WHERE m.match.id = :matchId AND mf.fan.user = :user AND (mf.role = 'MANAGER' OR mf.role = 'MEMBER')")
     boolean existsByMatchAndMeetFansFanUser(@Param("matchId") Long matchId, @Param("user") User user);
+
+    @Query("SELECT m FROM Meet m " +
+            "WHERE m.communityId = :communityId " +
+            "AND m.ageMin <= :userAge AND m.ageMax >= :userAge " +
+            "AND (m.gender = :gender OR m.gender = 'ANY') " +
+            "AND m.match.time > CURRENT_TIMESTAMP " +
+            "AND NOT EXISTS (" +
+            "    SELECT mf FROM MeetFan mf WHERE mf.meet = m AND mf.fan.user = :user" +
+            ") " +
+            "ORDER BY m.createdAt DESC")
+    List<Meet> findMeetsByConditions(@Param("communityId") Long communityId,
+                                     @Param("userAge") Integer userAge,
+                                     @Param("gender") MeetGender gender,
+                                     @Param("user") User user,
+                                     Pageable pageable);
 
 
 
