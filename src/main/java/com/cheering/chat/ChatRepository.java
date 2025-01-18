@@ -1,6 +1,7 @@
 package com.cheering.chat;
 
 import com.cheering.chat.chatRoom.ChatRoom;
+import com.cheering.fan.Fan;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,4 +32,8 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
 
 //    @Query(value = "SELECT * FROM chat_tb WHERE DATE_TRUNC('minute', created_at) = DATE_TRUNC('minute', CURRENT_TIMESTAMP) AND chat_room_id = :chatRoomId AND writer_id = :writerId", nativeQuery = true)
 //    Optional<Chat> findByChatRoomAndWriterAndCreatedAtMinute(@Param("chatRoomId") Long chatRoomId, @Param("writerId") Long writerId);
+
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN TRUE ELSE FALSE END FROM Chat c WHERE c.chatRoom = :chatRoom")
+    boolean existsByChatRoomAndWriter(@Param("chatRoom") ChatRoom chatRoom);
+
 }

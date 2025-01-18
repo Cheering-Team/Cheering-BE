@@ -303,6 +303,27 @@ public class ChatRoomService {
             ChatRoom chatRoom = entityManager.getReference(ChatRoom.class, chatRoomId);
             Fan fan = entityManager.getReference(Fan.class, requestDTO.writerId());
 
+            if(requestDTO.chatRoomType().equals("PRIVATE")) {
+                Fan manager = chatRoom.getManager();
+                if (!writerFan.equals(manager)) {
+                    boolean hasMessage = chatRepository.existsByChatRoomAndWriter(chatRoom);
+
+                    // 처음 메시지를 보낸 경우에만 알림
+                    if (!hasMessage) {
+                        User managerUser = manager.getUser();
+                        for (DeviceToken deviceToken : managerUser.getDeviceTokens()) {
+                            fcmService.sendMeetNewAppliedMessageTo(
+                                    deviceToken.getToken(),
+                                    chatRoom.getMeet().getTitle(),
+                                    chatRoom.getMeet().getTitle() + " 모임에 새로운 신청이 있습니다.",
+                                    chatRoom.getMeet().getId(),
+                                    chatRoom.getMeet().getCommunityId()
+                            );
+                        }
+                    }
+                }
+            }
+
             Chat chat = Chat.builder()
                     .type(ChatType.MESSAGE)
                     .chatRoom(chatRoom)
@@ -320,6 +341,7 @@ public class ChatRoomService {
                 user.getDeviceTokens().forEach(deviceToken -> fcmService.sendChatMessageTo(deviceToken.getToken(), count));
             });
         }
+
     }
 
     @Transactional
@@ -443,17 +465,6 @@ public class ChatRoomService {
                 .meet(meet)
                 .build();
         chatRoomRepository.save(privateChatRoom);
-
-        User managerUser = manager.getUser();
-        for (DeviceToken deviceToken : managerUser.getDeviceTokens()) {
-            fcmService.sendMeetNewAppliedMessageTo(
-                    deviceToken.getToken(),
-                    meet.getTitle(),
-                    meet.getTitle() + " 모임에 새로운 신청이 있습니다.",
-                    meetId,
-                    meet.getCommunityId()
-            );
-        }
 
         chatSessionRepository.save(
                 ChatSession.builder()
