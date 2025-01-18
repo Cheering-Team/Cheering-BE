@@ -58,6 +58,9 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             "AND m.ageMin <= :userAge AND m.ageMax >= :userAge " +
             "AND (m.gender = :gender OR m.gender = 'ANY') " +
             "AND m.match.time > CURRENT_TIMESTAMP " +
+            "AND m.max > (" +
+            "    SELECT COUNT(mf) FROM MeetFan mf WHERE mf.meet = m" +
+            ") " +
             "AND NOT EXISTS (" +
             "    SELECT mf FROM MeetFan mf WHERE mf.meet = m AND mf.fan.user = :user" +
             ") " +
