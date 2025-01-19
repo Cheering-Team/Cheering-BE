@@ -207,17 +207,18 @@ public class MatchService {
                 // 가입된 모임이 없는 경우
                 List<Meet> meets;
                 if (user.getAge() == null || user.getGender() == null) {
-                    meets = meetRepository.findMeetsByConditionsWithMatch(communityId, match.getId(), PageRequest.of(0, 50));
+                    meets = meetRepository.findMeetsByMatch(communityId, match.getId(), PageRequest.of(0, 50));
                 } else {
                     int currentYear = java.time.Year.now().getValue();
                     int currentAge = currentYear - user.getAge() + 1;
                     MeetGender meetGender = meetService.genderMapper(user.getGender());
 
-                    meets = meetRepository.findMeetsByConditions(
+                    meets = meetRepository.findMeetsByConditionsWithMattch(
                             communityId,
                             currentAge,
                             meetGender,
                             user,
+                            match.getId(),
                             PageRequest.of(0, 50)
                     );
                 }
