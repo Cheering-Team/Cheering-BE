@@ -207,7 +207,7 @@ public class MatchService {
                 // 가입된 모임이 없는 경우
                 List<Meet> meets;
                 if (user.getAge() == null || user.getGender() == null) {
-                    meets = meetRepository.findMeetsByConditionsWithoutProfile(communityId, PageRequest.of(0, 50));
+                    meets = meetRepository.findMeetsByConditionsWithMatch(communityId, match.getId(), PageRequest.of(0, 50));
                 } else {
                     int currentYear = java.time.Year.now().getValue();
                     int currentAge = currentYear - user.getAge() + 1;
