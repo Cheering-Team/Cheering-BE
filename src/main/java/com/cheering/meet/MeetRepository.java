@@ -74,8 +74,9 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             "WHERE mf.fan.user = :user " +
             "AND mf.role IN :roles " +
             "AND mf.meet.match.time > CURRENT_TIMESTAMP " +
+            "AND mf.meet.communityId = :communityId " +
             "ORDER BY mf.meet.match.time ASC")
-    List<Meet> findClosestMeetsByUserAndRoles(@Param("user") User user, @Param("roles") List<MeetFanRole> roles);
+    List<Meet> findClosestMeetsByUserAndRoles(@Param("communityId") Long CommunityId, @Param("user") User user, @Param("roles") List<MeetFanRole> roles);
 
 
 
