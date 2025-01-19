@@ -763,10 +763,10 @@ public class MeetService {
     }
 
     @Transactional(readOnly = true)
-    public List<MeetResponse.MeetInfoDTO> findClosestMeets(User user) {
+    public List<MeetResponse.MeetInfoDTO> findClosestMeets(Long communityId, User user) {
 
         List<MeetFanRole> roles = List.of(MeetFanRole.MANAGER, MeetFanRole.MEMBER, MeetFanRole.APPLIER);
-        List<Meet> meets = meetRepository.findClosestMeetsByUserAndRoles(user, roles);
+        List<Meet> meets = meetRepository.findClosestMeetsByUserAndRoles(communityId, user, roles);
 
         meets.stream().limit(5).collect(Collectors.toList());
 
