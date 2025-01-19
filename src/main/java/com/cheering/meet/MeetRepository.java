@@ -43,13 +43,6 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             Pageable pageable
     );
 
-
-
-    @Query("SELECT COUNT(mf) > 0 " +
-            "FROM MeetFan mf " +
-            "WHERE mf.meet.match.id = :matchId AND mf.fan.id = :fanId AND mf.role = 'MANAGER'")
-    boolean existsByMatchIdAndFanIdAsManager(@Param("matchId") Long matchId, @Param("fanId") Long fanId);
-
     @Query("SELECT CASE WHEN COUNT(mf) > 0 THEN true ELSE false END FROM Meet m JOIN m.meetFans mf WHERE m.match.id = :matchId AND mf.fan.user = :user AND (mf.role = 'MANAGER' OR mf.role = 'MEMBER')")
     boolean existsByMatchAndMeetFansFanUser(@Param("matchId") Long matchId, @Param("user") User user);
 
@@ -70,6 +63,15 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
                                      @Param("gender") MeetGender gender,
                                      @Param("user") User user,
                                      Pageable pageable);
+
+    @Query("SELECT mf.meet FROM MeetFan mf " +
+            "WHERE mf.fan.user = :user " +
+            "AND mf.role IN :roles " +
+            "AND mf.meet.match.time > CURRENT_TIMESTAMP " +
+            "ORDER BY mf.meet.match.time ASC")
+    List<Meet> findClosestMeetsByUserAndRoles(@Param("user") User user, @Param("roles") List<MeetFanRole> roles);
+
+
 
 
 
