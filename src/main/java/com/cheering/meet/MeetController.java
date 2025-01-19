@@ -19,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -188,5 +190,14 @@ public class MeetController {
         User user = userDetails.getUser();
 
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "랜덤 5개 모임 조회 완료", meetService.getRandomMeetsByConditions(communityId, user)));
+    }
+
+    @GetMapping("/meets/closest")
+    public ResponseEntity<?> findClosestMeets(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        User user = userDetails.getUser();
+
+        List<MeetResponse.MeetInfoDTO> meets = meetService.findClosestMeets(user);
+
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "가장 가까운 5개의 모임 조회 완료", meets));
     }
 }

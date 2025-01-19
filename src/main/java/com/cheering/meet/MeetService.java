@@ -31,6 +31,7 @@ import com.cheering.user.deviceToken.DeviceToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -763,6 +764,49 @@ public class MeetService {
                 })
                 .collect(Collectors.toList());
         return meetInfoDTOs;
+    }
+
+    @Transactional(readOnly = true)
+    public List<MeetResponse.MeetInfoDTO> findClosestMeets(User user) {
+
+        List<MeetFanRole> roles = List.of(MeetFanRole.MANAGER, MeetFanRole.MEMBER, MeetFanRole.APPLIER);
+        List<Meet> meets = meetRepository.findClosestMeetsByUserAndRoles(user, roles);
+
+        meets.stream().limit(5).collect(Collectors.toList());
+
+        return meets.stream()
+                .map(meet -> {
+                    int currentCount = calculateCurrentCount(meet.getId());
+
+                    MeetStatus status;
+                    if (meet.getManager().getUser().equals(user)) {
+                        status = MeetStatus.MANAGER; // 내가 만든 모임
+                    } else if (meetFanRepository.existsByMeetAndFanUser(meet, user)) {
+                        status = MeetStatus.CONFIRMED; // 확정된 모임
+                    } else {
+                        status = MeetStatus.APPLIED; // 1:1 대화 중인 상태
+                    }
+
+                    Optional<Team> optionalTeam = teamRepository.findById(meet.getCommunityId());
+                    Optional<Player> optionalPlayer = playerRepository.findById(meet.getCommunityId());
+
+                    ChatRoomResponse.ChatRoomDTO chatRoomDTO = null;
+                    ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+                    chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
+                            confirmChatRoom,
+                            currentCount,
+                            true
+                    );
+                    if (optionalTeam.isPresent()) {
+                        Team curTeam = optionalTeam.get();
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam, status);
+                    } else {
+                        Player player = optionalPlayer.get();
+                        Team firstTeam = player.getFirstTeam();
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam, status);
+                    }
+                })
+                .toList();
     }
 
 }
