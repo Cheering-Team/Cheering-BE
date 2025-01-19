@@ -30,20 +30,23 @@ public class MatchController {
 
     // 일정 조회
     @GetMapping("/matches/{matchId}")
-    public ResponseEntity<?> getMatch(@PathVariable("matchId") Long matchId){
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "일정 조회 완료", matchService.getMatch(matchId)));
+    public ResponseEntity<?> getMatch(@PathVariable("matchId") Long matchId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        User user = customUserDetails.getUser();
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "일정 조회 완료", matchService.getMatch(matchId, user)));
     }
 
     // 다음 경기 조회
     @GetMapping("/communities/{communityId}/matches/next")
-    public ResponseEntity<?> getNextMatch(@PathVariable("communityId") Long communityId){
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "다음 경기 조회 완료", matchService.getNextMatch(communityId)));
+    public ResponseEntity<?> getNextMatch(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        User user = customUserDetails.getUser();
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "다음 경기 조회 완료", matchService.getNextMatch(communityId, user)));
     }
 
     // 일주일 전/후 경기 조회
     @GetMapping("/communities/{communityId}/matches/near")
-    public ResponseEntity<?> getNearMatches(@PathVariable("communityId") Long communityId){
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "최근 경기 조회 완료", matchService.getNearMatches(communityId)));
+    public ResponseEntity<?> getNearMatches(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        User user = customUserDetails.getUser();
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "최근 경기 조회 완료", matchService.getNearMatches(communityId, user)));
     }
 
     // 특정 경기투표 포함 게시글 조회

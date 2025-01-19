@@ -78,9 +78,8 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             "ORDER BY mf.meet.match.time ASC")
     List<Meet> findClosestMeetsByUserAndRoles(@Param("communityId") Long CommunityId, @Param("user") User user, @Param("roles") List<MeetFanRole> roles);
 
-
-
-
+    @Query("SELECT m FROM Meet m WHERE m.match.id = :matchId")
+    Optional<Meet> findByMatchId(@Param("matchId") Long matchId);
 
     @Query("SELECT mf.meet FROM MeetFan mf JOIN mf.meet m WHERE mf.fan.user = :user AND m.communityId = :communityId ORDER BY m.match.time ASC")
     Page<Meet> findMeetsByCommunityAndUser(Long communityId, User user, Pageable pageable);
@@ -121,6 +120,16 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             ChatType chatType,
             Pageable pageable
     );
+
+    @Query("SELECT m FROM Meet m " +
+            "JOIN m.meetFans mf " +
+            "WHERE m.match.id = :matchId " +
+            "AND mf.fan.user = :user " +
+            "AND mf.role IN :roles")
+    Meet findByMatchAndUserWithRoles(@Param("matchId") Long matchId,
+                                     @Param("user") User user,
+                                     @Param("roles") List<MeetFanRole> roles);
+
 
 
 }

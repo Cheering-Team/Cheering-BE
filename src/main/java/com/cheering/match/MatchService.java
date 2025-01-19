@@ -2,8 +2,12 @@ package com.cheering.match;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
+import com.cheering.chat.chatRoom.ChatRoomResponse;
 import com.cheering.fan.Fan;
 import com.cheering.fan.FanRepository;
+import com.cheering.meet.*;
+import com.cheering.meetfan.MeetFanRepository;
+import com.cheering.meetfan.MeetFanRole;
 import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
@@ -46,8 +50,11 @@ public class MatchService {
     private final UserRepository userRepository;
     private final PostService postService;
     private final FcmServiceImpl fcmService;
+    private final MeetService meetService;
     private final VoteOptionRepository voteOptionRepository;
     private final VoteRepository voteRepository;
+    private final MeetRepository meetRepository;
+    private final MeetFanRepository meetFanRepository;
 
     public Map<String, List<MatchResponse.MatchDTO>> getMatchSchedule(Long communityId, int year, int month) {
         YearMonth yearMonth = YearMonth.of(year, month);
@@ -85,14 +92,48 @@ public class MatchService {
         return null;
     }
 
-    public MatchResponse.MatchDetailDTO getMatch(Long matchId) {
+    public MatchResponse.MatchDetailDTO getMatch(Long matchId, User user) {
+
         Match match = matchRepository.findById(matchId).orElseThrow(()-> new CustomException(ExceptionCode.MATCH_NOT_FOUND));
 
-        return new MatchResponse.MatchDetailDTO(match);
+        List<MeetFanRole> roles = Arrays.asList(MeetFanRole.MANAGER, MeetFanRole.MEMBER, MeetFanRole.APPLIER);
+        Meet meet = meetRepository.findByMatchAndUserWithRoles(matchId, user, roles);
+
+
+        MeetStatus status;
+        Integer currentCount = null;
+        Team team = null;
+        if (meet != null) {
+            Optional<Team> optionalTeam = teamRepository.findById(meet.getCommunityId());
+            Optional<Player> optionalPlayer = playerRepository.findById(meet.getCommunityId());
+
+            currentCount = meetService.calculateCurrentCount(meet.getId());
+            if (optionalTeam.isPresent()) {
+                team = optionalTeam.get();
+            }else {
+                Player player = optionalPlayer.get();
+                team = player.getFirstTeam();
+            }
+            if (meet.getManager().getUser().equals(user)) {
+                status = MeetStatus.MANAGER; // 내가 만든 모임
+            } else if (meetFanRepository.existsByMeetAndFanUser(meet, user)) {
+                status = MeetStatus.CONFIRMED; // 확정된 모임
+            } else {
+                status = MeetStatus.APPLIED; // 1:1 대화 중인 상태
+            }
+        } else {
+            status = null;
+        }
+
+
+        return new MatchResponse.MatchDetailDTO(
+                match,
+                meet != null ? new MeetResponse.MeetInfoDTO(meet, currentCount, null, team, status) : null
+        );
     }
 
 
-    public MatchResponse.MatchDetailDTO getNextMatch(Long communityId) {
+    public MatchResponse.MatchDetailDTO getNextMatch(Long communityId, User user) {
         Pageable pageable = PageRequest.of(0, 1);
 
         Optional<Team> team = teamRepository.findById(communityId);
@@ -105,31 +146,101 @@ public class MatchService {
         List<MatchStatus> statuses = Arrays.asList(MatchStatus.not_started, MatchStatus.live, MatchStatus.delayed, MatchStatus.interrupted, MatchStatus.started, MatchStatus.match_about_to_start);
 
 
-        List<Match> nextMatch = matchRepository.findNextMatch(curTeam, statuses, pageable);
-        if(!nextMatch.isEmpty()) {
-            return new MatchResponse.MatchDetailDTO(nextMatch.get(0));
+        MeetStatus status;
+        List<Match> nextMatches = matchRepository.findNextMatch(curTeam, statuses, pageable);
+        if(!nextMatches.isEmpty()) {
+            Match nextMatch = nextMatches.get(0);
+
+            List<MeetFanRole> roles = Arrays.asList(MeetFanRole.MANAGER, MeetFanRole.MEMBER, MeetFanRole.APPLIER);
+            Meet meet = meetRepository.findByMatchAndUserWithRoles(nextMatch.getId(), user, roles);
+            MeetResponse.MeetInfoDTO meetInfoDTO = null;
+            if (meet != null) {
+                Integer currentCount = meetService.calculateCurrentCount(meet.getId());
+                if (meet.getManager().getUser().equals(user)) {
+                    status = MeetStatus.MANAGER; // 내가 만든 모임
+                } else if (meetFanRepository.existsByMeetAndFanUser(meet, user)) {
+                    status = MeetStatus.CONFIRMED; // 확정된 모임
+                } else {
+                    status = MeetStatus.APPLIED; // 1:1 대화 중인 상태
+                }
+                meetInfoDTO = new MeetResponse.MeetInfoDTO(meet, currentCount, null, curTeam, status);
+            }
+            return new MatchResponse.MatchDetailDTO(nextMatches.get(0), meetInfoDTO);
         }
 
         return null;
     }
 
-    public List<MatchResponse.MatchDetailDTO> getNearMatches(Long communityId) {
+    public List<MatchResponse.MatchDetailDTO> getNearMatches(Long communityId, User user) {
         LocalDate today = LocalDate.now();
         LocalDateTime oneWeekAgo = today.minusWeeks(1).atStartOfDay();
         LocalDateTime oneWeekLater = today.plusWeeks(1).atTime(23, 59, 59);
 
-        Optional<Team> team = teamRepository.findById(communityId);
-        Optional<Player> player = playerRepository.findById(communityId);
+        Optional<Team> optionalTeam = teamRepository.findById(communityId);
+        Optional<Player> optionalPlayer = playerRepository.findById(communityId);
+        Team team;
 
-        if(team.isPresent()) {
-            List<Match> matches = matchRepository.findByHomeTeamOrAwayTeam(team.get(), oneWeekAgo, oneWeekLater);
-            return matches.stream().map(MatchResponse.MatchDetailDTO::new).toList();
+        if (optionalTeam.isPresent()) {
+            team = optionalTeam.get();
+        } else {
+            team = optionalPlayer.get().getFirstTeam();
         }
-        if(player.isPresent()) {
-            List<Match> matches = matchRepository.findByHomeTeamOrAwayTeam(player.get().getFirstTeam(), oneWeekAgo, oneWeekLater);
-            return matches.stream().map(MatchResponse.MatchDetailDTO::new).toList();
-        }
-        return null;
+        List<MeetFanRole> roles = Arrays.asList(MeetFanRole.MANAGER, MeetFanRole.MEMBER, MeetFanRole.APPLIER);
+        List<Match> matches = matchRepository.findByHomeTeamOrAwayTeam(team, oneWeekAgo, oneWeekLater);
+        return matches.stream().map(match -> {
+            Meet meet = meetRepository.findByMatchAndUserWithRoles(match.getId(), user, roles);
+            MeetResponse.MeetInfoDTO meetInfoDTO;
+
+            if (meet != null) {
+
+                Integer currentCount = meetFanRepository.countByMeet(meet);
+                MeetStatus status;
+                if (meet.getManager().getUser().equals(user)) {
+                    status = MeetStatus.MANAGER; // 내가 만든 모임
+                } else if (meetFanRepository.existsByMeetAndFanUser(meet, user)) {
+                    status = MeetStatus.CONFIRMED; // 확정된 모임
+                } else {
+                    status = MeetStatus.APPLIED; // 1:1 대화 중인 상태
+                }
+                meetInfoDTO = new MeetResponse.MeetInfoDTO(meet, currentCount, null, team, status);
+            } else {
+                // 가입된 모임이 없는 경우
+                List<Meet> meets;
+                if (user.getAge() == null || user.getGender() == null) {
+                    meets = meetRepository.findMeetsByConditionsWithoutProfile(communityId, PageRequest.of(0, 50));
+                } else {
+                    int currentYear = java.time.Year.now().getValue();
+                    int currentAge = currentYear - user.getAge() + 1;
+                    MeetGender meetGender = meetService.genderMapper(user.getGender());
+
+                    meets = meetRepository.findMeetsByConditions(
+                            communityId,
+                            currentAge,
+                            meetGender,
+                            user,
+                            PageRequest.of(0, 50)
+                    );
+                }
+
+                // 모임 1개 랜덤으로 고르기
+                if (!meets.isEmpty()) {
+                    Collections.shuffle(meets);
+                    Meet selectedMeet = meets.get(0);
+                    Integer currentCount = meetFanRepository.countByMeet(selectedMeet);
+
+                    meetInfoDTO = new MeetResponse.MeetInfoDTO(
+                            selectedMeet,
+                            currentCount,
+                            null,
+                            team,
+                            null
+                    );
+                } else {
+                    meetInfoDTO = null;
+                }
+            }
+            return new MatchResponse.MatchDetailDTO(match, meetInfoDTO);
+        }).toList();
     }
 
     // 특정 경기투표 포함 게시글 조회
@@ -153,7 +264,9 @@ public class MatchService {
     public MatchResponse.MatchListDTO getUnfinishedMatches(Pageable pageable) {
         Page<Match> matchList = matchRepository.findAllUnfinishedMatch(MatchStatus.closed, pageable);
 
-        List<MatchResponse.MatchDetailDTO> matchDetailDTOS = matchList.getContent().stream().map(MatchResponse.MatchDetailDTO::new).toList();
+        List<MatchResponse.MatchDetailDTO> matchDetailDTOS = matchList.getContent().stream()
+                .map(match -> new MatchResponse.MatchDetailDTO(match, null)) // 필요하면(?) 추가
+                .toList();
 
         return new MatchResponse.MatchListDTO(matchList, matchDetailDTOS);
     }
@@ -385,11 +498,15 @@ public class MatchService {
 
         if (team.isPresent()) {
             List<Match> matches = matchRepository.findByHomeTeamOrAwayTeam(team.get(), now, twoWeeksLater);
-            return matches.stream().map(MatchResponse.MatchDetailDTO::new).toList();
+            return matches.stream()
+                    .map(match -> new MatchResponse.MatchDetailDTO(match, null))
+                    .toList();
         }
         if (player.isPresent()) {
             List<Match> matches = matchRepository.findByHomeTeamOrAwayTeam(player.get().getFirstTeam(), now, twoWeeksLater);
-            return matches.stream().map(MatchResponse.MatchDetailDTO::new).toList();
+            return matches.stream()
+                    .map(match -> new MatchResponse.MatchDetailDTO(match, null))
+                    .toList();
         }
         return null;
     }
