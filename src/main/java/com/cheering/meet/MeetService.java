@@ -156,9 +156,38 @@ public class MeetService {
                 isUserParticipating
         );
 
-        MatchResponse.MatchDetailDTO matchDetailDTO = meet.getMatch() != null
-                ? new MatchResponse.MatchDetailDTO(meet.getMatch())
-                : null;
+        MatchResponse.MatchDetailDTO matchDetailDTO = null;
+        if (meet.getMatch() != null) {
+            Match match = meet.getMatch();
+
+            MeetStatus status;
+            Team team;
+            if (meet.getManager().getUser().equals(user)) {
+                status = MeetStatus.MANAGER; // 내가 만든 모임
+            } else if (meetFanRepository.existsByMeetAndFanUser(meet, user)) {
+                status = MeetStatus.CONFIRMED; // 확정된 모임
+            } else {
+                status = MeetStatus.APPLIED; // 1:1 대화 중인 상태
+            }
+            Optional<Team> optionalTeam = teamRepository.findById(meet.getCommunityId());
+            Optional<Player> optionalPlayer = playerRepository.findById(meet.getCommunityId());
+
+            if (optionalTeam.isPresent()) {
+                team = optionalTeam.get();
+            } else {
+                Player player = optionalPlayer.get();
+                team = player.getFirstTeam();
+            }
+
+            MeetResponse.MeetInfoDTO meetInfoDTO = new MeetResponse.MeetInfoDTO(
+                    meet,
+                    currentCount,
+                    chatRoomDTO,
+                    team,
+                    status
+            );
+            matchDetailDTO = new MatchResponse.MatchDetailDTO(match, meetInfoDTO);
+        }
 
         int currentYear = java.time.Year.now().getValue();
 
