@@ -78,9 +78,29 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             "    SELECT COUNT(mf) FROM MeetFan mf WHERE mf.meet = m" +
             ") " +
             "ORDER BY m.createdAt DESC")
-    List<Meet> findMeetsByConditionsWithMatch(@Param("communityId") Long communityId,
+    List<Meet> findMeetsByMatch(@Param("communityId") Long communityId,
                                               @Param("matchId") Long matchId,
                                               Pageable pageable);
+
+    @Query("SELECT m FROM Meet m " +
+            "WHERE m.communityId = :communityId " +
+            "AND m.ageMin <= :userAge AND m.ageMax >= :userAge " +
+            "AND (m.gender = :gender OR m.gender = 'ANY') " +
+            "AND m.match.id = :matchId " +
+            "AND m.match.time > CURRENT_TIMESTAMP " +
+            "AND m.max > (" +
+            "    SELECT COUNT(mf) FROM MeetFan mf WHERE mf.meet = m" +
+            ") " +
+            "AND NOT EXISTS (" +
+            "    SELECT mf FROM MeetFan mf WHERE mf.meet = m AND mf.fan.user = :user" +
+            ") " +
+            "ORDER BY m.createdAt DESC")
+    List<Meet> findMeetsByConditionsWithMattch(@Param("communityId") Long communityId,
+                                     @Param("userAge") Integer userAge,
+                                     @Param("gender") MeetGender gender,
+                                     @Param("user") User user,
+                                     @Param("matchId") Long matchId,
+                                     Pageable pageable);
 
 
     @Query("SELECT mf.meet FROM MeetFan mf " +
