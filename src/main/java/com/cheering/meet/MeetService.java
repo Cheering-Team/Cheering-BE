@@ -703,31 +703,27 @@ public class MeetService {
 
     @Transactional(readOnly = true)
     public List<MeetResponse.MeetInfoDTO> getRandomMeetsByConditions(Long communityId, User user) {
-
-        if (user.getAge() == null) {
-            throw new CustomException(ExceptionCode.USER_AGE_NOT_SET);
-        }
-
-        if (user.getGender() == null) {
-            throw new CustomException(ExceptionCode.USER_GENDER_NOT_SET);
-        }
-
         // 커뮤니티 타입 확인 (Team 또는 Player)
         Optional<Team> optionalTeam = teamRepository.findById(communityId);
         Optional<Player> optionalPlayer = playerRepository.findById(communityId);
+        List<Meet> meets;
 
-        // 현재 나이 계산
-        int currentYear = java.time.Year.now().getValue();
-        int currentAge = currentYear - user.getAge() + 1;
-        MeetGender meetGender = genderMapper(user.getGender());
+        if (user.getAge() == null || user.getGender() == null) {
+            meets = meetRepository.findMeetsByConditionsWithoutProfile(communityId, PageRequest.of(0,50));
+        } else{
+            // 현재 나이 계산
+            int currentYear = java.time.Year.now().getValue();
+            int currentAge = currentYear - user.getAge() + 1;
+            MeetGender meetGender = genderMapper(user.getGender());
 
-        List<Meet> meets = meetRepository.findMeetsByConditions(
-                communityId,
-                currentAge,
-                meetGender,
-                user,
-                PageRequest.of(0, 50) // 최대 50개를 조회
-        );
+            meets = meetRepository.findMeetsByConditions(
+                    communityId,
+                    currentAge,
+                    meetGender,
+                    user,
+                    PageRequest.of(0, 50)
+            );
+        }
 
         if (meets.isEmpty()) {
             return Collections.emptyList();
@@ -750,7 +746,7 @@ public class MeetService {
                     ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
                             confirmChatRoom,
                             currentCount,
-                            true
+                            null
                     );
 
                     if (optionalTeam.isPresent()) {
