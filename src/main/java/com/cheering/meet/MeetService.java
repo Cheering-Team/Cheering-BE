@@ -196,8 +196,9 @@ public class MeetService {
         Long privateChatRoomId = null;
 
         if(!isManager) {
-            privateChatRoomId = chatRoomRepository.findPrivateChatRoomByMeetIdAndUser(meetId, user)
-                    .orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+            Optional<Long> optionalChatRoomId = chatRoomRepository.findPrivateChatRoomByMeetIdAndUser(meetId, user);
+
+            privateChatRoomId = optionalChatRoomId.orElse(null);
         }
 
         return new MeetResponse.MeetDetailDTO(
