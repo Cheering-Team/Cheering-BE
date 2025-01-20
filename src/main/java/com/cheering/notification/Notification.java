@@ -4,6 +4,7 @@ import com.cheering.BaseTimeEntity;
 import com.cheering.comment.Comment;
 import com.cheering.comment.reComment.ReComment;
 import com.cheering.fan.Fan;
+import com.cheering.meet.Meet;
 import com.cheering.post.Post;
 import jakarta.persistence.*;
 import lombok.*;
@@ -45,6 +46,13 @@ public class Notification extends BaseTimeEntity {
     @JoinColumn(name = "re_comment_id")
     private ReComment reComment;
 
+    @ManyToOne
+    @JoinColumn(name = "meet_id")
+    private Meet meet;
+
+    @Column(nullable = false)
+    private String meetName;
+
     public Notification(NotificaitonType type, Fan to, Fan from, Post post) {
         this.type = type;
         this.to = to;
@@ -68,6 +76,14 @@ public class Notification extends BaseTimeEntity {
         this.from = from;
         this.post = post;
         this.reComment = reComment;
+        this.isRead = false;
+    }
+
+    public Notification(NotificaitonType type, Fan to, Fan from, Meet meet) {
+        this.type = type;
+        this.to = to;
+        this.from = from;
+        this.meet = meet;
         this.isRead = false;
     }
 }

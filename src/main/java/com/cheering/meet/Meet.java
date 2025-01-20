@@ -6,6 +6,7 @@ import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.fan.Fan;
 import com.cheering.match.Match;
 import com.cheering.meetfan.MeetFan;
+import com.cheering.notification.Notification;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -75,6 +76,9 @@ public class Meet extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "meet", cascade = CascadeType.REMOVE)
     private List<MeetFan> meetFans = new ArrayList<>();
+
+    @OneToMany(mappedBy = "meet", cascade = CascadeType.REMOVE)
+    private List<Notification> notifications = new ArrayList<>();
 
     @Builder
     public Meet(MeetType type, String title, String description, Fan manager, CommunityType communityType, Long communityId, Match match,

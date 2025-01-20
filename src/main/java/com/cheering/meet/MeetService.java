@@ -22,6 +22,9 @@ import com.cheering.meetfan.MeetFan;
 import com.cheering.meetfan.MeetFanRepository;
 import com.cheering.meetfan.MeetFanRole;
 import com.cheering.notification.Fcm.FcmServiceImpl;
+import com.cheering.notification.NotificaitonType;
+import com.cheering.notification.Notification;
+import com.cheering.notification.NotificationRepository;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
 import com.cheering.team.Team;
@@ -63,6 +66,7 @@ public class MeetService {
     private final ChatRepository chatRepository;
     private final FcmServiceImpl fcmService;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public MeetResponse.MeetIdDTO createMeet(Long communityId, MeetRequest.CreateMeetDTO requestDto, User user) {
@@ -677,6 +681,9 @@ public class MeetService {
 
         meetFanRepository.save(meetFan);
 
+        Notification notification = new Notification(NotificaitonType.MEET_NEW_APPLY, meet.getManager(), meetFan.getFan(), meet);
+        notificationRepository.save(notification);
+
         User managerUser = manager.getUser();
         for (DeviceToken deviceToken : managerUser.getDeviceTokens()) {
             fcmService.sendMeetNewAppliedMessageTo(
@@ -687,6 +694,7 @@ public class MeetService {
                     meet.getCommunityId()
             );
         }
+
 
     }
 
