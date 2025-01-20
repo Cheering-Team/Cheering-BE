@@ -404,6 +404,10 @@ public class ChatRoomService {
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
 
+        boolean isRestricted = matchRestrictionRepository.existsByMatchIdAndUser(meet.getMatch().getId(), user);
+        if (isRestricted) {
+            throw new CustomException(ExceptionCode.USER_RESTRICTED_FOR_MATCH);
+        }
 
         Fan manager = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND))
@@ -619,15 +623,28 @@ public class ChatRoomService {
 
         Meet meet = privateChatRoom.getMeet();
         Match match = meet.getMatch();
+
+        LocalDateTime now = LocalDateTime.now();
+
         boolean isRestricted = matchRestrictionRepository.existsByMatchIdAndUser(match.getId(), fan.getUser());
         if (isRestricted) {
-            throw new CustomException(ExceptionCode.USER_RESTRICTED_FOR_MATCH);
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/chatRoom/" + chatRoomId,
+                    new ChatResponse.ChatResponseDTO(
+                            "ERROR",
+                            "2013",
+                            now,
+                            fan.getId(),
+                            fan.getMeetImage(),
+                            fan.getMeetName(),
+                            requestDTO.writerId()+"_JOIN_ACCEPT",
+                            null
+                    )
+            );
         }
 
         MeetFan meetFan = meetFanRepository.findByMeetAndFanUser(meet, fan.getUser())
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
-
-        LocalDateTime now = LocalDateTime.now();
 
         if (meet.getMax().equals(meetFanRepository.countByMeet(meet))) {
             simpMessagingTemplate.convertAndSend(

@@ -335,8 +335,10 @@ public class MeetService {
         LocalDateTime matchTime = match.getTime();
         boolean isMatchWithinTwoDays = now.isAfter(matchTime.minusDays(2));
 
+        int curCount = calculateCurrentCount(meetId);
+
         // 이틀보다 가까우면 제한 추가
-        if (isMatchWithinTwoDays) {
+        if (isMatchWithinTwoDays && curCount > 1) {
             // 이미 제한 있는지 확인
             validateParticipation(match.getId(), user);
             MatchRestriction restriction = MatchRestriction.builder()
