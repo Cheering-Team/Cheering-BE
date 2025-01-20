@@ -411,23 +411,23 @@ public class MeetService {
 
     // 확정 질문 수락 -> 모임 가입
     @Transactional
-    public void acceptJoinRequest(Long chatRoomId, User user) {
+    public void acceptJoinRequest(Long chatRoomId, Long fanId) {
+
         ChatRoom privateChatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
 
-        Meet meet = privateChatRoom.getMeet();
-        if (meet == null) {
-            throw new CustomException(ExceptionCode.MEET_NOT_FOUND);
-        }
-
-        Fan userFan = fanRepository.findByCommunityIdAndUser(privateChatRoom.getCommunityId(), user)
+        Fan fan = fanRepository.findById(fanId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        MeetFan meetFan = meetFanRepository.findByMeetAndFanUser(meet, user)
+        Match match = privateChatRoom.getMeet().getMatch();
+        validateParticipation(match.getId(), fan.getUser());
+
+        Meet meet = privateChatRoom.getMeet();
+        MeetFan meetFan = meetFanRepository.findByMeetAndFanUser(meet, fan.getUser())
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
         LocalDateTime now = LocalDateTime.now();
-        String groupKey = chatRoomService.generateGroupKey(userFan.getId(), now);
+        String groupKey = chatRoomService.generateGroupKey(fan.getId(), now);
 
         if (meet.getMax().equals(meetFanRepository.countByMeet(meet))) {
             simpMessagingTemplate.convertAndSend(
@@ -436,9 +436,9 @@ public class MeetService {
                             "ERROR",
                             "2015",
                             now,
-                            userFan.getId(),
-                            userFan.getMeetImage(),
-                            userFan.getMeetName(),
+                            fan.getId(),
+                            fan.getMeetImage(),
+                            fan.getMeetName(),
                             groupKey,
                             null
                     )
@@ -446,9 +446,9 @@ public class MeetService {
             return;
         }
 
-        validateParticipation(meet.getMatch().getId(), user);
+        validateParticipation(meet.getMatch().getId(), fan.getUser());
 
-        boolean MatchDuplicatedMeet = checkExistingMeet(meet.getMatch().getId(), user);
+        boolean MatchDuplicatedMeet = checkExistingMeet(meet.getMatch().getId(), fan.getUser());
 
         if(MatchDuplicatedMeet) {
             throw new CustomException(ExceptionCode.DUPLICATE_MEET);
@@ -464,7 +464,7 @@ public class MeetService {
 
         ChatSession chatSession = ChatSession.builder()
                 .chatRoom(confirmChatRoom)
-                .fan(userFan)
+                .fan(fan)
                 .sessionId(sessionId)
                 .build();
 
@@ -473,7 +473,7 @@ public class MeetService {
         Chat chat = Chat.builder()
                 .type(ChatType.JOIN_ACCEPT)
                 .chatRoom(privateChatRoom)
-                .writer(userFan)
+                .writer(fan)
                 .content("모임 참여를 확정하였습니다.")
                 .groupKey(groupKey)
                 .build();
