@@ -50,7 +50,7 @@ public class Notification extends BaseTimeEntity {
     @JoinColumn(name = "meet_id")
     private Meet meet;
 
-    @Column(nullable = false)
+    @Column
     private String meetName;
 
     public Notification(NotificaitonType type, Fan to, Fan from, Post post) {
