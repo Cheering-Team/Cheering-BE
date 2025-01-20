@@ -10,6 +10,7 @@ import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.fan.CommunityType;
 import com.cheering.meet.Meet;
 import com.cheering.meet.MeetGender;
+import com.cheering.meet.MeetService;
 import com.cheering.meetfan.MeetFan;
 import com.cheering.meet.MeetRepository;
 import com.cheering.meetfan.MeetFanRepository;
@@ -55,6 +56,7 @@ public class ChatRoomService {
     private final S3Util s3Util;
     private final EntityManager entityManager;
     private final FcmServiceImpl fcmService;
+    private final MeetService meetService;
     private final DateTimeFormatter groupKeyFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 
     public ChatRoomResponse.IdDTO createChatRoom(Long communityId, String name, String description, MultipartFile image, Integer max, User user) {
@@ -399,6 +401,12 @@ public class ChatRoomService {
 
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
+
+        Integer currentCount = meetService.calculateCurrentCount(meetId);
+        if(currentCount.equals(meet.getMax())) {
+            throw new CustomException(ExceptionCode.MEET_MAX);
+        }
+
         Fan manager = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND))
                 .getFan();
@@ -532,8 +540,6 @@ public class ChatRoomService {
         }).toList();
     }
 
-
-
     @Transactional
     public void sendJoinRequest(ChatRequest.ChatRequestDTO requestDTO, Long chatRoomId) {
 
@@ -543,8 +549,12 @@ public class ChatRoomService {
         ChatRoom chatRoom = entityManager.getReference(ChatRoom.class, chatRoomId);
 
         Meet meet = chatRoom.getMeet();
+
         if (meet == null || meet.getManager().equals(requestDTO.writerId())) {
             throw new CustomException(ExceptionCode.USER_FORBIDDEN); // 방장 아닌 경우 - 권한X
+        }
+        if (meet.getMax().equals(meetService.calculateCurrentCount(meet.getId()))) {
+            throw new CustomException(ExceptionCode.MEET_MAX);
         }
 
         simpMessagingTemplate.convertAndSend(

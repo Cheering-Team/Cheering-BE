@@ -418,6 +418,10 @@ public class MeetService {
             throw new CustomException(ExceptionCode.MEET_NOT_FOUND);
         }
 
+        if (meet.getMax().equals(calculateCurrentCount(meet.getId()))) {
+            throw new CustomException(ExceptionCode.MEET_MAX);
+        }
+
         validateParticipation(meet.getMatch().getId(), user);
 
         boolean MatchDuplicatedMeet = checkExistingMeet(meet.getMatch().getId(), user);
