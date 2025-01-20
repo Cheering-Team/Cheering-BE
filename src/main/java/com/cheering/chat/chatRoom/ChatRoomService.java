@@ -553,7 +553,19 @@ public class ChatRoomService {
             throw new CustomException(ExceptionCode.USER_FORBIDDEN); // 방장 아닌 경우 - 권한X
         }
         if (meet.getMax().equals(meetFanRepository.countByMeet(meet))) {
-            throw new CustomException(ExceptionCode.MEET_MAX);
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/chatRoom/" + chatRoomId,
+                    new ChatResponse.ChatResponseDTO(
+                            "ERROR",
+                            "2015",
+                            now,
+                            requestDTO.writerId(),
+                            requestDTO.writerImage(),
+                            requestDTO.writerName(),
+                            groupKey,
+                            null
+                    )
+            );
         }
 
         simpMessagingTemplate.convertAndSend(

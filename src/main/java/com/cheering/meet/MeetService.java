@@ -4,6 +4,7 @@ import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering.chat.Chat;
 import com.cheering.chat.ChatRepository;
+import com.cheering.chat.ChatResponse;
 import com.cheering.chat.ChatType;
 import com.cheering.chat.chatRoom.*;
 import com.cheering.chat.session.ChatSession;
@@ -33,6 +34,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +62,7 @@ public class MeetService {
     private final ChatSessionRepository chatSessionRepository;
     private final ChatRepository chatRepository;
     private final FcmServiceImpl fcmService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Transactional
     public MeetResponse.MeetIdDTO createMeet(Long communityId, MeetRequest.CreateMeetDTO requestDto, User user) {
@@ -409,7 +412,6 @@ public class MeetService {
     // 확정 질문 수락 -> 모임 가입
     @Transactional
     public void acceptJoinRequest(Long chatRoomId, User user) {
-
         ChatRoom privateChatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
 
@@ -418,8 +420,29 @@ public class MeetService {
             throw new CustomException(ExceptionCode.MEET_NOT_FOUND);
         }
 
-        if (meet.getMax().equals(calculateCurrentCount(meet.getId()))) {
-            throw new CustomException(ExceptionCode.MEET_MAX);
+        Fan userFan = fanRepository.findByCommunityIdAndUser(privateChatRoom.getCommunityId(), user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        MeetFan meetFan = meetFanRepository.findByMeetAndFanUser(meet, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        LocalDateTime now = LocalDateTime.now();
+        String groupKey = chatRoomService.generateGroupKey(userFan.getId(), now);
+
+        if (meet.getMax().equals(meetFanRepository.countByMeet(meet))) {
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/chatRoom/" + chatRoomId,
+                    new ChatResponse.ChatResponseDTO(
+                            "ERROR",
+                            "2015",
+                            now,
+                            userFan.getId(),
+                            userFan.getMeetImage(),
+                            userFan.getMeetName(),
+                            groupKey,
+                            null
+                    )
+            );
         }
 
         validateParticipation(meet.getMatch().getId(), user);
@@ -429,12 +452,6 @@ public class MeetService {
         if(MatchDuplicatedMeet) {
             throw new CustomException(ExceptionCode.DUPLICATE_MEET);
         }
-
-        Fan userFan = fanRepository.findByCommunityIdAndUser(privateChatRoom.getCommunityId(), user)
-                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
-
-        MeetFan meetFan = meetFanRepository.findByMeetAndFanUser(meet, user)
-                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
         // 역할 업데이트
         meetFan.setRole(MeetFanRole.MEMBER);
@@ -451,9 +468,6 @@ public class MeetService {
                 .build();
 
         chatSessionRepository.save(chatSession);
-
-        LocalDateTime now = LocalDateTime.now();
-        String groupKey = chatRoomService.generateGroupKey(userFan.getId(), now);
 
         Chat chat = Chat.builder()
                 .type(ChatType.JOIN_ACCEPT)
