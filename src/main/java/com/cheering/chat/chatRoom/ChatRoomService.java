@@ -547,7 +547,6 @@ public class ChatRoomService {
     public void sendJoinRequest(ChatRequest.ChatRequestDTO requestDTO, Long chatRoomId) {
 
         LocalDateTime now = LocalDateTime.now();
-        String groupKey = generateGroupKey(requestDTO.writerId(), now);
 
         ChatRoom chatRoom = entityManager.getReference(ChatRoom.class, chatRoomId);
 
@@ -566,7 +565,7 @@ public class ChatRoomService {
                             requestDTO.writerId(),
                             requestDTO.writerImage(),
                             requestDTO.writerName(),
-                            groupKey,
+                            requestDTO.writerId()+"_JOIN_REQUEST",
                             null
                     )
             );
@@ -582,7 +581,7 @@ public class ChatRoomService {
                         requestDTO.writerId(),
                         requestDTO.writerImage(),
                         requestDTO.writerName(),
-                        groupKey,
+                        requestDTO.writerId()+"_JOIN_REQUEST",
                         null
                 )
         );
@@ -594,7 +593,7 @@ public class ChatRoomService {
                 .chatRoom(chatRoom)
                 .writer(manager)
                 .content("해당 모임에 참여를 확정하겠습니까?")
-                .groupKey(groupKey)
+                .groupKey(requestDTO.writerId()+"_JOIN_REQUEST")
                 .build();
 
         chatRepository.save(chat);
@@ -629,7 +628,6 @@ public class ChatRoomService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
         LocalDateTime now = LocalDateTime.now();
-        String groupKey = generateGroupKey(fan.getId(), now);
 
         if (meet.getMax().equals(meetFanRepository.countByMeet(meet))) {
             simpMessagingTemplate.convertAndSend(
@@ -641,7 +639,7 @@ public class ChatRoomService {
                             fan.getId(),
                             fan.getMeetImage(),
                             fan.getMeetName(),
-                            groupKey,
+                            requestDTO.writerId()+"_JOIN_ACCEPT",
                             null
                     )
             );
@@ -663,7 +661,7 @@ public class ChatRoomService {
                         requestDTO.writerId(),
                         requestDTO.writerImage(),
                         requestDTO.writerName(),
-                        groupKey,
+                        requestDTO.writerId()+"_JOIN_ACCEPT",
                         null
                 )
         );
@@ -689,7 +687,7 @@ public class ChatRoomService {
                 .chatRoom(privateChatRoom)
                 .writer(fan)
                 .content("모임 참여를 확정하였습니다.")
-                .groupKey(groupKey)
+                .groupKey(requestDTO.writerId()+"_JOIN_ACCEPT")
                 .build();
 
         chatRepository.save(chat);
