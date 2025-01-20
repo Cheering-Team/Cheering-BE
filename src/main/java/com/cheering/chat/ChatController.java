@@ -51,9 +51,8 @@ public class ChatController {
         meetService.joinAsApplier(chatRoomId, fanId);
     }
 
-    @MessageMapping("/fans/{fanId}/chatrooms/{chatRoomId}/accept")
-    public ResponseEntity<?> acceptJoinRequest(@DestinationVariable Long fanId, @DestinationVariable Long chatRoomId) {
-        meetService.acceptJoinRequest(chatRoomId, fanId);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "사용자가 모임에 가입되었습니다.", null));
+    @MessageMapping("/chatRooms/{chatRoomId}/accept")
+    public void acceptJoinRequest(@Payload ChatRequest.ChatRequestDTO requestDTO, @DestinationVariable String chatRoomId) {
+        chatRoomService.acceptJoinRequest(requestDTO, Long.parseLong(chatRoomId));
     }
 }

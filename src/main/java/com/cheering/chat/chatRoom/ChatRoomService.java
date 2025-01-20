@@ -8,6 +8,8 @@ import com.cheering.chat.*;
 import com.cheering.chat.session.ChatSession;
 import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.fan.CommunityType;
+import com.cheering.match.Match;
+import com.cheering.matchRestriction.MatchRestrictionRepository;
 import com.cheering.meet.Meet;
 import com.cheering.meet.MeetGender;
 import com.cheering.meet.MeetService;
@@ -52,6 +54,7 @@ public class ChatRoomService {
     private final MeetRepository meetRepository;
     private final MeetFanRepository meetFanRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final MatchRestrictionRepository matchRestrictionRepository;
     private final BadWordService badWordService;
     private final S3Util s3Util;
     private final EntityManager entityManager;
@@ -604,6 +607,94 @@ public class ChatRoomService {
             );
         });
     }
+
+    // 확정 질문 수락 -> 모임 가입
+    @Transactional
+    public void acceptJoinRequest(ChatRequest.ChatRequestDTO requestDTO, Long chatRoomId) {
+
+        ChatRoom privateChatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
+        Fan fan = fanRepository.findById(requestDTO.writerId())
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        Meet meet = privateChatRoom.getMeet();
+        Match match = meet.getMatch();
+        boolean isRestricted = matchRestrictionRepository.existsByMatchIdAndUser(match.getId(), fan.getUser());
+        if (isRestricted) {
+            throw new CustomException(ExceptionCode.USER_RESTRICTED_FOR_MATCH);
+        }
+
+        MeetFan meetFan = meetFanRepository.findByMeetAndFanUser(meet, fan.getUser())
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        LocalDateTime now = LocalDateTime.now();
+        String groupKey = generateGroupKey(fan.getId(), now);
+
+        if (meet.getMax().equals(meetFanRepository.countByMeet(meet))) {
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/chatRoom/" + chatRoomId,
+                    new ChatResponse.ChatResponseDTO(
+                            "ERROR",
+                            "2015",
+                            now,
+                            fan.getId(),
+                            fan.getMeetImage(),
+                            fan.getMeetName(),
+                            groupKey,
+                            null
+                    )
+            );
+            return;
+        }
+
+        boolean MatchDuplicatedMeet = meetRepository.existsByMatchAndMeetFansFanUser(meet.getMatch().getId(), fan.getUser());
+
+        if(MatchDuplicatedMeet) {
+            throw new CustomException(ExceptionCode.DUPLICATE_MEET);
+        }
+
+        simpMessagingTemplate.convertAndSend(
+                "/topic/chatRoom/" + chatRoomId,
+                new ChatResponse.ChatResponseDTO(
+                        "JOIN_ACCEPT",
+                        "모임 참여를 확정하였습니다.",
+                        now,
+                        requestDTO.writerId(),
+                        requestDTO.writerImage(),
+                        requestDTO.writerName(),
+                        groupKey,
+                        null
+                )
+        );
+
+        // 역할 업데이트
+        meetFan.setRole(MeetFanRole.MEMBER);
+        meetFanRepository.save(meetFan);
+
+        ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
+        String sessionId = UUID.randomUUID().toString();
+
+        ChatSession chatSession = ChatSession.builder()
+                .chatRoom(confirmChatRoom)
+                .fan(fan)
+                .sessionId(sessionId)
+                .build();
+
+        chatSessionRepository.save(chatSession);
+
+        Chat chat = Chat.builder()
+                .type(ChatType.JOIN_ACCEPT)
+                .chatRoom(privateChatRoom)
+                .writer(fan)
+                .content("모임 참여를 확정하였습니다.")
+                .groupKey(groupKey)
+                .build();
+
+        chatRepository.save(chat);
+    }
+
 
     public ChatRoomResponse.PrivateChatRoomDTO getPrivateChatRoomById(Long chatRoomId, User user) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
