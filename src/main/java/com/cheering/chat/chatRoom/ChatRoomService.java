@@ -422,7 +422,7 @@ public class ChatRoomService {
         }
 
         int currentYear = java.time.Year.now().getValue();
-        int currentAge = currentYear - applicant.getUser().getAge();
+        int currentAge = currentYear - applicant.getUser().getAge() + 1;
 
         boolean isConditionMatched = true;
         if (meet.getGender() != null && meet.getGender() != MeetGender.ANY &&
