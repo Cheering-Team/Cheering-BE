@@ -53,6 +53,9 @@ public interface MeetFanRepository extends JpaRepository<com.cheering.meetfan.Me
     @Query("SELECT mf FROM MeetFan mf WHERE mf.meet = :meet AND (mf.role = 'MANAGER' OR mf.role = 'MEMBER')")
     List<MeetFan> findByMeetAndRoleIsManagerOrMember(@Param("meet") Meet meet);
 
+    @Query("SELECT mf FROM MeetFan mf WHERE mf.meet = :meet AND mf.role = 'MEMBER'")
+    List<MeetFan> findByMeetAndRoleIsMember(@Param("meet") Meet meet);
+
     @Query("SELECT mf FROM MeetFan mf WHERE mf.meet = :meet AND mf.role = 'LEFT'")
     List<MeetFan> findLeavedMeetFansByMeet(@Param("meet") Meet meet);
 
