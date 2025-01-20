@@ -1,6 +1,7 @@
 package com.cheering.chat.chatRoom;
 
 import com.cheering.chat.ChatType;
+import com.cheering.chat.session.ChatSession;
 import com.cheering.player.Player;
 import com.cheering.fan.Fan;
 import com.cheering.user.User;
@@ -80,6 +81,13 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 """)
     List<ChatRoom> findPrivateChatRoomsWithMessages(Long managerId, ChatRoomType chatRoomType, Long meetId, ChatType chatType);
 
-    @Query("SELECT COUNT(c) FROM ChatRoom c WHERE c.meet.id = :meetId AND c.type = :chatRoomType")
-    int countPrivateChatRoomsByMeetId(Long meetId, ChatRoomType chatRoomType);
+    @Query("SELECT cr FROM ChatRoom cr " +
+            "JOIN ChatSession cs ON cr.id = cs.chatRoom.id " +
+            "WHERE cr.meet.id = :meetId " +
+            "AND cr.type = 'PRIVATE' " +
+            "AND cs.fan.user = :user")
+    Optional<ChatRoom> findPrivateChatRoomByMeetIdAndUser(@Param("meetId") Long meetId,
+                                                          @Param("user") User user);
+
+
 }

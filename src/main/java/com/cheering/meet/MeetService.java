@@ -194,6 +194,9 @@ public class MeetService {
 
         int currentYear = java.time.Year.now().getValue();
 
+        ChatRoom privateChatRoom = chatRoomRepository.findPrivateChatRoomByMeetIdAndUser(meetId, user)
+                .orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
         return new MeetResponse.MeetDetailDTO(
                 meetId,
                 meet.getTitle(),
@@ -214,7 +217,8 @@ public class MeetService {
                 matchDetailDTO,
                 meet.getPlace(),
                 isManager,
-                isMember
+                isMember,
+                privateChatRoom.getId()
         );
     }
 
