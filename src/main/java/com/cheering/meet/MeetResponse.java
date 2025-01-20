@@ -196,5 +196,17 @@ public class MeetResponse {
         }
     }
 
+    public record MeetTitleDTO(
+            Long id, // 모임 id
+            String title
+    ) {
+        public MeetTitleDTO(Meet meet) {
+            this(
+                    meet.getId(),
+                    meet.getTitle()
+            );
+        }
+    }
+
 
 }
