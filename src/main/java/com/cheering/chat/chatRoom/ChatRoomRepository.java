@@ -81,12 +81,12 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 """)
     List<ChatRoom> findPrivateChatRoomsWithMessages(Long managerId, ChatRoomType chatRoomType, Long meetId, ChatType chatType);
 
-    @Query("SELECT cr FROM ChatRoom cr " +
+    @Query("SELECT cr.id FROM ChatRoom cr " +
             "JOIN ChatSession cs ON cr.id = cs.chatRoom.id " +
             "WHERE cr.meet.id = :meetId " +
             "AND cr.type = 'PRIVATE' " +
             "AND cs.fan.user = :user")
-    Optional<ChatRoom> findPrivateChatRoomByMeetIdAndUser(@Param("meetId") Long meetId,
+    Optional<Long> findPrivateChatRoomByMeetIdAndUser(@Param("meetId") Long meetId,
                                                           @Param("user") User user);
 
 

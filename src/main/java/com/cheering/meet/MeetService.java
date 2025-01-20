@@ -193,9 +193,12 @@ public class MeetService {
         }
 
         int currentYear = java.time.Year.now().getValue();
+        Long privateChatRoomId = null;
 
-        ChatRoom privateChatRoom = chatRoomRepository.findPrivateChatRoomByMeetIdAndUser(meetId, user)
-                .orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+        if(!isManager) {
+            privateChatRoomId = chatRoomRepository.findPrivateChatRoomByMeetIdAndUser(meetId, user)
+                    .orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+        }
 
         return new MeetResponse.MeetDetailDTO(
                 meetId,
@@ -218,7 +221,7 @@ public class MeetService {
                 meet.getPlace(),
                 isManager,
                 isMember,
-                privateChatRoom.getId()
+                privateChatRoomId
         );
     }
 
