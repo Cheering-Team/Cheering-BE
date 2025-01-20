@@ -56,7 +56,6 @@ public class ChatRoomService {
     private final S3Util s3Util;
     private final EntityManager entityManager;
     private final FcmServiceImpl fcmService;
-    private final MeetService meetService;
     private final DateTimeFormatter groupKeyFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 
     public ChatRoomResponse.IdDTO createChatRoom(Long communityId, String name, String description, MultipartFile image, Integer max, User user) {
@@ -402,7 +401,7 @@ public class ChatRoomService {
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
 
-        Integer currentCount = meetService.calculateCurrentCount(meetId);
+        Integer currentCount = meetFanRepository.countByMeet(meet);
         if(currentCount.equals(meet.getMax())) {
             throw new CustomException(ExceptionCode.MEET_MAX);
         }
@@ -553,7 +552,7 @@ public class ChatRoomService {
         if (meet == null || meet.getManager().equals(requestDTO.writerId())) {
             throw new CustomException(ExceptionCode.USER_FORBIDDEN); // 방장 아닌 경우 - 권한X
         }
-        if (meet.getMax().equals(meetService.calculateCurrentCount(meet.getId()))) {
+        if (meet.getMax().equals(meetFanRepository.countByMeet(meet))) {
             throw new CustomException(ExceptionCode.MEET_MAX);
         }
 
