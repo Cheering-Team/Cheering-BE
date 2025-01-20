@@ -353,7 +353,7 @@ public class MeetService {
         }
 
         // 알림 전송
-        List<MeetFan> meetFans = meetFanRepository.findByFanUserOrderByRoleExcludingLeft(user, MeetFanRole.LEFT);
+        List<MeetFan> meetFans = meetFanRepository.findByMeetAndRoleIsMember(meet);
         for (MeetFan meetFan : meetFans) {
             User fanUser = meetFan.getFan().getUser();
             for (DeviceToken deviceToken : fanUser.getDeviceTokens()) {
@@ -361,7 +361,6 @@ public class MeetService {
                         deviceToken.getToken(),
                         meet.getTitle(),
                         meet.getTitle() + " 모임이 삭제되었습니다.",
-                        meetId,
                         meet.getCommunityId()
                 );
             }

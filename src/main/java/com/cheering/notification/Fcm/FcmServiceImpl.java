@@ -99,11 +99,10 @@ public class FcmServiceImpl {
         }
     }
 
-    public void sendMeetDeleteMessageTo(String token, String title, String body, Long meetId, Long communityId) {
+    public void sendMeetDeleteMessageTo(String token, String title, String body, Long communityId) {
         Message message = Message.builder()
                 .setToken(token)
                 .putData("type", "MEET_DELETED")
-                .putData("meetId", meetId.toString())
                 .putData("communityId", communityId.toString())
                 .setNotification(Notification.builder()
                         .setTitle(title)
