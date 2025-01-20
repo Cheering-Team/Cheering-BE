@@ -705,6 +705,9 @@ public class MeetService {
         validateParticipation(match.getId(), fan.getUser());
         boolean alreadyApplier = meetFanRepository.existsByMeetAndFanUser(chatRoom.getMeet(), fan.getUser());
 
+        Meet meet = chatRoom.getMeet();
+        Fan manager = meet.getManager();
+
         if (alreadyApplier) {
             throw new CustomException(ExceptionCode.ALREADY_APPLIED);
         }
@@ -716,6 +719,17 @@ public class MeetService {
                 .build();
 
         meetFanRepository.save(meetFan);
+
+        User managerUser = manager.getUser();
+        for (DeviceToken deviceToken : managerUser.getDeviceTokens()) {
+            fcmService.sendMeetNewAppliedMessageTo(
+                    deviceToken.getToken(),
+                    meet.getTitle(),
+                    meet.getTitle() + " 모임에 새로운 신청이 있습니다.",
+                    meet.getId(),
+                    meet.getCommunityId()
+            );
+        }
 
     }
 

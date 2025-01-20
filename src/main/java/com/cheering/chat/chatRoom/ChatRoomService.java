@@ -23,8 +23,6 @@ import com.cheering.fan.FanResponse;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
-import com.cheering.user.deviceToken.DeviceToken;
-import io.sentry.SystemOutLogger;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,11 +34,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -302,27 +299,6 @@ public class ChatRoomService {
 
             ChatRoom chatRoom = entityManager.getReference(ChatRoom.class, chatRoomId);
             Fan fan = entityManager.getReference(Fan.class, requestDTO.writerId());
-
-            if(requestDTO.chatRoomType().equals("PRIVATE")) {
-                Fan manager = chatRoom.getManager();
-                if (!writerFan.equals(manager)) {
-                    boolean hasMessage = chatRepository.existsByChatRoomAndWriter(chatRoom);
-
-                    // 처음 메시지를 보낸 경우에만 알림
-                    if (!hasMessage) {
-                        User managerUser = manager.getUser();
-                        for (DeviceToken deviceToken : managerUser.getDeviceTokens()) {
-                            fcmService.sendMeetNewAppliedMessageTo(
-                                    deviceToken.getToken(),
-                                    chatRoom.getMeet().getTitle(),
-                                    chatRoom.getMeet().getTitle() + " 모임에 새로운 신청이 있습니다.",
-                                    chatRoom.getMeet().getId(),
-                                    chatRoom.getMeet().getCommunityId()
-                            );
-                        }
-                    }
-                }
-            }
 
             Chat chat = Chat.builder()
                     .type(ChatType.MESSAGE)
