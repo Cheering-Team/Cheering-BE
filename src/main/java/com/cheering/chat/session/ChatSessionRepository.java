@@ -25,6 +25,9 @@ public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> 
     @Query("SELECT c FROM ChatSession c WHERE c.fan.user = :user")
     List<ChatSession> findByUser(User user);
 
+    @Query("SELECT c FROM ChatSession c WHERE c.fan.user = :user AND c.chatRoom.type = 'PUBLIC'")
+    List<ChatSession> findPublicByUser(@Param("user") User user);
+
     @Modifying
     @Query("DELETE FROM ChatSession c WHERE c.chatRoom.manager = :manager AND c.fan = :fan")
     void deleteByChatRoomManagerAndCurFan(@Param("manager") Fan manager, @Param("fan") Fan curFan);

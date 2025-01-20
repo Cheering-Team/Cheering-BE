@@ -358,7 +358,7 @@ public class ChatRoomService {
 
     @Transactional
     public Integer getUnreadChats(User user) {
-        List<ChatSession> chatSessions = chatSessionRepository.findByUser(user);
+        List<ChatSession> chatSessions = chatSessionRepository.findPublicByUser(user);
 
         return chatSessions.stream().mapToInt(chatSession -> chatRepository.countUnreadMessages(chatSession.getChatRoom(), ChatType.MESSAGE, chatSession.getLastExitTime())).sum();
     }
