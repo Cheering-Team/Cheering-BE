@@ -185,26 +185,21 @@ public class MatchService {
         } else {
             team = optionalPlayer.get().getFirstTeam();
         }
-        List<MeetFanRole> roles = Arrays.asList(MeetFanRole.MANAGER, MeetFanRole.MEMBER, MeetFanRole.APPLIER);
+
         List<Match> matches = matchRepository.findByHomeTeamOrAwayTeam(team, oneWeekAgo, oneWeekLater);
+
         return matches.stream().map(match -> {
-            Meet meet = meetRepository.findByMatchAndUserWithRoles(match.getId(), user, roles);
+            // Manager 또는 Member 상태의 모임 우선 확인
+            Meet meet = meetRepository.findByMatchAndUserWithRoles(match.getId(), user, Arrays.asList(MeetFanRole.MANAGER, MeetFanRole.MEMBER));
+
             MeetResponse.MeetInfoDTO meetInfoDTO;
 
             if (meet != null) {
-
+                // Manager 또는 Member 상태의 모임이 있는 경우
                 Integer currentCount = meetFanRepository.countByMeet(meet);
-                MeetStatus status;
-                if (meet.getManager().getUser().equals(user)) {
-                    status = MeetStatus.MANAGER; // 내가 만든 모임
-                } else if (meetFanRepository.existsByMeetAndFanUser(meet, user)) {
-                    status = MeetStatus.CONFIRMED; // 확정된 모임
-                } else {
-                    status = MeetStatus.APPLIED; // 1:1 대화 중인 상태
-                }
+                MeetStatus status = meet.getManager().getUser().equals(user) ? MeetStatus.MANAGER : MeetStatus.CONFIRMED;
                 meetInfoDTO = new MeetResponse.MeetInfoDTO(meet, currentCount, null, team, status);
             } else {
-                // 가입된 모임이 없는 경우
                 List<Meet> meets;
                 if (user.getAge() == null || user.getGender() == null) {
                     meets = meetRepository.findMeetsByMatch(communityId, match.getId(), PageRequest.of(0, 50));
@@ -213,7 +208,7 @@ public class MatchService {
                     int currentAge = currentYear - user.getAge() + 1;
                     MeetGender meetGender = meetService.genderMapper(user.getGender());
 
-                    meets = meetRepository.findMeetsByConditionsWithMattch(
+                    meets = meetRepository.findMeetsByConditionsWithMatch(
                             communityId,
                             currentAge,
                             meetGender,
@@ -239,10 +234,13 @@ public class MatchService {
                 } else {
                     meetInfoDTO = null;
                 }
+
             }
+
             return new MatchResponse.MatchDetailDTO(match, meetInfoDTO);
         }).toList();
     }
+
 
     // 특정 경기투표 포함 게시글 조회
     @Transactional
