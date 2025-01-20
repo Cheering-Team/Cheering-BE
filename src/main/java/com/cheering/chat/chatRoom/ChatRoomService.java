@@ -566,6 +566,7 @@ public class ChatRoomService {
                             null
                     )
             );
+            return;
         }
 
         simpMessagingTemplate.convertAndSend(

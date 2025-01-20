@@ -443,6 +443,7 @@ public class MeetService {
                             null
                     )
             );
+            return;
         }
 
         validateParticipation(meet.getMatch().getId(), user);
