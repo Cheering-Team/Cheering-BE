@@ -123,17 +123,6 @@ public class MeetController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "모임 수정 완료", null));
     }
 
-    @PostMapping("/chatrooms/{chatRoomId}/accept")
-    public ResponseEntity<?> acceptJoinRequest(
-            @PathVariable Long chatRoomId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        User user = userDetails.getUser();
-        meetService.acceptJoinRequest(chatRoomId, user);
-
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "사용자가 모임에 가입되었습니다.", null));
-    }
-
     @PostMapping("/meets/{meetId}/leave")
     public ResponseEntity<?> leaveMeet(@PathVariable Long meetId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userDetails.getUser();
