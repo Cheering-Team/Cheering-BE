@@ -401,10 +401,6 @@ public class ChatRoomService {
         Meet meet = meetRepository.findById(meetId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
 
-        Integer currentCount = meetFanRepository.countByMeet(meet);
-        if(currentCount.equals(meet.getMax())) {
-            throw new CustomException(ExceptionCode.MEET_MAX);
-        }
 
         Fan manager = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND))
@@ -419,6 +415,11 @@ public class ChatRoomService {
         // 기존 채팅방이 존재할 경우 채팅방 ID 반환 (같은 모임)
         if (existingPrivateRoom.isPresent()) {
             return new ChatRoomResponse.IdWithConditionDTO(existingPrivateRoom.get().getId(), true);
+        }
+
+        Integer currentCount = meetFanRepository.countByMeet(meet);
+        if(currentCount.equals(meet.getMax())) {
+            throw new CustomException(ExceptionCode.MEET_MAX);
         }
 
         int currentYear = java.time.Year.now().getValue();
