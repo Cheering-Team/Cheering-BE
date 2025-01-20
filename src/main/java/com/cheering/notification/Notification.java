@@ -20,6 +20,7 @@ public class Notification extends BaseTimeEntity {
     @Column(name = "notification_id")
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private NotificaitonType type;
 
@@ -50,7 +51,7 @@ public class Notification extends BaseTimeEntity {
     @JoinColumn(name = "meet_id")
     private Meet meet;
 
-    @Column(nullable = false)
+    @Column
     private String meetName;
 
     public Notification(NotificaitonType type, Fan to, Fan from, Post post) {
