@@ -95,7 +95,7 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             "    SELECT mf FROM MeetFan mf WHERE mf.meet = m AND mf.fan.user = :user" +
             ") " +
             "ORDER BY m.createdAt DESC")
-    List<Meet> findMeetsByConditionsWithMattch(@Param("communityId") Long communityId,
+    List<Meet> findMeetsByConditionsWithMatch(@Param("communityId") Long communityId,
                                      @Param("userAge") Integer userAge,
                                      @Param("gender") MeetGender gender,
                                      @Param("user") User user,
@@ -110,12 +110,6 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             "AND mf.meet.communityId = :communityId " +
             "ORDER BY mf.meet.match.time ASC")
     List<Meet> findClosestMeetsByUserAndRoles(@Param("communityId") Long CommunityId, @Param("user") User user, @Param("roles") List<MeetFanRole> roles);
-
-    @Query("SELECT m FROM Meet m WHERE m.match.id = :matchId")
-    Optional<Meet> findByMatchId(@Param("matchId") Long matchId);
-
-    @Query("SELECT mf.meet FROM MeetFan mf JOIN mf.meet m WHERE mf.fan.user = :user AND m.communityId = :communityId ORDER BY m.match.time ASC")
-    Page<Meet> findMeetsByCommunityAndUser(Long communityId, User user, Pageable pageable);
 
     @Query("SELECT mf.meet FROM MeetFan mf JOIN mf.meet m WHERE mf.fan.user =:user AND m.communityId =:communityId AND (mf.role = 'MANAGER' OR mf.role = 'MEMBER')")
     Page<Meet> findConfirmedMeetsByCommunityIdAndRole(@Param("communityId") Long communityId, @Param("user") User user, Pageable pageable);
@@ -134,26 +128,6 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
                                                           @Param("roles") List<MeetFanRole> roles,
                                                           Pageable pageable);
 
-
-    @Query("SELECT m FROM ChatRoom cr " +
-            "JOIN cr.meet m " +
-            "JOIN m.match mt " +
-            "WHERE cr.type = :chatRoomType " +
-            "AND cr.communityId = :communityId " +
-            "AND EXISTS (SELECT 1 FROM ChatSession cs " +
-            "            JOIN cs.fan f " +
-            "            WHERE cs.chatRoom = cr " +
-            "            AND f.user = :user) " +
-            "AND EXISTS (SELECT 1 FROM Chat c WHERE c.chatRoom = cr AND c.type = :chatType) " +
-            "ORDER BY mt.time ASC")
-    Page<Meet> findPrivateChatRoomMeetsWithChatsByCommunityAndUser(
-            User user,
-            Long communityId,
-            ChatRoomType chatRoomType,
-            ChatType chatType,
-            Pageable pageable
-    );
-
     @Query("SELECT m FROM Meet m " +
             "JOIN m.meetFans mf " +
             "WHERE m.match.id = :matchId " +
@@ -162,6 +136,16 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
     Meet findByMatchAndUserWithRoles(@Param("matchId") Long matchId,
                                      @Param("user") User user,
                                      @Param("roles") List<MeetFanRole> roles);
+
+    @Query("SELECT m FROM Meet m " +
+            "JOIN m.meetFans mf " +
+            "WHERE m.match.id = :matchId " +
+            "AND mf.fan.user = :user " +
+            "AND mf.role = :role")
+    List<Meet> findApplierMeetsByMatchAndUser(@Param("matchId") Long matchId,
+                                              @Param("user") User user,
+                                              @Param("role") MeetFanRole role);
+
 
 
 
