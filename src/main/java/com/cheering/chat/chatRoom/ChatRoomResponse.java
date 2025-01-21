@@ -31,23 +31,24 @@ public class ChatRoomResponse {
                                String lastMessage,
                                LocalDateTime lastMessageTime,
                                Integer unreadCount,
-                               Long meetId
+                               Long meetId,
+                               Boolean notificationsEnabled
     ) {
         // 목록에서 사용
         public ChatRoomDTO(ChatRoom chatRoom, Integer count, Boolean isParticipating) {
-            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType(), count, null, null, null, isParticipating, null, null, null, null);
+            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType(), count, null, null, null, isParticipating, null, null, null, null, null);
         }
         // 내 채팅방 목록에서 사용
         public ChatRoomDTO(ChatRoom chatRoom, Integer count, Boolean isParticipating, String lastMessage, LocalDateTime lastMessageTime, Integer unreadCount) {
-            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType(), count, null, null, null, isParticipating, lastMessage, lastMessageTime, unreadCount, null);
+            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType(), count, null, null, null, isParticipating, lastMessage, lastMessageTime, unreadCount, null, null);
         }
         // 채팅방 내부 정보 (팀)
-        public ChatRoomDTO(ChatRoom chatRoom, Integer count, Fan fan, Fan manager, Team team) {
-                this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType(), count, new FanResponse.FanDTO(fan), new CommunityResponse.CommunityDTO(team, null, null), manager != null ? new FanResponse.FanDTO(manager) : null, null, null, null, null, chatRoom.getMeet() == null ? null : chatRoom.getMeet().getId());
+        public ChatRoomDTO(ChatRoom chatRoom, Integer count, Fan fan, Fan manager, Team team, Boolean notificationsEnabled) {
+                this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType(), count, new FanResponse.FanDTO(fan), new CommunityResponse.CommunityDTO(team, null, null), manager != null ? new FanResponse.FanDTO(manager) : null, null, null, null, null, chatRoom.getMeet() == null ? null : chatRoom.getMeet().getId(), notificationsEnabled);
         }
         // 채팅방 내부 정보 (선수)
-        public ChatRoomDTO(ChatRoom chatRoom, Integer count, Fan fan, Fan manager, Player player) {
-            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType(), count, new FanResponse.FanDTO(fan), new CommunityResponse.CommunityDTO(player, null, null), manager != null ? new FanResponse.FanDTO(manager) : null, null, null, null, null, chatRoom.getMeet() == null ? null : chatRoom.getMeet().getId());
+        public ChatRoomDTO(ChatRoom chatRoom, Integer count, Fan fan, Fan manager, Player player, Boolean notificationsEnabled) {
+            this(chatRoom.getId(), chatRoom.getName(), chatRoom.getImage(), chatRoom.getDescription(), chatRoom.getMax(), chatRoom.getType(), count, new FanResponse.FanDTO(fan), new CommunityResponse.CommunityDTO(player, null, null), manager != null ? new FanResponse.FanDTO(manager) : null, null, null, null, null, chatRoom.getMeet() == null ? null : chatRoom.getMeet().getId(), notificationsEnabled);
         }
     }
 
@@ -66,10 +67,11 @@ public class ChatRoomResponse {
                                      FanResponse.FanDTO user,
                                      Long meetId,
                                      Long communityId,
-                                     Boolean isConfirmed
+                                     Boolean isConfirmed,
+                                     Boolean notificationsEnabled
     ) {
-        public PrivateChatRoomDTO(ChatRoom chatRoom, String name, String image, Integer opponentAge, Gender opponentGender, Fan fan, Boolean isConfirmed) {
-            this(chatRoom.getId(), chatRoom.getType(), name, image, opponentAge, opponentGender, new FanResponse.FanDTO(fan.getId(), fan.getType(), fan.getMeetName(), fan.getMeetImage()), chatRoom.getMeet().getId(), chatRoom.getCommunityId(), isConfirmed);
+        public PrivateChatRoomDTO(ChatRoom chatRoom, String name, String image, Integer opponentAge, Gender opponentGender, Fan fan, Boolean isConfirmed, Boolean notificationsEnabled) {
+            this(chatRoom.getId(), chatRoom.getType(), name, image, opponentAge, opponentGender, new FanResponse.FanDTO(fan.getId(), fan.getType(), fan.getMeetName(), fan.getMeetImage()), chatRoom.getMeet().getId(), chatRoom.getCommunityId(), isConfirmed, notificationsEnabled);
         }
     }
 }

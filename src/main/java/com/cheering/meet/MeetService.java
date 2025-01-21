@@ -681,7 +681,7 @@ public class MeetService {
         meetFanRepository.save(meetFan);
 
         Notification notification = new Notification(NotificaitonType.MEET_NEW_APPLY, meet.getManager(), meetFan.getFan(), meet);
-        notificationRepository.save(notification);
+        // notificationRepository.save(notification);
 
         User managerUser = manager.getUser();
         for (DeviceToken deviceToken : managerUser.getDeviceTokens()) {

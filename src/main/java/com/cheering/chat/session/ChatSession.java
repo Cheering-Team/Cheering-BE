@@ -33,11 +33,15 @@ public class ChatSession extends BaseTimeEntity {
     @JoinColumn(name = "fan_id")
     private Fan fan;
 
+    @Column(nullable = false)
+    private Boolean notificationsEnabled = true;
+
     @Builder
     public ChatSession(String sessionId, ChatRoom chatRoom, Fan fan, LocalDateTime lastExitTime) {
         this.sessionId = sessionId;
         this.chatRoom = chatRoom;
         this.fan = fan;
         this.lastExitTime = lastExitTime;
+        this.notificationsEnabled = true;
     }
 }

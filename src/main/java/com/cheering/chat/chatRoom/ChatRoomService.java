@@ -168,12 +168,15 @@ public class ChatRoomService {
         Fan curFan = fanRepository.findByCommunityIdAndUser(chatRoom.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         int count = chatSessionRepository.countByChatRoom(chatRoom);
+
+        Optional<ChatSession> chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoomId, user);
+
         if(chatRoom.getCommunityType().equals(CommunityType.TEAM)) {
             Team team = teamRepository.findById(chatRoom.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
-            return chatRoom.getType().equals(ChatRoomType.OFFICIAL) ? new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, null, team) : new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, chatRoom.getManager(), team);
+            return chatRoom.getType().equals(ChatRoomType.OFFICIAL) ? new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, null, team, null) : new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, chatRoom.getManager(), team, chatSession.map(ChatSession::getNotificationsEnabled).orElse(true));
         } else {
             Player player = playerRepository.findById(chatRoom.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
-            return chatRoom.getType().equals(ChatRoomType.OFFICIAL) ? new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, null, player) : new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, chatRoom.getManager(), player);
+            return chatRoom.getType().equals(ChatRoomType.OFFICIAL) ? new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, null, player, null) : new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, chatRoom.getManager(), player, chatSession.map(ChatSession::getNotificationsEnabled).orElse(true));
         }
     }
 
@@ -568,7 +571,8 @@ public class ChatRoomService {
                     lastMessage,
                     lastMessageTime,
                     unreadCount,
-                    chatRoom.getMeet().getId()
+                    chatRoom.getMeet().getId(),
+                    null
             );
         }).toList();
     }
@@ -627,6 +631,27 @@ public class ChatRoomService {
                 .build();
 
         chatRepository.save(chat);
+
+        List<User> users = chatSessionRepository.findByChatRoomExceptMe(chatRoom, requestDTO.writerId());
+
+        users.forEach(user -> {
+            Integer count = getUnreadChats(user);
+            Long communityId = chatRoom.getCommunityId();
+            String title = "[" +  meet.getTitle() + "]";
+            String body = "모임 참여 확정 요청이 도착했습니다.";
+
+            // 푸시 알림 전송
+            user.getDeviceTokens().forEach(deviceToken ->
+                    fcmService.sendChatMessageTo(
+                            deviceToken.getToken(),
+                            count,
+                            communityId,
+                            chatRoomId,
+                            title,
+                            body
+                    )
+            );
+        });
     }
 
     // 확정 질문 수락 -> 모임 가입
@@ -726,6 +751,27 @@ public class ChatRoomService {
                 .build();
 
         chatRepository.save(chat);
+
+        List<User> users = chatSessionRepository.findByChatRoomExceptMe(privateChatRoom, requestDTO.writerId());
+
+        users.forEach(user -> {
+            Integer count = getUnreadChats(user);
+            Long communityId = privateChatRoom.getCommunityId();
+            String title = "[" +  confirmChatRoom.getMeet().getTitle() + "]";
+            String body = fan.getMeetName() + "님이 모임 참여를 확정하였습니다.";
+
+            // 푸시 알림 전송
+            user.getDeviceTokens().forEach(deviceToken ->
+                    fcmService.sendChatMessageTo(
+                            deviceToken.getToken(),
+                            count,
+                            communityId,
+                            chatRoomId,
+                            title,
+                            body
+                    )
+            );
+        });
     }
 
 
@@ -736,6 +782,8 @@ public class ChatRoomService {
 
         Fan opponentFan = chatSessionRepository.findOpponentFanByChatRoomAndUser(chatRoomId, user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        Optional<ChatSession> chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoom.getId(), user);
 
         boolean isConfirmed;
 
@@ -749,8 +797,24 @@ public class ChatRoomService {
             isConfirmed = optionalMeetFan.isPresent() && optionalMeetFan.get().getRole() != MeetFanRole.APPLIER && optionalMeetFan.get().getRole() != MeetFanRole.LEFT;
         }
 
-        return new ChatRoomResponse.PrivateChatRoomDTO(chatRoom, opponentFan.getMeetName(), opponentFan.getMeetImage(), opponentFan.getUser().getAge(), opponentFan.getUser().getGender(), curFan, isConfirmed);
+        return new ChatRoomResponse.PrivateChatRoomDTO(chatRoom, opponentFan.getMeetName(), opponentFan.getMeetImage(), opponentFan.getUser().getAge(), opponentFan.getUser().getGender(), curFan, isConfirmed, chatSession.get().getNotificationsEnabled());
     }
 
+    @Transactional
+    public void enableChatNotification(Long chatRoomId, User user) {
+        ChatSession chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoomId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
+
+        chatSession.setNotificationsEnabled(true);
+        chatSessionRepository.save(chatSession);
+    }
+    @Transactional
+    public void disableChatNotification(Long chatRoomId, User user) {
+        ChatSession chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoomId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
+
+        chatSession.setNotificationsEnabled(false);
+        chatSessionRepository.save(chatSession);
+    }
 
 }
