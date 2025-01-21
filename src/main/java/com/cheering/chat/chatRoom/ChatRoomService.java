@@ -327,11 +327,11 @@ public class ChatRoomService {
                     title = requestDTO.writerName();
                     body = content;
                 } else if (requestDTO.chatRoomType().equals("CONFIRM")){
-                    title = chatRoom.getMeet().getTitle();
-                    body = requestDTO.writerName() + "\n" + content;
+                    title = writerFan.getMeetName() + "\n" + chatRoom.getMeet().getTitle();
+                    body = content;
                 } else {
-                    title = chatRoom.getName();
-                    body = writerFan.getMeetName() + "\n" + content;
+                    title = writerFan.getName() + "\n" + chatRoom.getName();
+                    body = content;
                 }
 
                 // 푸시 알림 전송
