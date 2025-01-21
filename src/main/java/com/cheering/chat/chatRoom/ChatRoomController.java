@@ -57,7 +57,7 @@ public class  ChatRoomController {
 
     // 채팅방 정보 조회
     @GetMapping("/chatrooms/{chatRoomId}")
-    public ResponseEntity<?> getChatRoomById(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public ResponseEntity<?>  getChatRoomById(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 정보 조회 완료", chatRoomService.getChatRoomById(chatRoomId, customUserDetails.getUser())));
     }
 
