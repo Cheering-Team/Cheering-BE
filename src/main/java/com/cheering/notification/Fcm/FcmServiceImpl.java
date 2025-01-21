@@ -1,11 +1,15 @@
 package com.cheering.notification.Fcm;
 
 import com.cheering.meet.Meet;
+import com.cheering.player.Player;
+import com.cheering.team.Team;
 import com.cheering.user.deviceToken.DeviceTokenRepository;
 import com.google.firebase.ErrorCode;
 import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -82,11 +86,17 @@ public class FcmServiceImpl {
         }
     }
 
-    public void sendChatMessageTo(String token, Integer count) {
+    public void sendChatMessageTo(String token, Integer count, Long communityId, Long chatRoomId, String title, String body) {
         Message message = Message.builder()
                 .setToken(token)
                 .putData("type", "CHAT")
                 .putData("count", count.toString())
+                .putData("communityId", communityId.toString())
+                .putData("chatRoomId", chatRoomId.toString())
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
                 .build();
         try {
             FirebaseMessaging.getInstance().send(message);

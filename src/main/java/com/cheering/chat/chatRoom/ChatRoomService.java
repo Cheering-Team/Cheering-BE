@@ -318,7 +318,33 @@ public class ChatRoomService {
 
             users.forEach(user -> {
                 Integer count = getUnreadChats(user);
-                user.getDeviceTokens().forEach(deviceToken -> fcmService.sendChatMessageTo(deviceToken.getToken(), count));
+                String content = requestDTO.content();
+                Long communityId = chatRoom.getCommunityId();
+                String title;
+                String body;
+
+                if (requestDTO.chatRoomType().equals("PRIVATE")) {
+                    title = requestDTO.writerName();
+                    body = content;
+                } else if (requestDTO.chatRoomType().equals("CONFIRM")){
+                    title = chatRoom.getMeet().getTitle();
+                    body = requestDTO.writerName() + "\n" + content;
+                } else {
+                    title = chatRoom.getName();
+                    body = writerFan.getMeetName() + "\n" + content;
+                }
+
+                // 푸시 알림 전송
+                user.getDeviceTokens().forEach(deviceToken ->
+                        fcmService.sendChatMessageTo(
+                                deviceToken.getToken(),
+                                count,
+                                communityId,
+                                chatRoomId,
+                                title,
+                                body
+                        )
+                );
             });
         }
 
@@ -601,14 +627,6 @@ public class ChatRoomService {
                 .build();
 
         chatRepository.save(chat);
-
-        List<User> users = chatSessionRepository.findByChatRoomExceptMe(chatRoom, requestDTO.writerId());
-        users.forEach(user -> {
-            Integer count = getUnreadChats(user);
-            user.getDeviceTokens().forEach(deviceToken ->
-                    fcmService.sendChatMessageTo(deviceToken.getToken(), count)
-            );
-        });
     }
 
     // 확정 질문 수락 -> 모임 가입
