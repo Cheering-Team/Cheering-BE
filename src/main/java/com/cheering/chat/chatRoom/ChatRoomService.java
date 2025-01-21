@@ -794,5 +794,19 @@ public class ChatRoomService {
         return new ChatRoomResponse.PrivateChatRoomDTO(chatRoom, opponentFan.getMeetName(), opponentFan.getMeetImage(), opponentFan.getUser().getAge(), opponentFan.getUser().getGender(), curFan, isConfirmed);
     }
 
+    @Transactional
+    public void updateChatNotificationSetting(Long chatRoomId, User user, Boolean enabled) {
+        ChatSession chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoomId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
+
+        chatSession.setNotificationsEnabled(enabled);
+        chatSessionRepository.save(chatSession);
+    }
+
+    public Boolean isNotificationEnabled(Long chatRoomId, User user) {
+        ChatSession chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoomId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
+        return chatSession.getNotificationsEnabled();
+    }
 
 }
