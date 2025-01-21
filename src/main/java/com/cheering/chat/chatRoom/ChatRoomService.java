@@ -327,12 +327,21 @@ public class ChatRoomService {
                     title = requestDTO.writerName();
                     body = content;
                 } else if (requestDTO.chatRoomType().equals("CONFIRM")){
-                    title = writerFan.getMeetName() + "\n" + chatRoom.getMeet().getTitle();
-                    body = content;
+                    title = "[" +  chatRoom.getMeet().getTitle() + "]";
+                    body = writerFan.getMeetName() + " : " + content;
                 } else {
-                    title = writerFan.getName() + "\n" + chatRoom.getName();
-                    body = content;
+                    title = "[" + chatRoom.getName() + "]";
+                    body = writerFan.getName() + " : " + content;
                 }
+
+                // [내일 직관갈사람]
+                // 조준서 : 안녕하세요
+
+                // [내일 직관갈사람]
+                // 조준서
+                // 안녕하세요
+
+
 
                 // 푸시 알림 전송
                 user.getDeviceTokens().forEach(deviceToken ->
