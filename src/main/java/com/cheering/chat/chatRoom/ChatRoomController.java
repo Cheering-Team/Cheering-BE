@@ -129,11 +129,19 @@ public class  ChatRoomController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1:1 채팅방 정보 조회 완료", chatRoomService.getPrivateChatRoomById(chatRoomId, customUserDetails.getUser())));
     }
 
-    @PatchMapping("/chatrooms/{chatRoomId}/notifications")
-    public ResponseEntity<?> updateNotificationSetting(@PathVariable Long chatRoomId, @RequestBody Boolean enabled, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    @PatchMapping("/chatrooms/{chatroomId}/enable")
+    public ResponseEntity<?> enableNotification(@PathVariable Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = customUserDetails.getUser();
-        chatRoomService.updateChatNotificationSetting(chatRoomId, user, enabled);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림 설정이 변경되었습니다.", null));
+        chatRoomService.enableChatNotification(chatRoomId, user);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림이 활성화되었습니다.", null));
+    }
+
+    // 알림 끄기
+    @PatchMapping("/chatrooms/{chatroomId}/disable")
+    public ResponseEntity<?> disableNotification(@PathVariable Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        User user = customUserDetails.getUser();
+        chatRoomService.disableChatNotification(chatRoomId, user);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "알림이 비활성화되었습니다.", null));
     }
 
 

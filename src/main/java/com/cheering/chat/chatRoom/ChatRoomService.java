@@ -795,18 +795,20 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public void updateChatNotificationSetting(Long chatRoomId, User user, Boolean enabled) {
+    public void enableChatNotification(Long chatRoomId, User user) {
         ChatSession chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoomId, user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
 
-        chatSession.setNotificationsEnabled(enabled);
+        chatSession.setNotificationsEnabled(true);
         chatSessionRepository.save(chatSession);
     }
-
-    public Boolean isNotificationEnabled(Long chatRoomId, User user) {
+    @Transactional
+    public void disableChatNotification(Long chatRoomId, User user) {
         ChatSession chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoomId, user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
-        return chatSession.getNotificationsEnabled();
+
+        chatSession.setNotificationsEnabled(false);
+        chatSessionRepository.save(chatSession);
     }
 
 }
