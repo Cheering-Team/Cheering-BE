@@ -627,6 +627,27 @@ public class ChatRoomService {
                 .build();
 
         chatRepository.save(chat);
+
+        List<User> users = chatSessionRepository.findByChatRoomExceptMe(chatRoom, requestDTO.writerId());
+
+        users.forEach(user -> {
+            Integer count = getUnreadChats(user);
+            Long communityId = chatRoom.getCommunityId();
+            String title = "[" +  meet.getTitle() + "]";
+            String body = "모임 참여 확정 요청이 도착했습니다.";
+
+            // 푸시 알림 전송
+            user.getDeviceTokens().forEach(deviceToken ->
+                    fcmService.sendChatMessageTo(
+                            deviceToken.getToken(),
+                            count,
+                            communityId,
+                            chatRoomId,
+                            title,
+                            body
+                    )
+            );
+        });
     }
 
     // 확정 질문 수락 -> 모임 가입
@@ -726,6 +747,27 @@ public class ChatRoomService {
                 .build();
 
         chatRepository.save(chat);
+
+        List<User> users = chatSessionRepository.findByChatRoomExceptMe(privateChatRoom, requestDTO.writerId());
+
+        users.forEach(user -> {
+            Integer count = getUnreadChats(user);
+            Long communityId = privateChatRoom.getCommunityId();
+            String title = "[" +  confirmChatRoom.getMeet().getTitle() + "]";
+            String body = fan.getMeetName() + "님이 모임 참여를 확정하였습니다.";
+
+            // 푸시 알림 전송
+            user.getDeviceTokens().forEach(deviceToken ->
+                    fcmService.sendChatMessageTo(
+                            deviceToken.getToken(),
+                            count,
+                            communityId,
+                            chatRoomId,
+                            title,
+                            body
+                    )
+            );
+        });
     }
 
 
