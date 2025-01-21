@@ -168,12 +168,15 @@ public class ChatRoomService {
         Fan curFan = fanRepository.findByCommunityIdAndUser(chatRoom.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         int count = chatSessionRepository.countByChatRoom(chatRoom);
+
+        Optional<ChatSession> chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoomId, user);
+
         if(chatRoom.getCommunityType().equals(CommunityType.TEAM)) {
             Team team = teamRepository.findById(chatRoom.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
-            return chatRoom.getType().equals(ChatRoomType.OFFICIAL) ? new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, null, team) : new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, chatRoom.getManager(), team);
+            return chatRoom.getType().equals(ChatRoomType.OFFICIAL) ? new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, null, team, null) : new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, chatRoom.getManager(), team, chatSession.get().getNotificationsEnabled());
         } else {
             Player player = playerRepository.findById(chatRoom.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
-            return chatRoom.getType().equals(ChatRoomType.OFFICIAL) ? new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, null, player) : new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, chatRoom.getManager(), player);
+            return chatRoom.getType().equals(ChatRoomType.OFFICIAL) ? new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, null, player, null) : new ChatRoomResponse.ChatRoomDTO(chatRoom, count, curFan, chatRoom.getManager(), player, chatSession.get().getNotificationsEnabled());
         }
     }
 
@@ -568,7 +571,8 @@ public class ChatRoomService {
                     lastMessage,
                     lastMessageTime,
                     unreadCount,
-                    chatRoom.getMeet().getId()
+                    chatRoom.getMeet().getId(),
+                    null
             );
         }).toList();
     }
@@ -779,6 +783,8 @@ public class ChatRoomService {
         Fan opponentFan = chatSessionRepository.findOpponentFanByChatRoomAndUser(chatRoomId, user)
                 .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
+        Optional<ChatSession> chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoom.getId(), user);
+
         boolean isConfirmed;
 
         if(chatRoom.getMeet().getManager().equals(curFan)) {
@@ -791,7 +797,7 @@ public class ChatRoomService {
             isConfirmed = optionalMeetFan.isPresent() && optionalMeetFan.get().getRole() != MeetFanRole.APPLIER && optionalMeetFan.get().getRole() != MeetFanRole.LEFT;
         }
 
-        return new ChatRoomResponse.PrivateChatRoomDTO(chatRoom, opponentFan.getMeetName(), opponentFan.getMeetImage(), opponentFan.getUser().getAge(), opponentFan.getUser().getGender(), curFan, isConfirmed);
+        return new ChatRoomResponse.PrivateChatRoomDTO(chatRoom, opponentFan.getMeetName(), opponentFan.getMeetImage(), opponentFan.getUser().getAge(), opponentFan.getUser().getGender(), curFan, isConfirmed, chatSession.get().getNotificationsEnabled());
     }
 
     @Transactional
