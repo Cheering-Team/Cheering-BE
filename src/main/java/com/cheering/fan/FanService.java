@@ -56,24 +56,14 @@ public class FanService {
     private final S3Util s3Util;
     private final VoteService voteService;
 
-    public FanResponse.ProfileDTO getFanInfo(Long fanId, User user) {
+    public FanResponse.FanProfileDTO getFanInfo(Long fanId, User user) {
         // 유저
         Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
         // 현 접속자
         Fan curFan = fanRepository.findByCommunityIdAndUser(fan.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
-        FanResponse.FanDTO fanDTO = new FanResponse.FanDTO(fan);
-
-        if(curFan.getType().equals(CommunityType.TEAM)) {
-            Team team = teamRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.TEAM_NOT_FOUND));
-
-            return new FanResponse.ProfileDTO(fanDTO, fan.equals(curFan), team.getKoreanName(), team.getEnglishName());
-        } else {
-            Player player = playerRepository.findById(fan.getCommunityId()).orElseThrow(()-> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
-
-            return new FanResponse.ProfileDTO(fanDTO, fan.equals(curFan), player.getKoreanName(), player.getEnglishName());
-        }
+        return new FanResponse.FanProfileDTO(fan, fan.equals(curFan));
     }
 
     public PostResponse.PostListDTO getFanPosts(Long fanId, Pageable pageable, User user) {
@@ -113,7 +103,7 @@ public class FanService {
     }
 
     @Transactional
-    public void updateFanImage(Long fanId, MultipartFile image) {
+    public void updateFanImage(Long fanId, String type, MultipartFile image) {
         Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
 
         String imageUrl = "";
@@ -123,11 +113,16 @@ public class FanService {
             imageUrl = s3Util.upload(image);
         }
 
-        fan.setImage(imageUrl);
+        if(type.equals("COMMUNITY")) {
+            fan.setImage(imageUrl);
+        } else {
+            fan.setMeetImage(imageUrl);
+        }
+
         fanRepository.save(fan);
     }
 
-    public void updateFanName(Long fanId, UserRequest.NameDTO requestDTO) {
+    public void updateFanName(Long fanId, String type, UserRequest.NameDTO requestDTO) {
         if(badWordService.containsBadWords(requestDTO.name())) {
             throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
         }
@@ -153,7 +148,11 @@ public class FanService {
             throw new CustomException(ExceptionCode.DUPLICATE_NAME);
         }
 
-        fan.setName(requestDTO.name());
+        if(type.equals("COMMUNITY")) {
+            fan.setName(requestDTO.name());
+        } else {
+            fan.setMeetName(requestDTO.name());
+        }
         fanRepository.save(fan);
     }
 

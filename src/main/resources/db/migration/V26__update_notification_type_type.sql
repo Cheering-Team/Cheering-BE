@@ -1,0 +1,2 @@
+ALTER TABLE notification_tb
+ALTER COLUMN type TYPE VARCHAR(256) USING type::VARCHAR(256);

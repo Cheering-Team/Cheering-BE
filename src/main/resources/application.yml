@@ -21,10 +21,10 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
-      format_sql: true
+      format_sql: false
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
@@ -34,7 +34,9 @@ spring:
         enabled: false
 
   flyway:
-    enabled: false
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
 
 server:
   port: 8080
@@ -57,10 +59,10 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
-      format_sql: true
+      format_sql: false
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
+    show-sql: false
 
   data:
     redis:
@@ -94,7 +96,7 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
-      format_sql: true
+      format_sql: false
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
@@ -123,3 +125,49 @@ spring:
       minSupported: 4.5.0
       iosUrl: https://apps.apple.com/kr/app/%EC%8A%A4%ED%83%80%EB%94%94%EC%9B%80/id6667097204
       aosUrl: https://play.google.com/store/apps/details?id=com.stardium
+
+
+---
+
+springdoc:
+  swagger-ui:
+    # swagger-ui 접근 경로. default 값은 /swagger-ui.html이다.
+    path: /swagger-ui.html
+
+    # 각 API의 그룹 표시 순서
+    # path, query, body, response 순으로 출력
+    groups-order: DESC
+
+    # 태그 정렬 순서.
+    # alpha: 알파벳 순 정렬
+    # method: OpenAPI specification file에 원하는 태그 정렬 방식 직접 기재
+    tags-sorter: alpha
+
+    # 컨트롤러 정렬 순서.
+    # method는 delete - get - patch - post - put 순으로 정렬된다.
+    # alpha를 사용해 알파벳 순으로 정렬할 수 있다.
+    operations-sorter: method
+
+    # swagger-ui default url인 petstore html의 비활성화 설정
+    disable-swagger-default-url: true
+
+    # swagger-ui에서 try 했을 때 request duration을 알려주는 설정
+    display-request-duration: true
+
+  # openAPI 접근 경로. default 값은 /v3/api-docs 이다.
+  api-docs:
+    path: /v3/api-docs
+
+  # Spring Actuator의 endpoint까지 보여줄 것인지?
+  show-actuator: true
+
+  # request media type 의 기본 값
+  default-consumes-media-type: application/json
+
+  # response media type 의 기본 값
+  default-produces-media-type: application/json
+
+  # 해당 패턴에 매칭되는 controller만 swagger-ui에 노출한다.
+  paths-to-match:
+    - /api/**
+

@@ -4,6 +4,7 @@ import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
+import io.lettuce.core.dynamic.annotation.Param;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -114,6 +115,28 @@ public class UserController {
     @GetMapping("/isFirstLogin")
     public ResponseEntity<?> isFirstLogin(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK,"조회 완료", userService.isFirstLogin(customUserDetails.getUser())));
+    }
+
+    // 유저의 나이와 성별 설정 여부 확인
+    @GetMapping("/users/communities/{communityId}/check-profile")
+    public ResponseEntity<?> getUserProfileStatus(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        User user = customUserDetails.getUser();
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "프로필 설정 여부 확인 완료", userService.getUserProfileStatus(user.getId(), communityId)));
+    }
+
+    // 유저 나이, 성별 설정
+    @PostMapping("/users/communities/{communityId}/set-profile")
+    public ResponseEntity<?> setAgeAndGenderAndMeetProfile(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UserRequest.AgeAndGenderAndProfileDTO requestDTO) {
+        User user = customUserDetails.getUser();
+        userService.setAgeAndGenderAndMeetProfile(requestDTO, user.getId(), communityId);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별, 모임 프로필 설정 완료", null));
+    }
+
+    // 유저의 나이, 성별 조회
+    @GetMapping("/users/age-gender")
+    public ResponseEntity<?> getAgeAndGender(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        User user = customUserDetails.getUser();
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "나이 및 성별 조회 완료", userService.getAgeAndGender(user.getId())));
     }
 }
 

@@ -8,6 +8,15 @@ import com.cheering.chat.*;
 import com.cheering.chat.session.ChatSession;
 import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.fan.CommunityType;
+import com.cheering.match.Match;
+import com.cheering.matchRestriction.MatchRestrictionRepository;
+import com.cheering.meet.Meet;
+import com.cheering.meet.MeetGender;
+import com.cheering.meet.MeetService;
+import com.cheering.meetfan.MeetFan;
+import com.cheering.meet.MeetRepository;
+import com.cheering.meetfan.MeetFanRepository;
+import com.cheering.meetfan.MeetFanRole;
 import com.cheering.notification.Fcm.FcmServiceImpl;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
@@ -27,12 +36,11 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +51,10 @@ public class ChatRoomService {
     private final ChatRepository chatRepository;
     private final ChatSessionRepository chatSessionRepository;
     private final TeamRepository teamRepository;
+    private final MeetRepository meetRepository;
+    private final MeetFanRepository meetFanRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final MatchRestrictionRepository matchRestrictionRepository;
     private final BadWordService badWordService;
     private final S3Util s3Util;
     private final EntityManager entityManager;
@@ -184,13 +195,29 @@ public class ChatRoomService {
         lastChat = chats.get(chats.size() - 1);
         boolean hasNext = chatRepository.existsByChatRoomIdAndBeforeLastChat(chatRoomId, lastChat.getCreatedAt(), enterDate);
 
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+        ChatRoomType chatRoomType = chatRoom.getType();
+
         ChatGroup curGroup = null;
 
-        for(Chat chat: chats) {
-            if(curGroup == null || !curGroup.getGroupKey().equals(chat.getGroupKey())){
+        for (Chat chat : chats) {
+            FanResponse.FanDTO writerDTO;
+
+            if (chatRoomType == ChatRoomType.CONFIRM || chatRoomType == ChatRoomType.PRIVATE) {
+                writerDTO = new FanResponse.FanDTO(
+                        chat.getWriter().getId(),
+                        chat.getWriter().getType(),
+                        chat.getWriter().getMeetName(),
+                        chat.getWriter().getMeetImage()
+                );
+            } else {
+                writerDTO = new FanResponse.FanDTO(chat.getWriter());
+            }
+
+            if (curGroup == null || !curGroup.getGroupKey().equals(chat.getGroupKey())) {
                 List<String> messages = new ArrayList<>();
                 messages.add(chat.getContent());
-                curGroup = new ChatGroup(chat.getType(), chat.getCreatedAt(), new FanResponse.FanDTO(chat.getWriter()), messages, chat.getGroupKey());
+                curGroup = new ChatGroup(chat.getType(), chat.getCreatedAt(), writerDTO, messages, chat.getGroupKey());
                 chatGroups.add(curGroup);
             } else {
                 curGroup.getMessages().add(0, chat.getContent());
@@ -261,9 +288,19 @@ public class ChatRoomService {
         LocalDateTime now = LocalDateTime.now();
         String groupKey = generateGroupKey(requestDTO.writerId(), now);
 
-        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId, new ChatResponse.ChatResponseDTO("MESSAGE", requestDTO.content(), now, requestDTO.writerId(), requestDTO.writerImage(), requestDTO.writerName(), groupKey, null));
+        Fan writerFan = fanRepository.findById(requestDTO.writerId())
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
 
-        if(requestDTO.chatRoomType().equals("PUBLIC")){
+        if (requestDTO.chatRoomType().equals("CONFIRM")) {
+            simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId, new ChatResponse.ChatResponseDTO("MESSAGE", requestDTO.content(), now, requestDTO.writerId(), writerFan.getMeetImage(), writerFan.getMeetName(), groupKey, null));
+        } else {
+            simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId, new ChatResponse.ChatResponseDTO("MESSAGE", requestDTO.content(), now, requestDTO.writerId(), requestDTO.writerImage(), requestDTO.writerName(), groupKey, null));
+        }
+
+        if(requestDTO.chatRoomType().equals("PUBLIC") ||
+                requestDTO.chatRoomType().equals("PRIVATE") ||
+                requestDTO.chatRoomType().equals("CONFIRM")) {
+
             ChatRoom chatRoom = entityManager.getReference(ChatRoom.class, chatRoomId);
             Fan fan = entityManager.getReference(Fan.class, requestDTO.writerId());
 
@@ -281,9 +318,36 @@ public class ChatRoomService {
 
             users.forEach(user -> {
                 Integer count = getUnreadChats(user);
-                user.getDeviceTokens().forEach(deviceToken -> fcmService.sendChatMessageTo(deviceToken.getToken(), count));
+                String content = requestDTO.content();
+                Long communityId = chatRoom.getCommunityId();
+                String title;
+                String body;
+
+                if (requestDTO.chatRoomType().equals("PRIVATE")) {
+                    title = requestDTO.writerName();
+                    body = content;
+                } else if (requestDTO.chatRoomType().equals("CONFIRM")){
+                    title = "[" +  chatRoom.getMeet().getTitle() + "]";
+                    body = writerFan.getMeetName() + ": " + content;
+                } else {
+                    title = "[" + chatRoom.getName() + "]";
+                    body = writerFan.getName() + ": " + content;
+                }
+
+                // 푸시 알림 전송
+                user.getDeviceTokens().forEach(deviceToken ->
+                        fcmService.sendChatMessageTo(
+                                deviceToken.getToken(),
+                                count,
+                                communityId,
+                                chatRoomId,
+                                title,
+                                body
+                        )
+                );
             });
         }
+
     }
 
     @Transactional
@@ -296,15 +360,15 @@ public class ChatRoomService {
         Fan fan = chatSession.get().getFan();
         chatSessionRepository.delete(chatSession.get());
         Integer count = chatSessionRepository.countByChatRoom(chatRoom);
-        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", new ChatResponse.ChatResponseDTO("SYSTEM_EXIT", fan.getName() + "님이 나가셨습니다", LocalDateTime.now(), fan.getId(), fan.getImage(), fan.getName(), fan.getId() + "_SYSTEM_EXIT", count));
+        simpMessagingTemplate.convertAndSend("/topic/chatRoom/" + chatRoomId + "/participants", new ChatResponse.ChatResponseDTO("SYSTEM", fan.getName() + "님이 나가셨습니다", LocalDateTime.now(), fan.getId(), fan.getImage(), fan.getName(), fan.getId() + "_SYSTEM", count));
 
-        if(chatRoom.getType().equals(ChatRoomType.PUBLIC)){
+        if (chatRoom.getType().equals(ChatRoomType.PUBLIC) || chatRoom.getType().equals(ChatRoomType.CONFIRM) || chatRoom.getType().equals(ChatRoomType.PRIVATE)) {
             Chat chat = Chat.builder()
-                    .type(ChatType.SYSTEM_EXIT)
+                    .type(ChatType.SYSTEM)
                     .chatRoom(chatRoom)
                     .writer(fan)
                     .content(fan.getName() + "님이 나가셨습니다")
-                    .groupKey(fan.getId() + "_SYSTEM_EXIT")
+                    .groupKey(fan.getId() + "_SYSTEM")
                     .build();
             chatRepository.save(chat);
         }
@@ -323,12 +387,370 @@ public class ChatRoomService {
 
     @Transactional
     public Integer getUnreadChats(User user) {
-        List<ChatSession> chatSessions = chatSessionRepository.findByUser(user);
+        List<ChatSession> chatSessions = chatSessionRepository.findPublicByUser(user);
 
         return chatSessions.stream().mapToInt(chatSession -> chatRepository.countUnreadMessages(chatSession.getChatRoom(), ChatType.MESSAGE, chatSession.getLastExitTime())).sum();
     }
 
-    private String generateGroupKey(Long writerId, LocalDateTime timestamp) {
+    public String generateGroupKey(Long writerId, LocalDateTime timestamp) {
         return writerId + "_" + groupKeyFormatter.format(timestamp);
     }
+
+    @Transactional
+    public ChatRoomResponse.IdDTO createConfirmedChatRoom(Long communityId, Meet meet, Integer max, User user) {
+
+        Fan curUser = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()-> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        Optional<ChatRoom> existingConfirmedRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(communityId, ChatRoomType.CONFIRM );
+        if (existingConfirmedRoom.isPresent()) {
+            throw new CustomException(ExceptionCode.DUPLICATE_CHAT_ROOM);
+        }
+
+        Optional<Player> player = playerRepository.findById(communityId);
+
+        ChatRoom chatRoom = ChatRoom.builder()
+                .communityId(communityId)
+                .name("모임 확정 채팅방")
+                .description("확정된 멤버들이 대화하는 채팅방입니다.")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-confirm-chatroom.png")
+                .type(ChatRoomType.CONFIRM)
+                .manager(curUser) // Manager of the chat room
+                .communityType(player.isPresent() ? CommunityType.PLAYER : CommunityType.TEAM)
+                .max(max)
+                .meet(meet) // Meet 정보 설정
+                .build();
+
+        chatRoomRepository.save(chatRoom);
+        return new ChatRoomResponse.IdDTO(chatRoom.getId());
+    }
+
+    @Transactional
+    public ChatRoomResponse.IdWithConditionDTO createPrivateChatRoom(Long communityId, Long meetId, User user) {
+
+        Meet meet = meetRepository.findById(meetId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.MEET_NOT_FOUND));
+
+        boolean isRestricted = matchRestrictionRepository.existsByMatchIdAndUser(meet.getMatch().getId(), user);
+        if (isRestricted) {
+            throw new CustomException(ExceptionCode.USER_RESTRICTED_FOR_MATCH);
+        }
+
+        Fan manager = meetFanRepository.findByMeetAndRole(meet, MeetFanRole.MANAGER)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND))
+                .getFan();
+
+        Fan applicant = fanRepository.findByCommunityIdAndUser(communityId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        Optional<ChatRoom> existingPrivateRoom = chatRoomRepository.findPrivateChatRoomByParticipantsAndMeet(
+                manager, applicant, ChatRoomType.PRIVATE, meetId);
+
+        // 기존 채팅방이 존재할 경우 채팅방 ID 반환 (같은 모임)
+        if (existingPrivateRoom.isPresent()) {
+            return new ChatRoomResponse.IdWithConditionDTO(existingPrivateRoom.get().getId(), true);
+        }
+
+        Integer currentCount = meetFanRepository.countByMeet(meet);
+        if(currentCount.equals(meet.getMax())) {
+            throw new CustomException(ExceptionCode.MEET_MAX);
+        }
+
+        int currentYear = java.time.Year.now().getValue();
+        int currentAge = currentYear - applicant.getUser().getAge() + 1;
+
+        boolean isConditionMatched = true;
+        if (meet.getGender() != null && meet.getGender() != MeetGender.ANY &&
+                !meet.getGender().toString().equalsIgnoreCase(applicant.getUser().getGender().toString())) {
+            isConditionMatched = false;
+        }
+        if (meet.getAgeMin() != null && currentAge < meet.getAgeMin()) {
+            isConditionMatched = false;
+        }
+        if (meet.getAgeMax() != null && currentAge > meet.getAgeMax()) {
+            isConditionMatched = false;
+        }
+
+        ChatRoom privateChatRoom = ChatRoom.builder()
+                .communityId(communityId)
+                .name(applicant.getMeetName())
+                .description("방장과 자유롭게 이야기해보세요")
+                .image("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/default-private-chatroom.png")
+                .type(ChatRoomType.PRIVATE)
+                .manager(manager)
+                .communityType(manager.getType())
+                .max(2)
+                .meet(meet)
+                .build();
+        chatRoomRepository.save(privateChatRoom);
+
+        chatSessionRepository.save(
+                ChatSession.builder()
+                        .sessionId(UUID.randomUUID().toString()) // 임시 세션 ID
+                        .chatRoom(privateChatRoom)
+                        .fan(manager)
+                        .lastExitTime(LocalDateTime.now())
+                        .build()
+        );
+
+        chatSessionRepository.save(
+                ChatSession.builder()
+                        .sessionId(UUID.randomUUID().toString()) // 임시 세션 ID
+                        .chatRoom(privateChatRoom)
+                        .fan(applicant)
+                        .lastExitTime(LocalDateTime.now())
+                        .build()
+        );
+
+        if (!isConditionMatched) {
+            String systemMessage = "모임 조건과 일치하지 않는 대화 신청자입니다.\n" +
+                    "충분한 대화를 통해 멤버 확정을 검토해주세요.";
+            Chat systemChat = Chat.builder()
+                    .type(ChatType.SYSTEM)
+                    .chatRoom(privateChatRoom)
+                    .writer(manager)
+                    .content(systemMessage)
+                    .groupKey(manager.getId() + "_SYSTEM")
+                    .build();
+            chatRepository.save(systemChat);
+        }
+
+        return new ChatRoomResponse.IdWithConditionDTO(privateChatRoom.getId(), isConditionMatched);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChatRoomResponse.ChatRoomDTO> getPrivateChatRoomsForManager(Long meetId, User user) {
+
+        // 모임의 매니저 확인
+        MeetFan manager = meetFanRepository.findByMeetIdAndRole(meetId, MeetFanRole.MANAGER)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        // 채팅 메시지가 있는 1:1 대화방 조회
+        List<ChatRoom> privateChatRooms = chatRoomRepository.findPrivateChatRoomsWithMessages(
+                manager.getFan().getId(),
+                ChatRoomType.PRIVATE,
+                meetId,
+                ChatType.MESSAGE
+        );
+
+        return privateChatRooms.stream().map(chatRoom -> {
+
+            ChatSession chatSession = chatSessionRepository.findByChatRoomIdAndUser(chatRoom.getId(), user)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.CHAT_SESSION_NOT_FOUND));
+
+            // 상대방 팬 정보 가져오기
+            Fan opponentFan = chatSessionRepository.findOpponentFanByChatRoomAndUser(chatRoom.getId(), user)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+            // 마지막 메시지 가져오기
+            Pageable pageable = PageRequest.of(0, 1);
+            List<Chat> chats = chatRepository.findLastChat(chatRoom, ChatType.MESSAGE, pageable);
+            String lastMessage = chats.isEmpty() ? null : chats.get(0).getContent();
+            LocalDateTime lastMessageTime = chats.isEmpty() ? null : chats.get(0).getCreatedAt();
+
+            // 읽지 않은 메시지 개수
+            Integer unreadCount = chatRepository.countUnreadMessages(chatRoom, ChatType.MESSAGE, chatSession.getLastExitTime());
+
+            // 현재 대화방 참가자 수
+            Integer count = chatSessionRepository.countByChatRoom(chatRoom);
+
+            return new ChatRoomResponse.ChatRoomDTO(
+                    chatRoom.getId(),
+                    opponentFan.getMeetName(),
+                    opponentFan.getMeetImage(),
+                    chatRoom.getDescription(),
+                    chatRoom.getMax(),
+                    chatRoom.getType(),
+                    count,
+                    null,
+                    null,
+                    null,
+                    true,
+                    lastMessage,
+                    lastMessageTime,
+                    unreadCount,
+                    chatRoom.getMeet().getId()
+            );
+        }).toList();
+    }
+
+    @Transactional
+    public void sendJoinRequest(ChatRequest.ChatRequestDTO requestDTO, Long chatRoomId) {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        ChatRoom chatRoom = entityManager.getReference(ChatRoom.class, chatRoomId);
+
+        Meet meet = chatRoom.getMeet();
+
+        if (meet == null || meet.getManager().equals(requestDTO.writerId())) {
+            throw new CustomException(ExceptionCode.USER_FORBIDDEN); // 방장 아닌 경우 - 권한X
+        }
+        if (meet.getMax().equals(meetFanRepository.countByMeet(meet))) {
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/chatRoom/" + chatRoomId,
+                    new ChatResponse.ChatResponseDTO(
+                            "ERROR",
+                            "2015",
+                            now,
+                            requestDTO.writerId(),
+                            requestDTO.writerImage(),
+                            requestDTO.writerName(),
+                            requestDTO.writerId()+"_JOIN_REQUEST",
+                            null
+                    )
+            );
+            return;
+        }
+
+        simpMessagingTemplate.convertAndSend(
+                "/topic/chatRoom/" + chatRoomId,
+                new ChatResponse.ChatResponseDTO(
+                        "JOIN_REQUEST",
+                        "해당 모임에 참여를 확정하겠습니까?",
+                        now,
+                        requestDTO.writerId(),
+                        requestDTO.writerImage(),
+                        requestDTO.writerName(),
+                        requestDTO.writerId()+"_JOIN_REQUEST",
+                        null
+                )
+        );
+
+        Fan manager = entityManager.getReference(Fan.class, requestDTO.writerId());
+
+        Chat chat = Chat.builder()
+                .type(ChatType.JOIN_REQUEST)
+                .chatRoom(chatRoom)
+                .writer(manager)
+                .content("해당 모임에 참여를 확정하겠습니까?")
+                .groupKey(requestDTO.writerId()+"_JOIN_REQUEST")
+                .build();
+
+        chatRepository.save(chat);
+    }
+
+    // 확정 질문 수락 -> 모임 가입
+    @Transactional
+    public void acceptJoinRequest(ChatRequest.ChatRequestDTO requestDTO, Long chatRoomId) {
+
+        ChatRoom privateChatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
+        Fan fan = fanRepository.findById(requestDTO.writerId())
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        Meet meet = privateChatRoom.getMeet();
+        Match match = meet.getMatch();
+
+        LocalDateTime now = LocalDateTime.now();
+
+        boolean isRestricted = matchRestrictionRepository.existsByMatchIdAndUser(match.getId(), fan.getUser());
+        if (isRestricted) {
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/chatRoom/" + chatRoomId,
+                    new ChatResponse.ChatResponseDTO(
+                            "ERROR",
+                            "2013",
+                            now,
+                            fan.getId(),
+                            fan.getMeetImage(),
+                            fan.getMeetName(),
+                            requestDTO.writerId()+"_JOIN_ACCEPT",
+                            null
+                    )
+            );
+        }
+
+        MeetFan meetFan = meetFanRepository.findByMeetAndFanUser(meet, fan.getUser())
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        if (meet.getMax().equals(meetFanRepository.countByMeet(meet))) {
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/chatRoom/" + chatRoomId,
+                    new ChatResponse.ChatResponseDTO(
+                            "ERROR",
+                            "2015",
+                            now,
+                            fan.getId(),
+                            fan.getMeetImage(),
+                            fan.getMeetName(),
+                            requestDTO.writerId()+"_JOIN_ACCEPT",
+                            null
+                    )
+            );
+            return;
+        }
+
+        boolean MatchDuplicatedMeet = meetRepository.existsByMatchAndMeetFansFanUser(meet.getMatch().getId(), fan.getUser());
+
+        if(MatchDuplicatedMeet) {
+            throw new CustomException(ExceptionCode.DUPLICATE_MEET);
+        }
+
+        simpMessagingTemplate.convertAndSend(
+                "/topic/chatRoom/" + chatRoomId,
+                new ChatResponse.ChatResponseDTO(
+                        "JOIN_ACCEPT",
+                        "모임 참여를 확정하였습니다.",
+                        now,
+                        requestDTO.writerId(),
+                        requestDTO.writerImage(),
+                        requestDTO.writerName(),
+                        requestDTO.writerId()+"_JOIN_ACCEPT",
+                        null
+                )
+        );
+
+        // 역할 업데이트
+        meetFan.setRole(MeetFanRole.MEMBER);
+        meetFanRepository.save(meetFan);
+
+        ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
+        String sessionId = UUID.randomUUID().toString();
+
+        ChatSession chatSession = ChatSession.builder()
+                .chatRoom(confirmChatRoom)
+                .fan(fan)
+                .sessionId(sessionId)
+                .build();
+
+        chatSessionRepository.save(chatSession);
+
+        Chat chat = Chat.builder()
+                .type(ChatType.JOIN_ACCEPT)
+                .chatRoom(privateChatRoom)
+                .writer(fan)
+                .content("모임 참여를 확정하였습니다.")
+                .groupKey(requestDTO.writerId()+"_JOIN_ACCEPT")
+                .build();
+
+        chatRepository.save(chat);
+    }
+
+
+    public ChatRoomResponse.PrivateChatRoomDTO getPrivateChatRoomById(Long chatRoomId, User user) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(()-> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
+
+        Fan curFan = fanRepository.findByCommunityIdAndUser(chatRoom.getCommunityId(), user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        Fan opponentFan = chatSessionRepository.findOpponentFanByChatRoomAndUser(chatRoomId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.FAN_NOT_FOUND));
+
+        boolean isConfirmed;
+
+        if(chatRoom.getMeet().getManager().equals(curFan)) {
+            Optional<MeetFan> optionalMeetFan = meetFanRepository.findByMeetAndFanUser(chatRoom.getMeet(), opponentFan.getUser());
+
+            isConfirmed = optionalMeetFan.isPresent() && optionalMeetFan.get().getRole() != MeetFanRole.APPLIER && optionalMeetFan.get().getRole() != MeetFanRole.LEFT;
+        } else {
+            Optional<MeetFan> optionalMeetFan = meetFanRepository.findByMeetAndFanUser(chatRoom.getMeet(), curFan.getUser());
+
+            isConfirmed = optionalMeetFan.isPresent() && optionalMeetFan.get().getRole() != MeetFanRole.APPLIER && optionalMeetFan.get().getRole() != MeetFanRole.LEFT;
+        }
+
+        return new ChatRoomResponse.PrivateChatRoomDTO(chatRoom, opponentFan.getMeetName(), opponentFan.getMeetImage(), opponentFan.getUser().getAge(), opponentFan.getUser().getGender(), curFan, isConfirmed);
+    }
+
+
 }

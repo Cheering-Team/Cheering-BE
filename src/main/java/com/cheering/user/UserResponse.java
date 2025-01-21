@@ -16,4 +16,6 @@ public class UserResponse {
     }
 
     public record TokenDTO(String accessToken, String refreshToken) { }
+
+    public record AgeAndGenderDTO(Long userId, Integer currentAge, Gender gender) { }
 }

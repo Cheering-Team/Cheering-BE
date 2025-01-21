@@ -2,6 +2,7 @@ package com.cheering.notification;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
+import com.cheering.meet.Meet;
 import com.cheering.post.Like.LikeRepository;
 import com.cheering.post.PostImage.PostImage;
 import com.cheering.post.PostImage.PostImageRepository;
@@ -46,8 +47,12 @@ public class NotificationService {
                 return postImages.isEmpty() ? new NotificationResponse.NotificationDTO(notification, count) : new NotificationResponse.NotificationDTO(notification, count, postImages.get(0));
             } else if(notification.getType().equals(NotificaitonType.COMMENT)) {
                 return postImages.isEmpty() ? new NotificationResponse.NotificationDTO(notification, notification.getComment()) : new NotificationResponse.NotificationDTO(notification, notification.getComment(), postImages.get(0));
-            } else {
+            } else if (notification.getType().equals(NotificaitonType.RECOMMNET)) {
                 return postImages.isEmpty() ? new NotificationResponse.NotificationDTO(notification, notification.getReComment()) : new NotificationResponse.NotificationDTO(notification, notification.getReComment(), postImages.get(0));
+            }
+            else {
+                Meet meet = notification.getMeet();
+                return new NotificationResponse.NotificationDTO(notification, meet);
             }
         })).toList();
 

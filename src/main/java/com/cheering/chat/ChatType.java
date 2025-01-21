@@ -1,5 +1,5 @@
 package com.cheering.chat;
 
 public enum ChatType {
-    MESSAGE, SYSTEM_ENTER, SYSTEM_EXIT
+    MESSAGE, SYSTEM, JOIN_REQUEST, JOIN_ACCEPT
 }

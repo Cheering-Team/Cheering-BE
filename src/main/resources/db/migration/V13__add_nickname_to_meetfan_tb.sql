@@ -1,0 +1,1 @@
+ALTER TABLE meet_fan_tb ADD COLUMN nickname VARCHAR(10) NOT NULL;

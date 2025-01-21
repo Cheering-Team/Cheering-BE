@@ -2,6 +2,7 @@ package com.cheering.chat.chatRoom;
 
 import com.cheering._core.security.CustomUserDetails;
 import com.cheering._core.util.ApiUtils;
+import com.cheering.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -55,7 +57,7 @@ public class  ChatRoomController {
 
     // 채팅방 정보 조회
     @GetMapping("/chatrooms/{chatRoomId}")
-    public ResponseEntity<?> getChatRoomById(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public ResponseEntity<?>  getChatRoomById(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방 정보 조회 완료", chatRoomService.getChatRoomById(chatRoomId, customUserDetails.getUser())));
     }
 
@@ -100,4 +102,32 @@ public class  ChatRoomController {
         chatRoomService.autoCreateChatRooms();
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "채팅방들이 생성되었습니다.", null));
     }
+
+    // 1:1 채팅방 만들기(모임)
+    @PostMapping("/communities/{communityId}/meets/{meetId}/talk")
+    public ResponseEntity<?> createPrivateChatRoom(
+            @PathVariable Long communityId,
+            @PathVariable Long meetId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        ChatRoomResponse.IdWithConditionDTO chatRoomIdWithCondition = chatRoomService.createPrivateChatRoom(communityId, meetId, userDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 생성 완료", chatRoomIdWithCondition));
+    }
+
+    // 특정 모임에 대해 온 1:1 채팅방 목록 조회
+    @GetMapping("/meets/{meetId}/private")
+    public ResponseEntity<?> getPrivateChatRoomsForManager(
+            @PathVariable Long meetId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1대1 채팅방 목록 조회 완료", chatRoomService.getPrivateChatRoomsForManager(meetId, userDetails.getUser())));
+    }
+
+    // 1:1 채팅방 조회
+    @GetMapping("/chatrooms/private/{chatRoomId}")
+    public ResponseEntity<?> getPrivateChatRoomById(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1:1 채팅방 정보 조회 완료", chatRoomService.getPrivateChatRoomById(chatRoomId, customUserDetails.getUser())));
+    }
+
+
 }

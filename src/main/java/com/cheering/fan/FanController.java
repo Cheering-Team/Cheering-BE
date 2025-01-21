@@ -34,15 +34,15 @@ public class FanController {
 
     // 팬 이미지 변경
     @PutMapping("/fans/{fanId}/image")
-    public ResponseEntity<?> updateFanImage(@PathVariable("fanId") Long fanId, @RequestPart(value = "image", required = false) MultipartFile image) {
-        fanService.updateFanImage(fanId, image);
+    public ResponseEntity<?> updateFanImage(@PathVariable("fanId") Long fanId, @RequestParam String type, @RequestPart(value = "image", required = false) MultipartFile image) {
+        fanService.updateFanImage(fanId, type, image);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "이미지 변경 완료", null));
     }
 
     // 팬 이름 변경
     @PutMapping("/fans/{fanId}/name")
-    public ResponseEntity<?> updateFanName(@PathVariable("fanId") Long fanId, @RequestBody UserRequest.NameDTO requestDTO) {
-        fanService.updateFanName(fanId, requestDTO);
+    public ResponseEntity<?> updateFanName(@PathVariable("fanId") Long fanId, @RequestParam String type, @RequestBody UserRequest.NameDTO requestDTO) {
+        fanService.updateFanName(fanId, type, requestDTO);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "이름 변경 완료", null));
     }
 

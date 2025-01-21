@@ -39,4 +39,21 @@ public class UserRequest {
             String deviceId,
             String token
     ) { }
+
+    public record AgeAndGenderDTO(
+            Integer age,
+            Gender gender
+    ) { }
+
+    public record AgeAndGenderAndProfileDTO(
+            Integer age,
+            Gender gender,
+            String name,
+            String status
+    ) {}
+
+    public record UpdateMeetProfileDTO(
+            String name,
+            String image
+    ) {}
 }

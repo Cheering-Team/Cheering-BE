@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.cheering.fan.Fan;
+import com.cheering.fan.FanRepository;
 import com.cheering.report.commentReport.CommentReport;
 import com.cheering.report.commentReport.CommentReportRepository;
 import com.cheering.report.postReport.PostReport;
@@ -32,6 +34,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final FanRepository fanRepository;
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
     private final ReCommentReportRepository reCommentReportRepository;
@@ -398,5 +401,72 @@ public class UserService {
         user.setIsFirstLogin(false);
         userRepository.save(user);
         return isFirstLogin;
+    }
+
+    public String getUserProfileStatus(Long userId, Long communityId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+        Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        boolean isAgeAndGenderSet = user.getAge() != null && user.getGender() != null;
+        boolean isMeetProfileSet = fan.getMeetName() != null;
+
+        if (!isAgeAndGenderSet && !isMeetProfileSet) {
+            return "NEITHER";
+        } else if (isAgeAndGenderSet && !isMeetProfileSet) {
+            return "NULL_PROFILE";
+        } else {
+            return "BOTH";
+        }
+    }
+
+    @Transactional
+    public void setAgeAndGenderAndMeetProfile(UserRequest.AgeAndGenderAndProfileDTO request, Long userId, Long communityId) {
+
+        if(badWordService.containsBadWords(request.name())) {
+            throw new CustomException(ExceptionCode.BADWORD_INCLUDED);
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+        Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user)
+                .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        if ("NEITHER".equalsIgnoreCase(request.status())) {
+            user.setAge(request.age());
+            user.setGender(request.gender());
+            fan.setMeetName(request.name());
+        } else if ("NULL_PROFILE".equalsIgnoreCase(request.status())) {
+            fan.setMeetName(request.name());
+        }
+        fan.setMeetImage("https://cheering-bucket.s3.ap-northeast-2.amazonaws.com/profile-image.jpg");
+        // 저장
+        userRepository.save(user);
+        fanRepository.save(fan);
+    }
+
+
+    // 나이, 성별 조회
+    @Transactional(readOnly = true)
+    public UserResponse.AgeAndGenderDTO getAgeAndGender(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+        if (user.getAge() == null) {
+            throw new CustomException(ExceptionCode.USER_AGE_NOT_SET);
+        }
+
+        if (user.getGender() == null) {
+            throw new CustomException(ExceptionCode.USER_GENDER_NOT_SET);
+        }
+
+        // 현재 나이 계산
+        int currentYear = java.time.Year.now().getValue();
+        int currentAge = currentYear - user.getAge() + 1;
+
+        return new UserResponse.AgeAndGenderDTO(userId, currentAge, user.getGender());
     }
 }

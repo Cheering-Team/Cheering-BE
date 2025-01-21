@@ -28,6 +28,9 @@ public enum ExceptionCode {
     CHEER_NOT_FOUND(404, "존재하지 않는 응원"),
     CHAT_SESSION_NOT_FOUND(404, "존재하지 않는 세션"),
     APPLY_NOT_FOUND(404, "존재하지 않는 신청"),
+    MEET_NOT_FOUND(404, "존재하지 않는 모임"),
+    MEET_FAN_NOT_FOUND(404, "존재하지 않는 모임 참가자"),
+    MANAGER_NOT_FOUND(404, "모임장이 존재하지 않습니다."),
 
     // USER
     USER_NOT_FOUND(200, "해당 사용자를 찾을 수 없습니다."),
@@ -35,6 +38,8 @@ public enum ExceptionCode {
     USER_UNAUTHORIZED(401, "인증되지 않았습니다."),
     INVALID_TOKEN(401, "토큰이 유효하지 않습니다."),
     ALREADY_MANAGER_ACCOUNT(200, "이미 존재하는 매니저 계정"),
+    USER_AGE_NOT_SET(400, "나이가 설정되지 않았습니다."),
+    USER_GENDER_NOT_SET(400, "성별이 설정되지 않았습니다."),
 
     // TEAM
     LEAGUE_NOT_FOUND(404, "존재하지 않는 리그"),
@@ -68,7 +73,20 @@ public enum ExceptionCode {
     IMAGE_DELETE_FAILED(200, "이미지 삭제에 실패하였습니다."),
 
     // FCM
-    FAILED_TO_SEND(200, "FCM 전송에 실패했습니다.");
+    FAILED_TO_SEND(200, "FCM 전송에 실패했습니다."),
+
+    // MEET
+    DUPLICATE_MEET(2010, "이미 해당 경기에 대해 생성된 모임이 있습니다."),
+    DUPLICATE_CHAT_ROOM(2011, "이미 채팅방이 있습니다."),
+    HAS_TICKET_REQUIRED_FOR_LIVE(2012, "직관 모임은 티켓 여부 입력이 필수입니다."),
+    USER_RESTRICTED_FOR_MATCH(2013, "해당 경기에 대한 모임 참여가 제한되었습니다."),
+    ALREADY_APPLIED(2014, "해당 모임에 대해 이미 대화를 신청했습니다."),
+    MEET_MAX(2015, "모임 인원이 가득 찼습니다."),
+
+    //MATCH
+    MATCH_NOT_RELATED_TO_COMMUNITY(403, "커뮤니티와 관련 없는 경기입니다.");
+
+
 
     private final int code;
     private final String message;

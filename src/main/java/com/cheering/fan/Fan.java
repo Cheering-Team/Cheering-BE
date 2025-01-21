@@ -7,11 +7,14 @@ import com.cheering.chat.session.ChatSession;
 import com.cheering.cheer.Cheer;
 import com.cheering.comment.Comment;
 import com.cheering.comment.reComment.ReComment;
+import com.cheering.meet.Meet;
+import com.cheering.meetfan.MeetFan;
 import com.cheering.notification.Notification;
 import com.cheering.post.Like.Like;
 import com.cheering.post.Post;
 import com.cheering.report.block.Block;
 import com.cheering.report.commentReport.CommentReport;
+import com.cheering.report.memberReport.MemberReport;
 import com.cheering.report.postReport.PostReport;
 import com.cheering.report.reCommentReport.ReCommentReport;
 import com.cheering.user.User;
@@ -47,6 +50,12 @@ public class Fan extends BaseTimeEntity {
     @Column(length = 2000)
     private String image;
 
+    @Column(length = 15)
+    private String meetName;
+
+    @Column(length = 2000)
+    private String meetImage;
+
     @Column
     private Long communityId;
 
@@ -81,6 +90,9 @@ public class Fan extends BaseTimeEntity {
     @OneToMany(mappedBy = "writer", cascade = CascadeType.REMOVE)
     private List<ReCommentReport> reCommentReports = new ArrayList<>();
 
+    @OneToMany(mappedBy = "writer", cascade = CascadeType.REMOVE)
+    private List<MemberReport> memberReports = new ArrayList<>();
+
     @OneToMany(mappedBy = "from", cascade = CascadeType.REMOVE)
     private List<Block> blocksFrom = new ArrayList<>();
 
@@ -107,6 +119,12 @@ public class Fan extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "fan", cascade = CascadeType.REMOVE)
     private List<FanVote> fanVotes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "manager", cascade = CascadeType.REMOVE)
+    private List<Meet> meets = new ArrayList<>();
+
+    @OneToMany(mappedBy = "fan", cascade = CascadeType.REMOVE)
+    private List<MeetFan> meetFans = new ArrayList<>();
 
     @Builder
     public Fan(CommunityType type, String name, String image, Long communityId, Integer communityOrder, User user) {

@@ -1,5 +1,7 @@
 package com.cheering.chat.chatRoom;
 
+import com.cheering.chat.ChatType;
+import com.cheering.chat.session.ChatSession;
 import com.cheering.player.Player;
 import com.cheering.fan.Fan;
 import com.cheering.user.User;
@@ -8,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,4 +39,55 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
     @Query("SELECT cr FROM ChatRoom cr LEFT JOIN Fan f ON f.communityId = cr.communityId WHERE f.user = :user AND cr.type = 'OFFICIAL' ORDER BY f.communityOrder ASC")
     List<ChatRoom> findMyOfficial(@Param("user") User user);
+
+    @Query("""
+    SELECT c FROM ChatRoom c 
+    WHERE c.type = :type 
+      AND c.meet.id = :meetId
+    """)
+    Optional<ChatRoom> findConfirmedChatRoomByMeetId(
+            @Param("meetId") Long meetId,
+            @Param("type") ChatRoomType type
+    );
+
+    @Query("""
+    SELECT c FROM ChatRoom c
+    WHERE c.type = :type
+      AND c.meet.id = :meetId
+      AND c.id IN (
+          SELECT cs.chatRoom.id FROM ChatSession cs
+          WHERE cs.fan = :manager OR cs.fan = :applicant
+          GROUP BY cs.chatRoom.id
+          HAVING COUNT(cs.chatRoom.id) = 2
+    )
+    """)
+    Optional<ChatRoom> findPrivateChatRoomByParticipantsAndMeet(
+            @Param("manager") Fan manager,
+            @Param("applicant") Fan applicant,
+            @Param("type") ChatRoomType type,
+            @Param("meetId") Long meetId
+    );
+
+    @Query("""
+    SELECT c FROM ChatRoom c
+    WHERE c.manager.id = :managerId
+    AND c.type = :chatRoomType
+    AND c.meet.id = :meetId
+    AND EXISTS (
+        SELECT 1 FROM Chat ch
+        WHERE ch.chatRoom = c
+        AND ch.type = :chatType
+    )
+""")
+    List<ChatRoom> findPrivateChatRoomsWithMessages(Long managerId, ChatRoomType chatRoomType, Long meetId, ChatType chatType);
+
+    @Query("SELECT cr.id FROM ChatRoom cr " +
+            "JOIN ChatSession cs ON cr.id = cs.chatRoom.id " +
+            "WHERE cr.meet.id = :meetId " +
+            "AND cr.type = 'PRIVATE' " +
+            "AND cs.fan.user = :user")
+    Optional<Long> findPrivateChatRoomByMeetIdAndUser(@Param("meetId") Long meetId,
+                                                          @Param("user") User user);
+
+
 }
