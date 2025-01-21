@@ -129,7 +129,7 @@ public class  ChatRoomController {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "1:1 채팅방 정보 조회 완료", chatRoomService.getPrivateChatRoomById(chatRoomId, customUserDetails.getUser())));
     }
 
-    @PatchMapping("/chatrooms/{chatroomId}/enable")
+    @PatchMapping("/chatrooms/{chatRoomId}/enable")
     public ResponseEntity<?> enableNotification(@PathVariable Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = customUserDetails.getUser();
         chatRoomService.enableChatNotification(chatRoomId, user);
@@ -137,7 +137,7 @@ public class  ChatRoomController {
     }
 
     // 알림 끄기
-    @PatchMapping("/chatrooms/{chatroomId}/disable")
+    @PatchMapping("/chatrooms/{chatRoomId}/disable")
     public ResponseEntity<?> disableNotification(@PathVariable Long chatRoomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = customUserDetails.getUser();
         chatRoomService.disableChatNotification(chatRoomId, user);
