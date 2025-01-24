@@ -509,4 +509,60 @@ public class MatchService {
         }
         return null;
     }
+
+    @Transactional(readOnly = true)
+    public MatchResponse.MatchListDTO getMatchesByDate(User user, Integer year, Integer month, Integer day, Pageable pageable) {
+        LocalDate targetDate = LocalDate.of(year, month, day);
+        LocalDateTime startOfDay = targetDate.atStartOfDay();
+        LocalDateTime endOfDay = targetDate.atTime(23, 59, 59);
+
+        List<Fan> fans = fanRepository.findFansByUser(user);
+
+        List<Long> teamCommunityIds = fans.stream()
+                .map(Fan::getCommunityId)
+                .filter(teamRepository::existsById)
+                .toList();
+
+        List<Long> playerCommunityIds = fans.stream()
+                .map(Fan::getCommunityId)
+                .filter(playerRepository::existsById)
+                .toList();
+
+        List<Long> filteredPlayerCommunityIds = playerCommunityIds.stream()
+                .filter(playerId -> {
+                    Long firstTeamId = playerRepository.findById(playerId)
+                            .orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND))
+                            .getFirstTeam().getId();
+                    return !teamCommunityIds.contains(firstTeamId);
+                })
+                .toList();
+
+        List<Long> finalCommunityIds = new ArrayList<>();
+        finalCommunityIds.addAll(teamCommunityIds);
+        finalCommunityIds.addAll(filteredPlayerCommunityIds);
+
+        Page<Match> matchesPage = matchRepository.findDistinctMatchesByCommunityIdsAndTimeRange(
+                finalCommunityIds, startOfDay, endOfDay, pageable
+        );
+
+        List<MeetFanRole> roles = Arrays.asList(MeetFanRole.MANAGER, MeetFanRole.MEMBER);
+
+        List<MatchResponse.MatchDetailDTO> matchDetailDTOs = matchesPage.getContent().stream()
+                .map(match -> {
+                    Meet meet = meetRepository.findByMatchAndUserWithRoles(match.getId(), user, roles);
+                    MeetResponse.MeetInfoDTO meetInfoDTO = null;
+
+                    if (meet != null) {
+                        int currentCount = meetFanRepository.countByMeet(meet);
+                        meetInfoDTO = new MeetResponse.MeetInfoDTO(meet, currentCount, null, null, null);
+                    }
+
+                    return new MatchResponse.MatchDetailDTO(match, meetInfoDTO);
+                })
+                .toList();
+
+        return new MatchResponse.MatchListDTO(matchesPage, matchDetailDTOs);
+    }
+
+
 }

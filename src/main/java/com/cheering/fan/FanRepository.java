@@ -33,4 +33,8 @@ public interface FanRepository extends JpaRepository<Fan, Long> {
 
     @Query("SELECT f FROM Fan f WHERE f.communityId IS NULL")
     Fan findByAdminFan();
+
+    @Query("SELECT f FROM Fan f WHERE f.user = :user")
+    List<Fan> findFansByUser(@Param("user") User user);
+
 }
