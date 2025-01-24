@@ -16,12 +16,6 @@ import com.cheering.post.PostImage.PostImageRepository;
 import com.cheering.post.PostImage.PostImageResponse;
 import com.cheering.post.PostRepository;
 import com.cheering.post.PostResponse;
-import com.cheering.report.commentReport.CommentReport;
-import com.cheering.report.commentReport.CommentReportRepository;
-import com.cheering.report.postReport.PostReport;
-import com.cheering.report.postReport.PostReportRepository;
-import com.cheering.report.reCommentReport.ReCommentReport;
-import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
@@ -49,9 +43,6 @@ public class FanService {
     private final CommentRepository commentRepository;
     private final ReCommentRepository reCommentRepository;
     private final PostImageRepository postImageRepository;
-    private final PostReportRepository postReportRepository;
-    private final CommentReportRepository commentReportRepository;
-    private final ReCommentReportRepository reCommentReportRepository;
     private final BadWordService badWordService;
     private final S3Util s3Util;
     private final VoteService voteService;
@@ -154,47 +145,5 @@ public class FanService {
             fan.setMeetName(requestDTO.name());
         }
         fanRepository.save(fan);
-    }
-
-    // 커뮤니티 탈퇴
-    @Transactional
-    public void deleteFan(Long fanId) {
-        Fan fan = fanRepository.findById(fanId).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-
-        List<PostImage> postImages = postImageRepository.findByFan(fan);
-
-        for(PostImage postImage : postImages) {
-            s3Util.deleteImageFromS3(postImage.getPath());
-        }
-
-        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByWriter(fan);
-        for(ReCommentReport reCommentReport : reCommentReports) {
-            reCommentReport.setReComment(null);
-        }
-
-        List<CommentReport> commentReports = commentReportRepository.findByWriter(fan);
-        for(CommentReport commentReport : commentReports) {
-            commentReport.setComment(null);
-        }
-
-        List<PostReport> postReports = postReportRepository.findByWriter(fan);
-        for(PostReport postReport : postReports) {
-            postReport.setPost(null);
-        }
-
-        List<Fan> fans = fanRepository.findByUserOrderByCommunityOrderAsc(fan.getUser());
-
-        Integer removedOrder = fan.getCommunityOrder();
-
-        fanRepository.delete(fan);
-        fans.remove(fan);
-
-        for(Fan eachFan : fans) {
-            if(eachFan.getCommunityOrder() > removedOrder) {
-                eachFan.setCommunityOrder(eachFan.getCommunityOrder() - 1);
-            }
-        }
-
-        fanRepository.saveAll(fans);
     }
 }

@@ -54,4 +54,11 @@ public class CommunityController {
     public ResponseEntity<?> getRandomCommunity() {
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 검색 완료", communityService.getRandomCommunity()));
     }
+
+    // 커뮤니티 탈퇴
+    @DeleteMapping("/communities/{communityId}/leave")
+    public ResponseEntity<?> leaveCommunity(@PathVariable("communityId") Long communityId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        communityService.leaveCommunity(communityId, userDetails.getUser());
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 탈퇴 완료", null));
+    }
 }

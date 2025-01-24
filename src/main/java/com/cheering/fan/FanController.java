@@ -45,11 +45,4 @@ public class FanController {
         fanService.updateFanName(fanId, type, requestDTO);
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "이름 변경 완료", null));
     }
-
-    // 커뮤니티 탈퇴
-    @DeleteMapping("/fans/{fanId}")
-    public ResponseEntity<?> deleteFan(@PathVariable("fanId") Long fanId) {
-        fanService.deleteFan(fanId);
-        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 탈퇴 완료", null));
-    }
 }
