@@ -85,4 +85,20 @@ public class MatchController {
         User user = userDetails.getUser();
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티의 2주 내 경기 조회 완료", matchService.getTwoWeeksMatches(communityId, user)));
     }
+
+    @GetMapping("/matches/date")
+    public ResponseEntity<?> getMatchesByDate(
+            @RequestParam("year") Integer year,
+            @RequestParam("month") Integer month,
+            @RequestParam("day") Integer day,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        User user = customUserDetails.getUser();
+        Pageable pageable = PageRequest.of(page, size);
+
+        MatchResponse.MatchListDTO matchList = matchService.getMatchesByDate(user, year, month, day, pageable);
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "경기 목록 조회 완료", matchList));
+    }
 }

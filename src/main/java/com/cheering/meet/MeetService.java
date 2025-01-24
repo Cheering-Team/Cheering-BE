@@ -78,7 +78,7 @@ public class MeetService {
         Match match = matchRepository.findById(requestDto.matchId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.MATCH_NOT_FOUND));
 
-        if (!isMatchRelatedToCommunity(match, communityId)) {
+        if (!isMatchRelatedToCommunityOrPlayer(match, communityId)) {
             throw new CustomException(ExceptionCode.MATCH_NOT_RELATED_TO_COMMUNITY);
         }
 
@@ -305,9 +305,22 @@ public class MeetService {
     }
 
 
-    private boolean isMatchRelatedToCommunity(Match match, Long communityId) {
-        return match.getHomeTeam().getId().equals(communityId) ||
-                match.getAwayTeam().getId().equals(communityId);
+    private boolean isMatchRelatedToCommunityOrPlayer(Match match, Long communityId) {
+        // 팀 커뮤니티와 경기 관련성 확인
+        if (match.getHomeTeam().getId().equals(communityId) ||
+                match.getAwayTeam().getId().equals(communityId)) {
+            return true;
+        }
+
+        // 선수 커뮤니티의 경우 해당 선수가 팀의 멤버인지 확인
+        Optional<Player> player = playerRepository.findById(communityId);
+        if (player.isPresent()) {
+            Team firstTeam = player.get().getFirstTeam();
+            return match.getHomeTeam().getId().equals(firstTeam.getId()) ||
+                    match.getAwayTeam().getId().equals(firstTeam.getId());
+        }
+
+        return false;
     }
 
     public int calculateCurrentCount(Long meetId) {
