@@ -511,7 +511,7 @@ public class MatchService {
     }
 
     @Transactional(readOnly = true)
-    public MatchResponse.MatchListDTO getMatchesByDate(User user, Integer year, Integer month, Integer day, Pageable pageable) {
+    public List<MatchResponse.MatchDetailDTO> getMatchesByDate(User user, Integer year, Integer month, Integer day) {
         LocalDate targetDate = LocalDate.of(year, month, day);
         LocalDateTime startOfDay = targetDate.atStartOfDay();
         LocalDateTime endOfDay = targetDate.atTime(23, 59, 59);
@@ -541,13 +541,13 @@ public class MatchService {
         finalCommunityIds.addAll(teamCommunityIds);
         finalCommunityIds.addAll(filteredPlayerCommunityIds);
 
-        Page<Match> matchesPage = matchRepository.findDistinctMatchesByCommunityIdsAndTimeRange(
-                finalCommunityIds, startOfDay, endOfDay, pageable
+        List<Match> matches = matchRepository.findDistinctMatchesByCommunityIdsAndTimeRange(
+                finalCommunityIds, startOfDay, endOfDay
         );
 
         List<MeetFanRole> roles = Arrays.asList(MeetFanRole.MANAGER, MeetFanRole.MEMBER);
 
-        List<MatchResponse.MatchDetailDTO> matchDetailDTOs = matchesPage.getContent().stream()
+        return matches.stream()
                 .map(match -> {
                     Meet meet = meetRepository.findByMatchAndUserWithRoles(match.getId(), user, roles);
                     MeetResponse.MeetInfoDTO meetInfoDTO = null;
@@ -560,8 +560,6 @@ public class MatchService {
                     return new MatchResponse.MatchDetailDTO(match, meetInfoDTO);
                 })
                 .toList();
-
-        return new MatchResponse.MatchListDTO(matchesPage, matchDetailDTOs);
     }
 
 

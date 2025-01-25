@@ -27,11 +27,10 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     @Query("SELECT DISTINCT m FROM Match m " +
             "WHERE (m.homeTeam.id IN :communityIds OR m.awayTeam.id IN :communityIds) " +
             "AND m.time BETWEEN :startOfDay AND :endOfDay")
-    Page<Match> findDistinctMatchesByCommunityIdsAndTimeRange(
+    List<Match> findDistinctMatchesByCommunityIdsAndTimeRange(
             @Param("communityIds") List<Long> communityIds,
             @Param("startOfDay") LocalDateTime startOfDay,
-            @Param("endOfDay") LocalDateTime endOfDay,
-            Pageable pageable);
+            @Param("endOfDay") LocalDateTime endOfDay);
 
 
 }
