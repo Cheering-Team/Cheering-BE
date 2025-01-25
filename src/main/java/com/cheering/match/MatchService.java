@@ -541,9 +541,7 @@ public class MatchService {
         finalCommunityIds.addAll(teamCommunityIds);
         finalCommunityIds.addAll(filteredPlayerCommunityIds);
 
-        List<Match> matches = matchRepository.findDistinctMatchesByCommunityIdsAndTimeRange(
-                finalCommunityIds, startOfDay, endOfDay
-        );
+        List<Match> matches = matchRepository.findDistinctMatchesByCommunityIdsAndTimeRange(finalCommunityIds, startOfDay, endOfDay);
 
         List<MeetFanRole> roles = Arrays.asList(MeetFanRole.MANAGER, MeetFanRole.MEMBER);
 
