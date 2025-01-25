@@ -58,14 +58,31 @@ public class VoteService {
     }
 
     public VoteResponse.VoteDTO getHotVote(Long communityId, User user) {
-        Optional<Vote> vote = voteRepository.findTopVoteByCommunityId(communityId);
+        if (communityId != 0) {
+            Optional<Vote> vote = voteRepository.findTopVoteByCommunityId(communityId);
 
-        if(vote.isPresent()) {
-            Fan curFan = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
-            return getVoteInfo(vote.get(), curFan);
+            if(vote.isPresent()) {
+                Fan curFan = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+                return getVoteInfo(vote.get(), curFan);
+            } else {
+                return null;
+            }
+        }
+        List<Long> communityIds = fanRepository.findFansByUser(user).stream()
+                .map(Fan::getCommunityId)
+                .toList();
+
+        Optional<Vote> topVote = voteRepository.findTopVoteByCommunityIds(communityIds);
+
+        if (topVote.isPresent()) {
+            Long voteCommunityId = topVote.get().getPost().getCommunityId();
+            Fan curFan = fanRepository.findByCommunityIdAndUser(voteCommunityId, user)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+            return getVoteInfo(topVote.get(), curFan);
         } else {
             return null;
         }
+
     }
 
     public VoteResponse.VoteDTO getVoteInfo(Vote vote, Fan curFan) {
