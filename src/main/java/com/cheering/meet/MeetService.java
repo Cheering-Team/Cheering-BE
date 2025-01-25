@@ -2,6 +2,7 @@ package com.cheering.meet;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
+import com.cheering._core.security.CustomUserDetails;
 import com.cheering.chat.Chat;
 import com.cheering.chat.ChatRepository;
 import com.cheering.chat.ChatResponse;
@@ -37,9 +38,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -723,32 +727,54 @@ public class MeetService {
 
     @Transactional(readOnly = true)
     public List<MeetResponse.MeetInfoDTO> getRandomMeetsByConditions(Long communityId, User user) {
-        // 커뮤니티 타입 확인 (Team 또는 Player)
-        Optional<Team> optionalTeam = teamRepository.findById(communityId);
-        Optional<Player> optionalPlayer = playerRepository.findById(communityId);
         List<Meet> meets;
+        if (communityId == 0) {
+            List<Long> communityIds = fanRepository.findFansByUser(user).stream()
+                    .map(Fan::getCommunityId)
+                    .toList();
 
-        if (user.getAge() == null || user.getGender() == null) {
-            meets = meetRepository.findMeetsByConditionsWithoutProfile(communityId, PageRequest.of(0,50));
+            if (communityIds.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            if (user.getAge() == null || user.getGender() == null) {
+                meets = meetRepository.findMeetsByConditionsWithoutProfileForMultipleCommunities(
+                        communityIds, PageRequest.of(0, 50)
+                );
+            }else {
+                int currentYear = java.time.Year.now().getValue();
+                int currentAge = currentYear - user.getAge() + 1;
+                MeetGender meetGender = genderMapper(user.getGender());
+
+                meets = meetRepository.findMeetsByConditionsForMultipleCommunities(
+                        communityIds,
+                        currentAge,
+                        meetGender,
+                        user,
+                        PageRequest.of(0, 50)
+                );
+            }
         } else{
-            // 현재 나이 계산
-            int currentYear = java.time.Year.now().getValue();
-            int currentAge = currentYear - user.getAge() + 1;
-            MeetGender meetGender = genderMapper(user.getGender());
+            if (user.getAge() == null || user.getGender() == null) {
+                meets = meetRepository.findMeetsByConditionsWithoutProfile(communityId, PageRequest.of(0,50));
+            } else{
+                // 현재 나이 계산
+                int currentYear = java.time.Year.now().getValue();
+                int currentAge = currentYear - user.getAge() + 1;
+                MeetGender meetGender = genderMapper(user.getGender());
 
-            meets = meetRepository.findMeetsByConditions(
-                    communityId,
-                    currentAge,
-                    meetGender,
-                    user,
-                    PageRequest.of(0, 50)
-            );
+                meets = meetRepository.findMeetsByConditions(
+                        communityId,
+                        currentAge,
+                        meetGender,
+                        user,
+                        PageRequest.of(0, 50)
+                );
+            }
+            if (meets.isEmpty()) {
+                return Collections.emptyList();
+            }
         }
-
-        if (meets.isEmpty()) {
-            return Collections.emptyList();
-        }
-
         // 랜덤으로 5개 선택
         Collections.shuffle(meets);
         List<Meet> randomMeets = meets.stream().limit(5).collect(Collectors.toList());
@@ -756,9 +782,6 @@ public class MeetService {
         List<MeetResponse.MeetInfoDTO> meetInfoDTOs = randomMeets.stream()
                 .map(meet -> {
                     int currentCount = calculateCurrentCount(meet.getId());
-
-                    // 모임 상태 결정
-                    MeetStatus status = null;
 
                     // 채팅방 정보 생성
                     ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM)
@@ -769,13 +792,35 @@ public class MeetService {
                             null
                     );
 
-                    if (optionalTeam.isPresent()) {
-                        Team curTeam = optionalTeam.get();
-                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam, status);
+                    if (communityId == 0) {
+                        if (teamRepository.existsById(meet.getCommunityId())) {
+                            Optional<Team> optionalTeam = teamRepository.findById(communityId);
+                            Team team = optionalTeam.orElse(null);
+                            return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, team, null);
+                        } else {
+                            Optional<Player> optionalPlayer = playerRepository.findById(meet.getCommunityId());
+                            if (optionalPlayer.isPresent()) {
+                                Player player = optionalPlayer.get();
+                                Team firstTeam = player.getFirstTeam();
+                            return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam, null);
+                            } else {
+                                return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, null, null);
+                            }
+                        }
                     } else {
-                        Player player = optionalPlayer.orElseThrow(() -> new CustomException(ExceptionCode.PLAYER_NOT_FOUND));
-                        Team firstTeam = player.getFirstTeam();
-                        return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam, status);
+                        Optional<Team> optionalTeam = teamRepository.findById(communityId);
+                        Optional<Player> optionalPlayer = playerRepository.findById(communityId);
+
+                        if (optionalTeam.isPresent()) {
+                            Team curTeam = optionalTeam.get();
+                            return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam, null);
+                        } else if (optionalPlayer.isPresent()) {
+                            Player player = optionalPlayer.get();
+                            Team firstTeam = player.getFirstTeam();
+                            return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam, null);
+                        } else {
+                            return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, null, null);
+                        }
                     }
                 })
                 .collect(Collectors.toList());

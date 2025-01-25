@@ -64,11 +64,41 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
                                      @Param("user") User user,
                                      Pageable pageable);
 
+    @Query("SELECT m FROM Meet m " +
+            "WHERE m.communityId IN :communityIds " +
+            "AND m.ageMin <= :userAge AND m.ageMax >= :userAge " +
+            "AND (m.gender = :gender OR m.gender = 'ANY') " +
+            "AND m.match.time > CURRENT_TIMESTAMP " +
+            "AND m.max > (" +
+            "    SELECT COUNT(mf) FROM MeetFan mf WHERE mf.meet = m" +
+            ") " +
+            "AND NOT EXISTS (" +
+            "    SELECT mf FROM MeetFan mf WHERE mf.meet = m AND mf.fan.user = :user" +
+            ") " +
+            "AND NOT EXISTS (" +
+            "    SELECT mf FROM MeetFan mf WHERE mf.meet = m AND mf.fan.user = :user" +
+            ") " +
+            "ORDER BY m.createdAt DESC")
+    List<Meet> findMeetsByConditionsForMultipleCommunities(
+            @Param("communityIds") List<Long> communityIds,
+            @Param("userAge") Integer userAge,
+            @Param("gender") MeetGender gender,
+            @Param("user") User user,
+            Pageable pageable
+    );
+
     @Query("SELECT m FROM Meet m WHERE m.communityId = :communityId AND m.match.time > CURRENT_TIMESTAMP " +
             "AND m.max > (" +
             "    SELECT COUNT(mf) FROM MeetFan mf WHERE mf.meet = m" +
             ") ORDER BY m.createdAt DESC")
     List<Meet> findMeetsByConditionsWithoutProfile(@Param("communityId") Long communityId, Pageable pageable);
+
+    @Query("SELECT m FROM Meet m WHERE m.communityId IN :communityIds AND m.match.time > CURRENT_TIMESTAMP " +
+            "AND m.max > (" +
+            "    SELECT COUNT(mf) FROM MeetFan mf WHERE mf.meet = m" +
+            ") " +
+            "ORDER BY m.createdAt DESC")
+    List<Meet> findMeetsByConditionsWithoutProfileForMultipleCommunities(@Param("communityIds") List<Long> communityIds, Pageable pageable);
 
     @Query("SELECT m FROM Meet m " +
             "WHERE m.communityId = :communityId " +
@@ -145,6 +175,10 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
     List<Meet> findApplierMeetsByMatchAndUser(@Param("matchId") Long matchId,
                                               @Param("user") User user,
                                               @Param("role") MeetFanRole role);
+
+    @Query("SELECT mf.meet.id FROM MeetFan mf WHERE mf.fan.user = :user")
+    List<Long> findMeetIdsByUser(@Param("user") User user);
+
 
 
 
