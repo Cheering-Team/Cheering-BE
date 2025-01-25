@@ -260,18 +260,41 @@ public class MeetService {
         }
 
         String keyword = request.getKeyword();
-        Page<Meet> meetPage = meetRepository.findByFilters(
-                communityId,
-                keyword,
-                request.getType(),
-                genders,
-                request.getMinAge(),
-                request.getMaxAge(),
-                request.getMatchId(),
-                hasTicket,
-                pageRequest
-        );
+        Page<Meet> meetPage;
 
+        // 팀 커뮤니티와 선수 커뮤니티를 구분
+        if (optionalTeam.isPresent()) {
+            meetPage = meetRepository.findByFilters(
+                    communityId,
+                    keyword,
+                    request.getType(),
+                    genders,
+                    request.getMinAge(),
+                    request.getMaxAge(),
+                    request.getMatchId(),
+                    hasTicket,
+                    pageRequest
+            );
+        } else if (optionalPlayer.isPresent()) {
+            // 선수 커뮤니티의 모임을 조회, 해당 선수의 팀 커뮤니티와 중복된 모임은 제외
+            Player player = optionalPlayer.get();
+            Long firstTeamId = player.getFirstTeam().getId();
+
+            meetPage = meetRepository.findByFiltersExcludingTeam(
+                    communityId,
+                    firstTeamId,
+                    keyword,
+                    request.getType(),
+                    genders,
+                    request.getMinAge(),
+                    request.getMaxAge(),
+                    request.getMatchId(),
+                    hasTicket,
+                    pageRequest
+            );
+        } else {
+            throw new CustomException(ExceptionCode.COMMUNITY_NOT_FOUND);
+        }
         List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meetPage.getContent().stream()
                 .map(meet -> {
                     int currentCount = calculateCurrentCount(meet.getId());
@@ -287,6 +310,7 @@ public class MeetService {
                     } else {
                         status = MeetStatus.APPLIED; // 1:1 대화 중인 상태
                     }
+
                     ChatRoomResponse.ChatRoomDTO chatRoomDTO = null;
                     ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM).orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
                     chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
@@ -294,12 +318,12 @@ public class MeetService {
                             currentCount,
                             isUserParticipating
                     );
+
                     if (optionalTeam.isPresent()) {
                         Team curTeam = optionalTeam.get();
                         return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam, status);
                     } else {
-                        Player player = optionalPlayer.get();
-                        Team firstTeam = player.getFirstTeam();
+                        Team firstTeam = optionalPlayer.get().getFirstTeam();
                         return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam, status);
                     }
                 })

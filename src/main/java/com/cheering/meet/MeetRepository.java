@@ -43,6 +43,30 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             Pageable pageable
     );
 
+    @Query("SELECT m FROM Meet m " +
+            "WHERE m.communityId = :communityId " +
+            "AND m.communityId <> :firstTeamId " +
+            "AND (:keyword IS NULL OR m.title LIKE %:keyword%) " +
+            "AND (:type IS NULL OR m.type = :type) " +
+            "AND m.gender IN :genders " +
+            "AND (:minAge IS NULL OR m.ageMin >= :minAge) " +
+            "AND (:maxAge IS NULL OR m.ageMax <= :maxAge) " +
+            "AND (:matchId IS NULL OR m.match.id = :matchId) " +
+            "AND (:hasTicket IS NULL OR m.hasTicket = :hasTicket) " +
+            "AND m.match.time > CURRENT_TIMESTAMP " +
+            "ORDER BY m.createdAt DESC")
+    Page<Meet> findByFiltersExcludingTeam(@Param("communityId") Long communityId,
+                                          @Param("firstTeamId") Long firstTeamId,
+                                          @Param("keyword") String keyword,
+                                          @Param("type") MeetType type,
+                                          @Param("genders") List<MeetGender> genders,
+                                          @Param("minAge") Integer minAge,
+                                          @Param("maxAge") Integer maxAge,
+                                          @Param("matchId") Long matchId,
+                                          @Param("hasTicket") Boolean hasTicket,
+                                          Pageable pageable);
+
+
     @Query("SELECT CASE WHEN COUNT(mf) > 0 THEN true ELSE false END FROM Meet m JOIN m.meetFans mf WHERE m.match.id = :matchId AND mf.fan.user = :user AND (mf.role = 'MANAGER' OR mf.role = 'MEMBER')")
     boolean existsByMatchAndMeetFansFanUser(@Param("matchId") Long matchId, @Param("user") User user);
 
