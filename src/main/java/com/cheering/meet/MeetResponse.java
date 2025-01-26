@@ -42,7 +42,8 @@ public class MeetResponse {
             Integer ageMax,
             @Schema(description = "경기 상세 정보")
             MeetMatchDTO match,
-            String place
+            String place,
+            Long communityId
     ) {
 
         public MeetInfoDTO(Meet meet, Integer currentCount, ChatRoomResponse.ChatRoomDTO chatRoom, Team curTeam, MeetStatus status) { //currentCount
@@ -60,7 +61,8 @@ public class MeetResponse {
                     meet.getAgeMin(),
                     meet.getAgeMax(),
                     meet.getMatch() != null ? new MeetMatchDTO(meet.getMatch(), curTeam) : null,
-                    meet.getPlace().isEmpty() ? null : meet.getPlace()
+                    meet.getPlace().isEmpty() ? null : meet.getPlace(),
+                    meet.getCommunityId()
             );
         }
 
