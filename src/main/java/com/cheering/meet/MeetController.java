@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -90,6 +91,14 @@ public class MeetController {
         MeetResponse.MeetListDTO meetList = meetService.findAllMeetsByCommunity(request, communityId, user);
 
         return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "커뮤니티 내 모든 모임 조회 완료", meetList));
+    }
+
+    // 특정 커뮤니티 특정 경기 모든 모임 조회
+    @GetMapping("/communities/{communityId}/matches/{matchId}/meets")
+    public ResponseEntity<?> getAllMeetsByCommunityAndMatch(@PathVariable Long communityId, @PathVariable Long matchId, @RequestParam int page, @RequestParam int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return ResponseEntity.ok().body(ApiUtils.success(HttpStatus.OK, "경기 모든 모임 조회 완료", meetService.getAllMeetsByCommunityAndMatch(communityId, matchId, pageRequest)));
     }
 
     @DeleteMapping("/meets/{meetId}")

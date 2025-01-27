@@ -138,6 +138,15 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
 
     @Query("SELECT m FROM Meet m " +
             "WHERE m.communityId = :communityId " +
+            "AND m.match.id = :matchId " +
+            "AND m.match.time > CURRENT_TIMESTAMP " +
+            "ORDER BY m.createdAt DESC")
+    Page<Meet> findMeetsByCommunityAndMatch(@Param("communityId") Long communityId,
+                                @Param("matchId") Long matchId,
+                                Pageable pageable);
+
+    @Query("SELECT m FROM Meet m " +
+            "WHERE m.communityId = :communityId " +
             "AND m.ageMin <= :userAge AND m.ageMax >= :userAge " +
             "AND (m.gender = :gender OR m.gender = 'ANY') " +
             "AND m.match.id = :matchId " +

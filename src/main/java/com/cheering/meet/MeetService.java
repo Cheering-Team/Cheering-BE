@@ -2,13 +2,8 @@ package com.cheering.meet;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
-import com.cheering._core.security.CustomUserDetails;
-import com.cheering.chat.Chat;
 import com.cheering.chat.ChatRepository;
-import com.cheering.chat.ChatResponse;
-import com.cheering.chat.ChatType;
 import com.cheering.chat.chatRoom.*;
-import com.cheering.chat.session.ChatSession;
 import com.cheering.chat.session.ChatSessionRepository;
 import com.cheering.fan.CommunityType;
 import com.cheering.fan.Fan;
@@ -36,14 +31,10 @@ import com.cheering.user.deviceToken.DeviceToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -332,6 +323,29 @@ public class MeetService {
         return new MeetResponse.MeetListDTO(meetPage, meetInfoDTOs);
     }
 
+    @Transactional(readOnly = true)
+    public MeetResponse.MeetListDTO getAllMeetsByCommunityAndMatch(Long communityId, Long matchId, PageRequest pageRequest) {
+        Page<Meet> meetPage = meetRepository.findMeetsByCommunityAndMatch(communityId, matchId, pageRequest);
+
+        Optional<Team> optionalTeam = teamRepository.findById(communityId);
+        Optional<Player> optionalPlayer = playerRepository.findById(communityId);
+
+        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = meetPage.getContent().stream()
+                .map(meet -> {
+                    int currentCount = calculateCurrentCount(meet.getId());
+
+                    if (optionalTeam.isPresent()) {
+                        Team curTeam = optionalTeam.get();
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, null, curTeam, null);
+                    } else {
+                        Team firstTeam = optionalPlayer.get().getFirstTeam();
+                        return new MeetResponse.MeetInfoDTO(meet, currentCount, null, firstTeam, null);
+                    }
+                })
+                .collect(Collectors.toList());
+
+        return new MeetResponse.MeetListDTO(meetPage, meetInfoDTOs);
+    }
 
     private boolean isMatchRelatedToCommunityOrPlayer(Match match, Long communityId) {
         // 팀 커뮤니티와 경기 관련성 확인
@@ -893,5 +907,4 @@ public class MeetService {
                 })
                 .toList();
     }
-
 }
