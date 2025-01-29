@@ -197,7 +197,7 @@ public class MeetService {
                     team,
                     status
             );
-            matchDetailDTO = new MatchResponse.MatchDetailDTO(match, meetInfoDTO);
+            matchDetailDTO = new MatchResponse.MatchDetailDTO(match, meetInfoDTO, null);
         }
 
         int currentYear = java.time.Year.now().getValue();

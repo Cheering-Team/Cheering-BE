@@ -19,9 +19,9 @@ public class MatchResponse {
         }
     }
 
-    public record MatchDetailDTO (Long id, MatchStatus status, LocalDateTime time, String location, Long homeScore, Long awayScore, TeamResponse.TeamDTO homeTeam, TeamResponse.TeamDTO awayTeam, String sportName, MeetResponse.MeetInfoDTO meet) {
-        public MatchDetailDTO(Match match, MeetResponse.MeetInfoDTO meet) {
-            this(match.getId(), match.getStatus(), match.getTime(), match.getLocation(), match.getHomeScore(), match.getAwayScore(), new TeamResponse.TeamDTO(match.getHomeTeam()), new TeamResponse.TeamDTO(match.getAwayTeam()), match.getHomeTeam().getLeague().getSport().getName(), meet);
+    public record MatchDetailDTO (Long id, MatchStatus status, LocalDateTime time, String location, Long homeScore, Long awayScore, TeamResponse.TeamDTO homeTeam, TeamResponse.TeamDTO awayTeam, String sportName, MeetResponse.MeetInfoDTO meet, List<Long> relatedCommunityIds) {
+        public MatchDetailDTO(Match match, MeetResponse.MeetInfoDTO meet, List<Long> relatedCommunityIds) {
+            this(match.getId(), match.getStatus(), match.getTime(), match.getLocation(), match.getHomeScore(), match.getAwayScore(), new TeamResponse.TeamDTO(match.getHomeTeam()), new TeamResponse.TeamDTO(match.getAwayTeam()), match.getHomeTeam().getLeague().getSport().getName(), meet, relatedCommunityIds);
         }
     }
 
