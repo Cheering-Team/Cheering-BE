@@ -765,7 +765,7 @@ public class MeetService {
                 meets = meetRepository.findMeetsByConditionsWithoutProfileForMultipleCommunities(
                         communityIds, PageRequest.of(0, 50)
                 );
-            }else {
+            } else {
                 int currentYear = java.time.Year.now().getValue();
                 int currentAge = currentYear - user.getAge() + 1;
                 MeetGender meetGender = genderMapper(user.getGender());
@@ -778,10 +778,10 @@ public class MeetService {
                         PageRequest.of(0, 50)
                 );
             }
-        } else{
+        } else {
             if (user.getAge() == null || user.getGender() == null) {
                 meets = meetRepository.findMeetsByConditionsWithoutProfile(communityId, PageRequest.of(0,50));
-            } else{
+            } else {
                 // 현재 나이 계산
                 int currentYear = java.time.Year.now().getValue();
                 int currentAge = currentYear - user.getAge() + 1;
@@ -795,19 +795,19 @@ public class MeetService {
                         PageRequest.of(0, 50)
                 );
             }
-            if (meets.isEmpty()) {
-                return Collections.emptyList();
-            }
         }
-        // 랜덤으로 5개 선택
-        Collections.shuffle(meets);
-        List<Meet> randomMeets = meets.stream().limit(5).collect(Collectors.toList());
 
-        List<MeetResponse.MeetInfoDTO> meetInfoDTOs = randomMeets.stream()
+        if (meets.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Collections.shuffle(meets);
+        List<Meet> randomMeets = meets.stream().limit(5).toList();
+
+        return randomMeets.stream()
                 .map(meet -> {
                     int currentCount = calculateCurrentCount(meet.getId());
 
-                    // 채팅방 정보 생성
                     ChatRoom confirmChatRoom = chatRoomRepository.findConfirmedChatRoomByMeetId(meet.getId(), ChatRoomType.CONFIRM)
                             .orElseThrow(() -> new CustomException(ExceptionCode.CHATROOM_NOT_FOUND));
                     ChatRoomResponse.ChatRoomDTO chatRoomDTO = new ChatRoomResponse.ChatRoomDTO(
@@ -816,39 +816,15 @@ public class MeetService {
                             null
                     );
 
-                    if (communityId == 0) {
-                        if (teamRepository.existsById(meet.getCommunityId())) {
-                            Optional<Team> optionalTeam = teamRepository.findById(communityId);
-                            Team team = optionalTeam.orElse(null);
-                            return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, team, null);
-                        } else {
-                            Optional<Player> optionalPlayer = playerRepository.findById(meet.getCommunityId());
-                            if (optionalPlayer.isPresent()) {
-                                Player player = optionalPlayer.get();
-                                Team firstTeam = player.getFirstTeam();
-                            return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam, null);
-                            } else {
-                                return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, null, null);
-                            }
-                        }
-                    } else {
-                        Optional<Team> optionalTeam = teamRepository.findById(communityId);
-                        Optional<Player> optionalPlayer = playerRepository.findById(communityId);
+                    Optional<Team> optionalTeam = teamRepository.findById(meet.getCommunityId());
+                    Optional<Player> optionalPlayer = playerRepository.findById(meet.getCommunityId());
 
-                        if (optionalTeam.isPresent()) {
-                            Team curTeam = optionalTeam.get();
-                            return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, curTeam, null);
-                        } else if (optionalPlayer.isPresent()) {
-                            Player player = optionalPlayer.get();
-                            Team firstTeam = player.getFirstTeam();
-                            return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, firstTeam, null);
-                        } else {
-                            return new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, null, null);
-                        }
-                    }
+                    return optionalTeam.map(team -> new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, team, null))
+                            .orElseGet(() -> optionalPlayer
+                                    .map(player -> new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, player.getFirstTeam(), null))
+                                    .orElse(new MeetResponse.MeetInfoDTO(meet, currentCount, chatRoomDTO, null, null)));
                 })
                 .collect(Collectors.toList());
-        return meetInfoDTOs;
     }
 
     @Transactional(readOnly = true)
