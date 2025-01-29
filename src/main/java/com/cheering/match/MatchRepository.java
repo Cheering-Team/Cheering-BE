@@ -24,11 +24,11 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     @Query("SELECT m FROM Match m WHERE m.status <> :matchStatus ORDER BY m.time ASC, m.id ASC")
     Page<Match> findAllUnfinishedMatch(MatchStatus matchStatus, Pageable pageable);
 
-    @Query("SELECT DISTINCT m FROM Match m " +
+    @Query("SELECT m FROM Match m " +
             "WHERE (m.homeTeam.id IN :communityIds OR m.awayTeam.id IN :communityIds) " +
             "AND m.time BETWEEN :startOfDay AND :endOfDay " +
             "ORDER BY m.time ASC")
-    List<Match> findDistinctMatchesByCommunityIdsAndTimeRange(
+    List<Match> findMatchesByCommunityIdsAndTimeRange(
             @Param("communityIds") List<Long> communityIds,
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay);
