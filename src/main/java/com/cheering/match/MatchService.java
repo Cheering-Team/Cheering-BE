@@ -128,7 +128,8 @@ public class MatchService {
 
         return new MatchResponse.MatchDetailDTO(
                 match,
-                meet != null ? new MeetResponse.MeetInfoDTO(meet, currentCount, null, team, status) : null
+                meet != null ? new MeetResponse.MeetInfoDTO(meet, currentCount, null, team, status) : null,
+                null
         );
     }
 
@@ -165,7 +166,7 @@ public class MatchService {
                 }
                 meetInfoDTO = new MeetResponse.MeetInfoDTO(meet, currentCount, null, curTeam, status);
             }
-            return new MatchResponse.MatchDetailDTO(nextMatches.get(0), meetInfoDTO);
+            return new MatchResponse.MatchDetailDTO(nextMatches.get(0), meetInfoDTO, null);
         }
 
         return null;
@@ -237,7 +238,7 @@ public class MatchService {
 
             }
 
-            return new MatchResponse.MatchDetailDTO(match, meetInfoDTO);
+            return new MatchResponse.MatchDetailDTO(match, meetInfoDTO, null);
         }).toList();
     }
 
@@ -264,7 +265,7 @@ public class MatchService {
         Page<Match> matchList = matchRepository.findAllUnfinishedMatch(MatchStatus.closed, pageable);
 
         List<MatchResponse.MatchDetailDTO> matchDetailDTOS = matchList.getContent().stream()
-                .map(match -> new MatchResponse.MatchDetailDTO(match, null)) // 필요하면(?) 추가
+                .map(match -> new MatchResponse.MatchDetailDTO(match, null, null))
                 .toList();
 
         return new MatchResponse.MatchListDTO(matchList, matchDetailDTOS);
@@ -498,15 +499,82 @@ public class MatchService {
         if (team.isPresent()) {
             List<Match> matches = matchRepository.findByHomeTeamOrAwayTeam(team.get(), now, twoWeeksLater);
             return matches.stream()
-                    .map(match -> new MatchResponse.MatchDetailDTO(match, null))
+                    .map(match -> new MatchResponse.MatchDetailDTO(match, null, null))
                     .toList();
         }
         if (player.isPresent()) {
             List<Match> matches = matchRepository.findByHomeTeamOrAwayTeam(player.get().getFirstTeam(), now, twoWeeksLater);
             return matches.stream()
-                    .map(match -> new MatchResponse.MatchDetailDTO(match, null))
+                    .map(match -> new MatchResponse.MatchDetailDTO(match, null, null))
                     .toList();
         }
         return null;
+    }
+
+    @Transactional(readOnly = true)
+    public List<MatchResponse.MatchDetailDTO> getMatchesByDate(User user, Integer year, Integer month, Integer day) {
+        LocalDate targetDate = LocalDate.of(year, month, day);
+        LocalDateTime startOfDay = targetDate.atStartOfDay();
+        LocalDateTime endOfDay = targetDate.atTime(23, 59, 59);
+
+        List<Fan> fans = fanRepository.findFansByUser(user);
+
+        List<Long> teamCommunityIds = fans.stream()
+                .map(Fan::getCommunityId)
+                .filter(teamRepository::existsById)
+                .toList();
+
+        List<Long> playerCommunityIds = fans.stream()
+                .map(Fan::getCommunityId)
+                .filter(playerRepository::existsById)
+                .toList();
+
+        Map<Long, Long> playerToTeamMap = playerRepository.findAllById(playerCommunityIds).stream()
+                .collect(Collectors.toMap(Player::getId, player -> player.getFirstTeam().getId()));
+
+        List<Long> allCommunityIds = new ArrayList<>(teamCommunityIds);
+        allCommunityIds.addAll(playerToTeamMap.values());
+
+        List<Match> matches = matchRepository.findMatchesByCommunityIdsAndTimeRange(allCommunityIds, startOfDay, endOfDay);
+
+        List<MeetFanRole> roles = Arrays.asList(MeetFanRole.MANAGER, MeetFanRole.MEMBER);
+
+        Map<Long, List<Long>> matchToCommunityMap = new HashMap<>();
+
+        matches.forEach(match -> {
+            Long matchId = match.getId();
+
+            List<Long> relatedCommunityIds = new ArrayList<>();
+
+            if (teamCommunityIds.contains(match.getHomeTeam().getId())) {
+                relatedCommunityIds.add(match.getHomeTeam().getId());
+            }
+            if (teamCommunityIds.contains(match.getAwayTeam().getId())) {
+                relatedCommunityIds.add(match.getAwayTeam().getId());
+            }
+
+            playerToTeamMap.forEach((playerId, firstTeamId) -> {
+                if (firstTeamId.equals(match.getHomeTeam().getId()) || firstTeamId.equals(match.getAwayTeam().getId())) {
+                    relatedCommunityIds.add(playerId);
+                }
+            });
+
+            matchToCommunityMap.put(matchId, relatedCommunityIds);
+        });
+        return matches.stream()
+                .map(match -> {
+                    Meet meet = meetRepository.findByMatchAndUserWithRoles(match.getId(), user, roles);
+                    MeetResponse.MeetInfoDTO meetInfoDTO = null;
+
+                    if (meet != null) {
+                        int currentCount = meetFanRepository.countByMeet(meet);
+                        meetInfoDTO = new MeetResponse.MeetInfoDTO(meet, currentCount, null, null, null);
+                    }
+
+                    List<Long> relatedCommunityIds = matchToCommunityMap.get(match.getId());
+
+                    return new MatchResponse.MatchDetailDTO(match, meetInfoDTO, relatedCommunityIds);
+                })
+                .toList();
     }
 }

@@ -2,6 +2,7 @@ package com.cheering.community;
 
 import com.cheering._core.errors.CustomException;
 import com.cheering._core.errors.ExceptionCode;
+import com.cheering._core.util.S3Util;
 import com.cheering.badword.BadWordService;
 import com.cheering.chat.chatRoom.ChatRoom;
 import com.cheering.chat.chatRoom.ChatRoomRepository;
@@ -11,6 +12,14 @@ import com.cheering.fan.FanRepository;
 import com.cheering.fan.FanResponse;
 import com.cheering.player.Player;
 import com.cheering.player.PlayerRepository;
+import com.cheering.post.PostImage.PostImage;
+import com.cheering.post.PostImage.PostImageRepository;
+import com.cheering.report.commentReport.CommentReport;
+import com.cheering.report.commentReport.CommentReportRepository;
+import com.cheering.report.postReport.PostReport;
+import com.cheering.report.postReport.PostReportRepository;
+import com.cheering.report.reCommentReport.ReCommentReport;
+import com.cheering.report.reCommentReport.ReCommentReportRepository;
 import com.cheering.team.Team;
 import com.cheering.team.TeamRepository;
 import com.cheering.user.User;
@@ -28,6 +37,11 @@ public class CommunityService {
     private final FanRepository fanRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final BadWordService badWordService;
+    private final PostReportRepository postReportRepository;
+    private final CommentReportRepository commentReportRepository;
+    private final ReCommentReportRepository reCommentReportRepository;
+    private final S3Util s3Util;
+    private final PostImageRepository postImageRepository;
 
     // 커뮤니티 조회
     public CommunityResponse.CommunityDTO getCommunityById(Long communityId, User user) {
@@ -168,5 +182,47 @@ public class CommunityService {
             Player player = playerRepository.findRandomPlayer();
             return new CommunityResponse.CommunityDTO(player, null, null);
         }
+    }
+
+    // 커뮤니티 탈퇴
+    @Transactional
+    public void leaveCommunity(Long communityId, User user) {
+        Fan fan = fanRepository.findByCommunityIdAndUser(communityId, user).orElseThrow(()->new CustomException(ExceptionCode.CUR_FAN_NOT_FOUND));
+
+        List<PostImage> postImages = postImageRepository.findByFan(fan);
+
+        for(PostImage postImage : postImages) {
+            s3Util.deleteImageFromS3(postImage.getPath());
+        }
+
+        List<ReCommentReport> reCommentReports = reCommentReportRepository.findByWriter(fan);
+        for(ReCommentReport reCommentReport : reCommentReports) {
+            reCommentReport.setReComment(null);
+        }
+
+        List<CommentReport> commentReports = commentReportRepository.findByWriter(fan);
+        for(CommentReport commentReport : commentReports) {
+            commentReport.setComment(null);
+        }
+
+        List<PostReport> postReports = postReportRepository.findByWriter(fan);
+        for(PostReport postReport : postReports) {
+            postReport.setPost(null);
+        }
+
+        List<Fan> fans = fanRepository.findByUserOrderByCommunityOrderAsc(fan.getUser());
+
+        Integer removedOrder = fan.getCommunityOrder();
+
+        fanRepository.delete(fan);
+        fans.remove(fan);
+
+        for(Fan eachFan : fans) {
+            if(eachFan.getCommunityOrder() > removedOrder) {
+                eachFan.setCommunityOrder(eachFan.getCommunityOrder() - 1);
+            }
+        }
+
+        fanRepository.saveAll(fans);
     }
 }

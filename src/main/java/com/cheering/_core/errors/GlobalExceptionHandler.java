@@ -18,6 +18,10 @@ public class GlobalExceptionHandler {
             Sentry.captureException(e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiUtils.error(e.getMessage(), e.getCode()));
         }
+        if(e.getCode() == 401) {
+            Sentry.captureException(e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiUtils.error(e.getMessage(), e.getCode()));
+        }
         return ResponseEntity.badRequest().body(ApiUtils.error(e.getMessage(), e.getCode()));
     }
 

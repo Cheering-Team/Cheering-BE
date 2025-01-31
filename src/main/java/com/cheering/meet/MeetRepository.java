@@ -43,6 +43,30 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
             Pageable pageable
     );
 
+    @Query("SELECT m FROM Meet m " +
+            "WHERE m.communityId = :communityId " +
+            "AND m.communityId <> :firstTeamId " +
+            "AND (:keyword IS NULL OR m.title LIKE %:keyword%) " +
+            "AND (:type IS NULL OR m.type = :type) " +
+            "AND m.gender IN :genders " +
+            "AND (:minAge IS NULL OR m.ageMin >= :minAge) " +
+            "AND (:maxAge IS NULL OR m.ageMax <= :maxAge) " +
+            "AND (:matchId IS NULL OR m.match.id = :matchId) " +
+            "AND (:hasTicket IS NULL OR m.hasTicket = :hasTicket) " +
+            "AND m.match.time > CURRENT_TIMESTAMP " +
+            "ORDER BY m.createdAt DESC")
+    Page<Meet> findByFiltersExcludingTeam(@Param("communityId") Long communityId,
+                                          @Param("firstTeamId") Long firstTeamId,
+                                          @Param("keyword") String keyword,
+                                          @Param("type") MeetType type,
+                                          @Param("genders") List<MeetGender> genders,
+                                          @Param("minAge") Integer minAge,
+                                          @Param("maxAge") Integer maxAge,
+                                          @Param("matchId") Long matchId,
+                                          @Param("hasTicket") Boolean hasTicket,
+                                          Pageable pageable);
+
+
     @Query("SELECT CASE WHEN COUNT(mf) > 0 THEN true ELSE false END FROM Meet m JOIN m.meetFans mf WHERE m.match.id = :matchId AND mf.fan.user = :user AND (mf.role = 'MANAGER' OR mf.role = 'MEMBER')")
     boolean existsByMatchAndMeetFansFanUser(@Param("matchId") Long matchId, @Param("user") User user);
 
@@ -64,11 +88,41 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
                                      @Param("user") User user,
                                      Pageable pageable);
 
+    @Query("SELECT m FROM Meet m " +
+            "WHERE m.communityId IN :communityIds " +
+            "AND m.ageMin <= :userAge AND m.ageMax >= :userAge " +
+            "AND (m.gender = :gender OR m.gender = 'ANY') " +
+            "AND m.match.time > CURRENT_TIMESTAMP " +
+            "AND m.max > (" +
+            "    SELECT COUNT(mf) FROM MeetFan mf WHERE mf.meet = m" +
+            ") " +
+            "AND NOT EXISTS (" +
+            "    SELECT mf FROM MeetFan mf WHERE mf.meet = m AND mf.fan.user = :user" +
+            ") " +
+            "AND NOT EXISTS (" +
+            "    SELECT mf FROM MeetFan mf WHERE mf.meet = m AND mf.fan.user = :user" +
+            ") " +
+            "ORDER BY m.createdAt DESC")
+    List<Meet> findMeetsByConditionsForMultipleCommunities(
+            @Param("communityIds") List<Long> communityIds,
+            @Param("userAge") Integer userAge,
+            @Param("gender") MeetGender gender,
+            @Param("user") User user,
+            Pageable pageable
+    );
+
     @Query("SELECT m FROM Meet m WHERE m.communityId = :communityId AND m.match.time > CURRENT_TIMESTAMP " +
             "AND m.max > (" +
             "    SELECT COUNT(mf) FROM MeetFan mf WHERE mf.meet = m" +
             ") ORDER BY m.createdAt DESC")
     List<Meet> findMeetsByConditionsWithoutProfile(@Param("communityId") Long communityId, Pageable pageable);
+
+    @Query("SELECT m FROM Meet m WHERE m.communityId IN :communityIds AND m.match.time > CURRENT_TIMESTAMP " +
+            "AND m.max > (" +
+            "    SELECT COUNT(mf) FROM MeetFan mf WHERE mf.meet = m" +
+            ") " +
+            "ORDER BY m.createdAt DESC")
+    List<Meet> findMeetsByConditionsWithoutProfileForMultipleCommunities(@Param("communityIds") List<Long> communityIds, Pageable pageable);
 
     @Query("SELECT m FROM Meet m " +
             "WHERE m.communityId = :communityId " +
@@ -81,6 +135,15 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
     List<Meet> findMeetsByMatch(@Param("communityId") Long communityId,
                                               @Param("matchId") Long matchId,
                                               Pageable pageable);
+
+    @Query("SELECT m FROM Meet m " +
+            "WHERE m.communityId = :communityId " +
+            "AND m.match.id = :matchId " +
+            "AND m.match.time > CURRENT_TIMESTAMP " +
+            "ORDER BY m.createdAt DESC")
+    Page<Meet> findMeetsByCommunityAndMatch(@Param("communityId") Long communityId,
+                                @Param("matchId") Long matchId,
+                                Pageable pageable);
 
     @Query("SELECT m FROM Meet m " +
             "WHERE m.communityId = :communityId " +
@@ -145,6 +208,10 @@ public interface MeetRepository extends JpaRepository<Meet, Long> {
     List<Meet> findApplierMeetsByMatchAndUser(@Param("matchId") Long matchId,
                                               @Param("user") User user,
                                               @Param("role") MeetFanRole role);
+
+    @Query("SELECT mf.meet.id FROM MeetFan mf WHERE mf.fan.user = :user")
+    List<Long> findMeetIdsByUser(@Param("user") User user);
+
 
 
 

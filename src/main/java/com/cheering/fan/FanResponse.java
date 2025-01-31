@@ -13,9 +13,10 @@ public class FanResponse {
                                 String image,
                                 String meetName,
                                 String meetImage,
-                                Boolean isUser) {
+                                Boolean isUser,
+                                Long communityId) {
         public FanProfileDTO(Fan fan, Boolean isUser) {
-            this(fan.getId(), fan.getType(), fan.getName(), fan.getImage(), fan.getMeetName(), fan.getMeetImage(), isUser);
+            this(fan.getId(), fan.getType(), fan.getName(), fan.getImage(), fan.getMeetName(), fan.getMeetImage(), isUser, fan.getCommunityId());
         }
 
     }
