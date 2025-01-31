@@ -539,26 +539,27 @@ public class MatchService {
 
         List<MeetFanRole> roles = Arrays.asList(MeetFanRole.MANAGER, MeetFanRole.MEMBER);
 
-        Map<Long, Set<Long>> matchToCommunityMap = new HashMap<>();
+        Map<Long, List<Long>> matchToCommunityMap = new HashMap<>();
 
         matches.forEach(match -> {
             Long matchId = match.getId();
-            matchToCommunityMap.putIfAbsent(matchId, new HashSet<>()); // matchId가 처음 등장하는 경우만 새로운 HashSet 생성
 
-            // 현재 경기의 홈팀 또는 어웨이팀 ID가 존재하면 해당 팀 ID를 matchToCommunityMap에 추가
+            List<Long> relatedCommunityIds = new ArrayList<>();
+
             if (teamCommunityIds.contains(match.getHomeTeam().getId())) {
-                matchToCommunityMap.get(matchId).add(match.getHomeTeam().getId());
+                relatedCommunityIds.add(match.getHomeTeam().getId());
             }
             if (teamCommunityIds.contains(match.getAwayTeam().getId())) {
-                matchToCommunityMap.get(matchId).add(match.getAwayTeam().getId());
+                relatedCommunityIds.add(match.getAwayTeam().getId());
             }
 
-            //해당 선수의 소속팀이 경기의 홈팀 또는 어웨이팀과 일치하는지 확인
             playerToTeamMap.forEach((playerId, firstTeamId) -> {
                 if (firstTeamId.equals(match.getHomeTeam().getId()) || firstTeamId.equals(match.getAwayTeam().getId())) {
-                    matchToCommunityMap.get(matchId).add(playerId);
+                    relatedCommunityIds.add(playerId);
                 }
             });
+
+            matchToCommunityMap.put(matchId, relatedCommunityIds);
         });
         return matches.stream()
                 .map(match -> {
@@ -570,8 +571,7 @@ public class MatchService {
                         meetInfoDTO = new MeetResponse.MeetInfoDTO(meet, currentCount, null, null, null);
                     }
 
-                    // 연관된 커뮤니티 ID 목록
-                    List<Long> relatedCommunityIds = new ArrayList<>(matchToCommunityMap.get(match.getId()));
+                    List<Long> relatedCommunityIds = matchToCommunityMap.get(match.getId());
 
                     return new MatchResponse.MatchDetailDTO(match, meetInfoDTO, relatedCommunityIds);
                 })
